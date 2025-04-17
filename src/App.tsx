@@ -16,6 +16,7 @@ import CreateOrder from "./pages/CreateOrder";
 import OrderDetails from "./pages/OrderDetails";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
+import NewOrder from "./pages/NewOrder"; // Add import for the new page
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
                   <Route path="/login" element={<Login />} />
                   <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                   <Route path="/create-order" element={<ProtectedRoute roleRequired="leader"><CreateOrder /></ProtectedRoute>} />
+                  <Route path="/new-order" element={<ProtectedRoute roleRequired="leader"><NewOrder /></ProtectedRoute>} />
                   <Route path="/orders/:id" element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />
                   <Route path="/index" element={<Index />} />
                   <Route path="*" element={<NotFound />} />

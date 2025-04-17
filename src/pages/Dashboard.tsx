@@ -1,6 +1,9 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useOrders } from '@/contexts/OrderContext';
 import Layout from '@/components/Layout';
 import OrderCard from '@/components/OrderCard';
@@ -21,6 +24,18 @@ const Dashboard: React.FC = () => {
   
   return (
     <Layout title="Bakery Dashboard">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Order Queue</h2>
+        <div className="flex space-x-2">
+          <Button asChild className="flex items-center">
+            <Link to="/new-order">
+              <Plus className="mr-2 h-4 w-4" />
+              New Order
+            </Link>
+          </Button>
+        </div>
+      </div>
+      
       <div className="grid gap-4">
         <Tabs 
           defaultValue="all" 
