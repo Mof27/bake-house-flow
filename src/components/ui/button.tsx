@@ -20,7 +20,7 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         priority: "bg-red-500 text-white hover:bg-red-600 border-2 border-yellow-500 shadow-md font-bold animate-pulse",
-        cancel: "bg-gray-600 text-white hover:bg-gray-700", // Adding a cancel button variant
+        cancel: "bg-gray-600 text-white hover:bg-gray-700 font-medium", // Improving contrast for cancel button text
       },
       size: {
         default: "h-10 px-4 py-2",
