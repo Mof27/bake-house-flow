@@ -61,7 +61,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
         <div className="text-base font-medium mb-2">Asked Qty: {requestedQuantity}</div>
         
         {/* Notes and Tags section */}
-        <div className="space-y-2">
+        <div className="space-y-2 mt-auto">
           {notes && (
             <div className="text-xs bg-muted/50 p-1 rounded">
               {notes}
@@ -84,7 +84,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
         
         <Button 
           onClick={onStartMixing} 
-          className="w-full py-1 h-10 mt-auto text-zinc-50 bg-bakery-primary"
+          className="w-full py-1 h-10 mt-2 text-zinc-50 bg-bakery-primary"
         >
           <PlayCircle className="mr-1 h-4 w-4" /> Start Mixing
         </Button>

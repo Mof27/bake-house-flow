@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import Layout from '@/components/Layout';
@@ -19,7 +18,6 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MockData } from '@/types/queue';
 
-// Import our custom components
 import MixingCard from '@/components/queue/MixingCard';
 import ActiveMixingCard from '@/components/queue/ActiveMixingCard';
 import OvenReadyCard from '@/components/queue/OvenReadyCard';
@@ -185,7 +183,6 @@ const QueuePage: React.FC = () => {
   });
   
   const handleQuantityChange = (orderId: string, delta: number) => {
-    // Now this will be used for the oven ready cards instead
     setMockData(prev => ({
       ...prev,
       ovenReady: prev.ovenReady.map(order => 
@@ -486,7 +483,6 @@ const QueuePage: React.FC = () => {
                           size={order.size}
                           batchLabel={order.batchLabel}
                           requestedQuantity={order.requestedQuantity}
-                          producedQuantity={order.producedQuantity}
                           requestedAt={order.requestedAt}
                           isPriority={order.isPriority}
                           notes={order.notes}
