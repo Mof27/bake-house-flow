@@ -36,11 +36,9 @@ import { Input } from '@/components/ui/input';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { useTheme } from '@/contexts/ThemeContext';
 
-// Define a union type for flavors to ensure type safety
 type CakeFlavor = 'vanilla' | 'chocolate';
 type CakeShape = 'round' | 'square';
 
-// Define interface for mock data structure
 interface MockData {
   dailyCompleted: number;
   dailyTarget: number;
@@ -99,7 +97,6 @@ interface MockData {
   }[];
 }
 
-// Utility functions
 const formatTime = (seconds: number) => {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -122,7 +119,6 @@ const generateBatchLabel = () => {
   return `${shape} ${type} ${size}CM`;
 };
 
-// Component for mixing queue cards
 interface MixingCardProps {
   flavor: CakeFlavor;
   shape: CakeShape;
@@ -152,7 +148,6 @@ const MixingCard: React.FC<MixingCardProps> = ({
   onQuantityChange,
   onStartMixing
 }) => {
-  // Card background color based on flavor
   const bgColor = flavor === 'vanilla' 
     ? 'bg-amber-50 text-amber-950' 
     : 'bg-amber-900 text-amber-50';
@@ -229,7 +224,6 @@ const MixingCard: React.FC<MixingCardProps> = ({
   );
 };
 
-// Component for active mixing cards with timer
 interface ActiveMixingCardProps {
   flavor: CakeFlavor;
   shape: CakeShape;
@@ -393,7 +387,6 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
   );
 };
 
-// Component for oven queue cards (ready to be moved to oven)
 interface OvenReadyCardProps {
   flavor: CakeFlavor;
   shape: CakeShape;
@@ -463,7 +456,6 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
   );
 };
 
-// Component for items in the oven
 interface OvenItemProps {
   batchLabel: string;
   producedQuantity: number;
@@ -484,8 +476,8 @@ const OvenItem: React.FC<OvenItemProps> = ({
     : 'bg-amber-900 text-amber-50';
 
   return (
-    <div className={`p-2 ${bgColor} rounded-md mb-1 text-sm`}>
-      <h4 className="font-bold text-sm">{batchLabel}</h4>
+    <div className={`p-1.5 ${bgColor} rounded-md text-xs w-full h-full flex flex-col justify-center`}>
+      <h4 className="font-bold text-xs">{batchLabel}</h4>
       <div className="text-xs">
         Qty: <span className="font-bold">{producedQuantity}</span>
       </div>
@@ -493,7 +485,6 @@ const OvenItem: React.FC<OvenItemProps> = ({
   );
 };
 
-// Component for oven slots
 interface OvenSlotProps {
   ovenNumber: number;
   isActive?: boolean;
@@ -554,7 +545,7 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
-      <CardHeader className="p-4 pb-2">
+      <CardHeader className="p-3 pb-1">
         <CardTitle className="text-xl flex justify-between">
           <span>OVEN {ovenNumber}</span>
           <Badge className={isActive ? (showWarning ? 'bg-red-500' : 'bg-green-500') : 'bg-gray-400'}>
@@ -563,10 +554,10 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="p-4 pt-0 flex-1 flex flex-col h-full">
+      <CardContent className="p-3 pt-0 flex-1 flex flex-col h-full">
         {isActive && timeRemaining !== undefined ? (
           <div className="flex flex-col h-full">
-            <div className="mb-4 text-center">
+            <div className="mb-2 text-center">
               <div className="text-3xl font-bold mb-2">
                 {timeRemaining > 0 
                   ? formatTime(timeRemaining) 
@@ -579,15 +570,25 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
                   className="w-full h-2 mb-2" 
                 />
               )}
+              
+              <Button
+                variant="default"
+                size="lg"
+                className="w-full my-2 text-lg py-2"
+                onClick={onComplete}
+              >
+                <CheckCircle2 className="mr-2 h-5 w-5" />
+                DONE
+              </Button>
             </div>
             
-            <div className="flex-1 overflow-y-auto space-y-1 mb-4">
+            <div className="flex-1 overflow-hidden space-y-0.5">
               {batches.length > 0 && (
-                <div className="grid grid-cols-1 gap-1" style={{ height: 'calc(100% - 50px)' }}>
+                <div className="grid grid-cols-1 gap-0.5 h-full">
                   {batches.map((batch, index) => (
                     <div key={batch.id} style={{ 
                       height: `${100 / batches.length}%`,
-                      minHeight: '60px'
+                      minHeight: '40px'
                     }}>
                       <OvenItem 
                         batchLabel={batch.batchLabel}
@@ -601,16 +602,6 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
                 </div>
               )}
             </div>
-            
-            <Button
-              variant="default"
-              size="lg"
-              className="w-full mt-auto text-lg py-4"
-              onClick={onComplete}
-            >
-              <CheckCircle2 className="mr-2 h-5 w-5" />
-              DONE
-            </Button>
           </div>
         ) : (
           <div className="text-center py-8 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md flex-1 flex items-center justify-center">
