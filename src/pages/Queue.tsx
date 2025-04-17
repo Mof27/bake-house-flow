@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -41,6 +40,7 @@ import {
   SheetDescription
 } from "@/components/ui/sheet";
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type CakeFlavor = 'vanilla' | 'chocolate';
 type CakeShape = 'round' | 'square';
@@ -707,7 +707,6 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({ children,
         <div 
           ref={scrollContainerRef}
           className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide" 
-          style={{ scrollbarWidth: 'none' }}
           onScroll={checkForScrollButtons}
         >
           {children}
@@ -1173,109 +1172,115 @@ const QueuePage: React.FC = () => {
                 </Button>
               </div>
 
-              <div style={{ height: 'calc(100vh - 150px)', overflow: 'hidden' }}>
+              <div className="h-[calc(100vh-150px)] overflow-hidden">
                 <TabsContent value="pending" className="mt-0 h-full">
-                  <div className="space-y-4 h-full overflow-y-auto pb-4">
-                    {mockData.pendingOrders.length > 0 ? (
-                      <ScrollableCardSection title="Pending Orders">
-                        {mockData.pendingOrders.map(order => (
-                          <MixingCard 
-                            key={order.id}
-                            flavor={order.flavor}
-                            shape={order.shape}
-                            size={order.size}
-                            batchLabel={order.batchLabel}
-                            requestedQuantity={order.requestedQuantity}
-                            producedQuantity={order.producedQuantity}
-                            requestedAt={order.requestedAt}
-                            isPriority={order.isPriority}
-                            notes={order.notes}
-                            onQuantityChange={(delta) => handleQuantityChange(order.id, delta)}
-                            onStartMixing={() => handleStartMixing(order.id)}
-                          />
-                        ))}
-                      </ScrollableCardSection>
-                    ) : (
-                      <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-                        <p className="text-muted-foreground">No batches in the pending queue</p>
-                      </div>
-                    )}
-                  </div>
+                  <ScrollArea className="h-full">
+                    <div className="space-y-4 pb-4">
+                      {mockData.pendingOrders.length > 0 ? (
+                        <ScrollableCardSection title="Pending Orders">
+                          {mockData.pendingOrders.map(order => (
+                            <MixingCard 
+                              key={order.id}
+                              flavor={order.flavor}
+                              shape={order.shape}
+                              size={order.size}
+                              batchLabel={order.batchLabel}
+                              requestedQuantity={order.requestedQuantity}
+                              producedQuantity={order.producedQuantity}
+                              requestedAt={order.requestedAt}
+                              isPriority={order.isPriority}
+                              notes={order.notes}
+                              onQuantityChange={(delta) => handleQuantityChange(order.id, delta)}
+                              onStartMixing={() => handleStartMixing(order.id)}
+                            />
+                          ))}
+                        </ScrollableCardSection>
+                      ) : (
+                        <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
+                          <p className="text-muted-foreground">No batches in the pending queue</p>
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
                 </TabsContent>
                 
                 <TabsContent value="in-progress" className="mt-0 h-full">
-                  <div className="space-y-4 h-full overflow-y-auto pb-4">
-                    {mockData.activeMixing.length > 0 && (
-                      <ScrollableCardSection title="Currently Mixing">
-                        {mockData.activeMixing.map(order => (
-                          <ActiveMixingCard 
-                            key={order.id}
-                            flavor={order.flavor}
-                            shape={order.shape}
-                            size={order.size}
-                            batchLabel={order.batchLabel}
-                            requestedAt={order.requestedAt}
-                            isPriority={order.isPriority}
-                            startTime={order.startTime}
-                            onCancel={() => handleCancelTimer(order.id)}
-                            onComplete={() => handleMixingComplete(order.id)}
-                          />
-                        ))}
-                      </ScrollableCardSection>
-                    )}
-                    
-                    {mockData.ovenReady.length > 0 && (
-                      <ScrollableCardSection title="Oven Queue">
-                        {mockData.ovenReady.map(order => (
-                          <OvenReadyCard 
-                            key={order.id}
-                            id={order.id}
-                            flavor={order.flavor}
-                            shape={order.shape}
-                            size={order.size}
-                            batchLabel={order.batchLabel}
-                            requestedAt={order.requestedAt}
-                            requestedQuantity={order.requestedQuantity}
-                            producedQuantity={order.producedQuantity}
-                            isPriority={order.isPriority}
-                            onDragStart={handleDragStart}
-                          />
-                        ))}
-                      </ScrollableCardSection>
-                    )}
-                    
-                    {!anyInProgress && (
-                      <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-                        <p className="text-muted-foreground">No batches currently in progress</p>
-                      </div>
-                    )}
-                  </div>
+                  <ScrollArea className="h-full">
+                    <div className="space-y-4 pb-4">
+                      {mockData.activeMixing.length > 0 && (
+                        <ScrollableCardSection title="Currently Mixing">
+                          {mockData.activeMixing.map(order => (
+                            <ActiveMixingCard 
+                              key={order.id}
+                              flavor={order.flavor}
+                              shape={order.shape}
+                              size={order.size}
+                              batchLabel={order.batchLabel}
+                              requestedAt={order.requestedAt}
+                              isPriority={order.isPriority}
+                              startTime={order.startTime}
+                              onCancel={() => handleCancelTimer(order.id)}
+                              onComplete={() => handleMixingComplete(order.id)}
+                            />
+                          ))}
+                        </ScrollableCardSection>
+                      )}
+                      
+                      {mockData.ovenReady.length > 0 && (
+                        <ScrollableCardSection title="Oven Queue">
+                          {mockData.ovenReady.map(order => (
+                            <OvenReadyCard 
+                              key={order.id}
+                              id={order.id}
+                              flavor={order.flavor}
+                              shape={order.shape}
+                              size={order.size}
+                              batchLabel={order.batchLabel}
+                              requestedAt={order.requestedAt}
+                              requestedQuantity={order.requestedQuantity}
+                              producedQuantity={order.producedQuantity}
+                              isPriority={order.isPriority}
+                              onDragStart={handleDragStart}
+                            />
+                          ))}
+                        </ScrollableCardSection>
+                      )}
+                      
+                      {!anyInProgress && (
+                        <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
+                          <p className="text-muted-foreground">No batches currently in progress</p>
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
                 </TabsContent>
                 
                 <TabsContent value="done" className="mt-0 h-full">
-                  <div className="h-full overflow-y-auto pb-4">
-                    <h2 className="text-lg font-bold mb-2">Completed Batches</h2>
-                    
-                    {mockData.completedBatches.length === 0 ? (
-                      <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-                        <p className="text-muted-foreground">No completed batches yet</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-1">
-                        {mockData.completedBatches.map(batch => (
-                          <CompletedBatchItem 
-                            key={batch.id}
-                            batchLabel={batch.batchLabel}
-                            flavor={batch.flavor}
-                            shape={batch.shape}
-                            size={batch.size}
-                            producedQuantity={batch.producedQuantity}
-                            completedAt={batch.completedAt}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <ScrollArea className="h-full">
+                    <div className="pb-4">
+                      <h2 className="text-lg font-bold mb-2">Completed Batches</h2>
+                      
+                      {mockData.completedBatches.length === 0 ? (
+                        <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
+                          <p className="text-muted-foreground">No completed batches yet</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          {mockData.completedBatches.map(batch => (
+                            <CompletedBatchItem 
+                              key={batch.id}
+                              batchLabel={batch.batchLabel}
+                              flavor={batch.flavor}
+                              shape={batch.shape}
+                              size={batch.size}
+                              producedQuantity={batch.producedQuantity}
+                              completedAt={batch.completedAt}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
                 </TabsContent>
               </div>
             </Tabs>
@@ -1312,7 +1317,7 @@ const QueuePage: React.FC = () => {
         </div>
       </div>
       
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{__html: `
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
@@ -1320,10 +1325,9 @@ const QueuePage: React.FC = () => {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
-      `}</style>
+      `}} />
     </Layout>
   );
 };
 
 export default QueuePage;
-

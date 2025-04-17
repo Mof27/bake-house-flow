@@ -26,9 +26,9 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
   const location = useLocation();
   
   return (
-    <div className="min-h-screen bg-background flex flex-col w-full ipad-container">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b ipad-safe-area flex justify-between items-center">
+    <div className="min-h-screen bg-background flex flex-col w-full">
+      {/* Header - Not fixed anymore */}
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b flex justify-between items-center py-2 px-4">
         <div className="flex items-center">
           <h1 className="text-2xl font-bold text-bakery-primary">{title}</h1>
           
@@ -119,13 +119,13 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
         </div>
       </header>
       
-      {/* Main content */}
-      <main className="flex-1 overflow-auto ipad-safe-area">
+      {/* Main content - Not using overflow-auto anymore to prevent page scrolling */}
+      <main className="flex-1">
         {children}
       </main>
       
       {/* Footer */}
-      <footer className="bg-white dark:bg-gray-800 border-t py-4 px-6 text-center text-sm text-muted-foreground">
+      <footer className="bg-white dark:bg-gray-800 border-t py-2 px-4 text-center text-sm text-muted-foreground">
         <p>Kitchen Display System &copy; {new Date().getFullYear()}</p>
       </footer>
     </div>
