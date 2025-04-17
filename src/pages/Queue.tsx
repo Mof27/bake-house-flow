@@ -37,6 +37,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 
 // Define a union type for flavors to ensure type safety
 type CakeFlavor = 'vanilla' | 'chocolate';
+type CakeShape = 'round' | 'square';
 
 // Define interface for mock data structure
 interface MockData {
@@ -45,9 +46,12 @@ interface MockData {
   pendingOrders: {
     id: string;
     flavor: CakeFlavor;
+    shape: CakeShape;
+    size: number;
     batchLabel: string;
-    quantity: number;
-    secretCode: string;
+    requestedQuantity: number;
+    producedQuantity: number;
+    requestedAt: Date;
     isPriority: boolean;
     notes?: string;
     isNew?: boolean;
@@ -55,15 +59,19 @@ interface MockData {
   activeMixing: {
     id: string;
     flavor: CakeFlavor;
+    shape: CakeShape;
+    size: number;
     batchLabel: string;
-    secretCode: string;
+    requestedAt: Date;
     isPriority: boolean;
   }[];
   ovenReady: {
     id: string;
     flavor: CakeFlavor;
+    shape: CakeShape;
+    size: number;
     batchLabel: string;
-    secretCode: string;
+    requestedAt: Date;
     isPriority: boolean;
   }[];
   ovens: {
@@ -80,30 +88,31 @@ const formatTime = (seconds: number) => {
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 };
 
-const generateBatchLabel = () => {
-  const size = Math.floor(Math.random() * 10) + 15; // 15-24cm
-  const type = Math.random() > 0.5 ? 'VC' : 'CC'; // Vanilla Cake or Chocolate Cake
-  const date = new Date();
-  const dateStr = `${date.getDate().toString().padStart(2, '0')}${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][date.getMonth()]}`;
-  const timeStr = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-  return `${size}cm | ${type} | ${dateStr}-${timeStr}`;
+const formatDateTime = (date: Date) => {
+  return new Date(date).toLocaleString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 };
 
-const generateRandomCode = () => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = '';
-  for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
+const generateBatchLabel = () => {
+  const shape = Math.random() > 0.5 ? 'ROUND' : 'SQUARE';
+  const type = Math.random() > 0.5 ? 'VANILLA' : 'CHOCOLATE';
+  const size = Math.floor(Math.random() * 10) + 15; // 15-24cm
+  return `${shape} ${type} ${size}CM`;
 };
 
 // Component for mixing queue cards
 interface MixingCardProps {
   flavor: CakeFlavor;
+  shape: CakeShape;
+  size: number;
   batchLabel: string;
-  quantity: number;
-  secretCode: string;
+  requestedQuantity: number;
+  producedQuantity: number;
+  requestedAt: Date;
   isPriority?: boolean;
   notes?: string;
   isNew?: boolean;
@@ -113,9 +122,12 @@ interface MixingCardProps {
 
 const MixingCard: React.FC<MixingCardProps> = ({
   flavor,
+  shape,
+  size,
   batchLabel,
-  quantity,
-  secretCode,
+  requestedQuantity,
+  producedQuantity,
+  requestedAt,
   isPriority = false,
   notes,
   isNew = false,
@@ -154,8 +166,10 @@ const MixingCard: React.FC<MixingCardProps> = ({
         {/* Batch label */}
         <h3 className="font-bold text-lg">{batchLabel}</h3>
         
-        {/* Secret code */}
-        <div className="text-xs opacity-70 mb-3">Code: {secretCode}</div>
+        {/* Requested at */}
+        <div className="text-xs opacity-70 mb-3">
+          requested at {formatDateTime(requestedAt)}
+        </div>
         
         {/* Notes if they exist */}
         {notes && (
@@ -164,27 +178,31 @@ const MixingCard: React.FC<MixingCardProps> = ({
           </div>
         )}
         
-        {/* Quantity controls */}
-        <div className="flex items-center justify-between mb-4">
-          <span className="font-medium">Qty: {quantity}</span>
-          <div className="flex space-x-2">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="h-11 w-11 rounded-full"
-              onClick={() => onQuantityChange(-1)}
-              disabled={quantity <= 1}
-            >
-              <MinusCircle />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="h-11 w-11 rounded-full"
-              onClick={() => onQuantityChange(1)}
-            >
-              <PlusCircle />
-            </Button>
+        {/* Quantity section */}
+        <div className="flex flex-col space-y-2 mb-4">
+          <div className="text-sm font-medium">Asked Qty: {requestedQuantity}</div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">Produced Qty: {producedQuantity}</span>
+            <div className="flex space-x-2">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="h-8 w-8 rounded-full"
+                onClick={() => onQuantityChange(-1)}
+                disabled={producedQuantity <= 1}
+              >
+                <MinusCircle className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="h-8 w-8 rounded-full"
+                onClick={() => onQuantityChange(1)}
+              >
+                <PlusCircle className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
         
@@ -203,8 +221,10 @@ const MixingCard: React.FC<MixingCardProps> = ({
 // Component for active mixing cards with timer
 interface ActiveMixingCardProps {
   flavor: CakeFlavor;
+  shape: CakeShape;
+  size: number;
   batchLabel: string;
-  secretCode: string;
+  requestedAt: Date;
   isPriority?: boolean;
   onReset: () => void;
   onComplete: () => void;
@@ -212,8 +232,10 @@ interface ActiveMixingCardProps {
 
 const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
   flavor,
+  shape,
+  size,
   batchLabel,
-  secretCode,
+  requestedAt,
   isPriority = false,
   onReset,
   onComplete
@@ -280,8 +302,10 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
         {/* Batch label */}
         <h3 className="font-bold text-lg">{batchLabel}</h3>
         
-        {/* Secret code */}
-        <div className="text-xs opacity-70 mb-3">Code: {secretCode}</div>
+        {/* Requested at */}
+        <div className="text-xs opacity-70 mb-3">
+          requested at {formatDateTime(requestedAt)}
+        </div>
         
         {/* Timer display */}
         <div className="flex flex-col items-center mt-4 mb-4">
@@ -303,14 +327,14 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
             className="flex-1"
             onClick={onReset}
           >
-            <RefreshCw /> Reset
+            <RefreshCw className="mr-1" /> Reset
           </Button>
           <Button 
             variant="default"
             className="flex-1"
             onClick={onComplete}
           >
-            <TimerOff /> Finish
+            <TimerOff className="mr-1" /> Finish
           </Button>
         </div>
       </CardContent>
@@ -321,15 +345,19 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
 // Component for oven queue cards (ready to be moved to oven)
 interface OvenReadyCardProps {
   flavor: CakeFlavor;
+  shape: CakeShape;
+  size: number;
   batchLabel: string;
-  secretCode: string;
+  requestedAt: Date;
   isPriority?: boolean;
 }
 
 const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
   flavor,
+  shape,
+  size,
   batchLabel,
-  secretCode,
+  requestedAt,
   isPriority = false
 }) => {
   // Card background color based on flavor
@@ -359,8 +387,10 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
         {/* Batch label */}
         <h3 className="font-bold text-lg">{batchLabel}</h3>
         
-        {/* Secret code */}
-        <div className="text-xs opacity-70">{secretCode}</div>
+        {/* Requested at */}
+        <div className="text-xs opacity-70 mb-3">
+          requested at {formatDateTime(requestedAt)}
+        </div>
         
         {/* Drag indicator */}
         <div className="flex justify-center items-center mt-3 text-sm text-gray-500 dark:text-gray-400">
@@ -388,7 +418,7 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
       border-2 ${isActive 
         ? 'border-green-500 bg-green-50 dark:bg-green-900/20' 
         : 'border-dashed border-gray-300 bg-gray-50 dark:bg-gray-800/50'} 
-      transition-all
+      transition-all h-1/2
     `}>
       <CardHeader className="p-4 pb-0">
         <CardTitle className="text-xl flex justify-between">
@@ -398,9 +428,9 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4">
+      <CardContent className="p-4 flex-1 flex flex-col">
         {isActive && timeRemaining ? (
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center flex-1 justify-center">
             <div className="text-2xl font-bold mb-2">
               {formatTime(timeRemaining)}
             </div>
@@ -410,7 +440,7 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
             />
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md flex-1 flex items-center justify-center">
             Drop batch here to start baking
           </div>
         )}
@@ -425,6 +455,15 @@ const QueuePage: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState<string>('');
   
+  // Generate a request date in the past few hours
+  const generateRequestDate = () => {
+    const now = new Date();
+    // Random time between 0 and 5 hours ago
+    const hoursAgo = Math.random() * 5;
+    now.setHours(now.getHours() - hoursAgo);
+    return now;
+  };
+  
   // Mock data for UI demonstration
   const [mockData, setMockData] = useState<MockData>({
     dailyCompleted: 12,
@@ -433,9 +472,12 @@ const QueuePage: React.FC = () => {
       {
         id: '1',
         flavor: 'vanilla',
-        batchLabel: generateBatchLabel(),
-        quantity: 4,
-        secretCode: generateRandomCode(),
+        shape: 'round',
+        size: 16,
+        batchLabel: 'ROUND VANILLA 16CM',
+        requestedQuantity: 4,
+        producedQuantity: 4,
+        requestedAt: generateRequestDate(),
         isPriority: true,
         notes: 'Birthday cake for Sarah',
         isNew: true
@@ -443,9 +485,12 @@ const QueuePage: React.FC = () => {
       {
         id: '2',
         flavor: 'chocolate',
-        batchLabel: generateBatchLabel(),
-        quantity: 2,
-        secretCode: generateRandomCode(),
+        shape: 'square',
+        size: 20,
+        batchLabel: 'SQUARE CHOCOLATE 20CM',
+        requestedQuantity: 2,
+        producedQuantity: 2,
+        requestedAt: generateRequestDate(),
         isPriority: false,
         isNew: false
       }
@@ -454,8 +499,10 @@ const QueuePage: React.FC = () => {
       {
         id: '3',
         flavor: 'vanilla',
-        batchLabel: generateBatchLabel(),
-        secretCode: generateRandomCode(),
+        shape: 'round',
+        size: 18,
+        batchLabel: 'ROUND VANILLA 18CM',
+        requestedAt: generateRequestDate(),
         isPriority: false
       }
     ],
@@ -463,8 +510,10 @@ const QueuePage: React.FC = () => {
       {
         id: '4',
         flavor: 'chocolate',
-        batchLabel: generateBatchLabel(),
-        secretCode: generateRandomCode(),
+        shape: 'round',
+        size: 22,
+        batchLabel: 'ROUND CHOCOLATE 22CM',
+        requestedAt: generateRequestDate(),
         isPriority: true
       }
     ],
@@ -487,7 +536,7 @@ const QueuePage: React.FC = () => {
       ...prev,
       pendingOrders: prev.pendingOrders.map(order => 
         order.id === orderId 
-          ? { ...order, quantity: Math.max(1, order.quantity + delta) }
+          ? { ...order, producedQuantity: Math.max(1, order.producedQuantity + delta) }
           : order
       )
     }));
@@ -506,8 +555,10 @@ const QueuePage: React.FC = () => {
       activeMixing: [...prev.activeMixing, { 
         id: orderToMove.id,
         flavor: orderToMove.flavor,
+        shape: orderToMove.shape,
+        size: orderToMove.size,
         batchLabel: orderToMove.batchLabel,
-        secretCode: orderToMove.secretCode,
+        requestedAt: orderToMove.requestedAt,
         isPriority: orderToMove.isPriority
       }]
     }));
@@ -535,8 +586,10 @@ const QueuePage: React.FC = () => {
       ovenReady: [...prev.ovenReady, { 
         id: orderToMove.id,
         flavor: orderToMove.flavor,
+        shape: orderToMove.shape,
+        size: orderToMove.size,
         batchLabel: orderToMove.batchLabel,
-        secretCode: orderToMove.secretCode,
+        requestedAt: orderToMove.requestedAt,
         isPriority: orderToMove.isPriority
       }]
     }));
@@ -546,13 +599,22 @@ const QueuePage: React.FC = () => {
   
   // Create a new mock order
   const handleAddNewOrder = () => {
+    const shape = Math.random() > 0.5 ? 'round' : 'square' as CakeShape;
+    const flavor = Math.random() > 0.5 ? 'vanilla' : 'chocolate' as CakeFlavor;
+    const size = Math.floor(Math.random() * 10) + 15; // 15-24cm
+    const requestedQuantity = Math.floor(Math.random() * 5) + 1;
+    const isPriority = Math.random() > 0.7;
+    
     const newOrder = {
       id: `new-${Date.now()}`,
-      flavor: Math.random() > 0.5 ? 'vanilla' : 'chocolate' as CakeFlavor,
-      batchLabel: generateBatchLabel(),
-      quantity: Math.floor(Math.random() * 5) + 1,
-      secretCode: generateRandomCode(),
-      isPriority: Math.random() > 0.7,
+      flavor,
+      shape,
+      size,
+      batchLabel: `${shape.toUpperCase()} ${flavor.toUpperCase()} ${size}CM`,
+      requestedQuantity,
+      producedQuantity: requestedQuantity,
+      requestedAt: new Date(),
+      isPriority,
       isNew: true
     };
     
@@ -660,9 +722,12 @@ const QueuePage: React.FC = () => {
                       <MixingCard 
                         key={order.id}
                         flavor={order.flavor}
+                        shape={order.shape}
+                        size={order.size}
                         batchLabel={order.batchLabel}
-                        quantity={order.quantity}
-                        secretCode={order.secretCode}
+                        requestedQuantity={order.requestedQuantity}
+                        producedQuantity={order.producedQuantity}
+                        requestedAt={order.requestedAt}
                         isPriority={order.isPriority}
                         notes={order.notes}
                         isNew={order.isNew}
@@ -683,8 +748,10 @@ const QueuePage: React.FC = () => {
                       <ActiveMixingCard 
                         key={order.id}
                         flavor={order.flavor}
+                        shape={order.shape}
+                        size={order.size}
                         batchLabel={order.batchLabel}
-                        secretCode={order.secretCode}
+                        requestedAt={order.requestedAt}
                         isPriority={order.isPriority}
                         onReset={() => handleResetTimer(order.id)}
                         onComplete={() => handleMixingComplete(order.id)}
@@ -708,8 +775,10 @@ const QueuePage: React.FC = () => {
                       <OvenReadyCard 
                         key={order.id}
                         flavor={order.flavor}
+                        shape={order.shape}
+                        size={order.size}
                         batchLabel={order.batchLabel}
-                        secretCode={order.secretCode}
+                        requestedAt={order.requestedAt}
                         isPriority={order.isPriority}
                       />
                     ))}
@@ -723,10 +792,10 @@ const QueuePage: React.FC = () => {
           
           {/* Right panel: Oven slots */}
           <ResizablePanel defaultSize={30} minSize={20}>
-            <div className="h-full overflow-y-auto p-4 space-y-6">
+            <div className="h-full flex flex-col p-4">
               <h2 className="text-xl font-bold mb-4">Oven Slots</h2>
               
-              <div className="space-y-6">
+              <div className="flex flex-col flex-1 space-y-4">
                 {mockData.ovens.map(oven => (
                   <OvenSlot 
                     key={oven.number}
