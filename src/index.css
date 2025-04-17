@@ -3,148 +3,63 @@
 @tailwind components;
 @tailwind utilities;
 
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+ 
 @layer base {
   :root {
-    --background: 30 33% 98%;
-    --foreground: 24 10% 10%;
-
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 24 10% 10%;
-
+    --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 24 10% 10%;
-
-    --primary: 24 100% 40%;
-    --primary-foreground: 60 36% 92%;
-
-    --secondary: 30 6% 25%;
-    --secondary-foreground: 60 36% 92%;
-
-    --muted: 30 6% 90%;
-    --muted-foreground: 24 5% 50%;
-
-    --accent: 36 100% 50%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 60 36% 92%;
-
-    --border: 30 6% 90%;
-    --input: 30 6% 90%;
-    --ring: 24 100% 30%;
-
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 72.2% 50.6%;
+    --primary-foreground: 0 85.7% 97.3%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 72.2% 50.6%;
     --radius: 0.75rem;
+    --bakery-danger: 357 76% 49%;
+    --bakery-warning: 38 92% 50%;
+    --bakery-success: 142 71% 45%;
   }
-
+ 
   .dark {
-    --background: 24 15% 15%;
-    --foreground: 60 36% 92%;
-
-    --card: 24 15% 18%;
-    --card-foreground: 60 36% 92%;
-
-    --popover: 24 15% 18%;
-    --popover-foreground: 60 36% 92%;
-
-    --primary: 24 100% 50%;
-    --primary-foreground: 60 36% 92%;
-
-    --secondary: 30 6% 30%;
-    --secondary-foreground: 60 36% 92%;
-
-    --muted: 24 15% 25%;
-    --muted-foreground: 60 36% 70%;
-
-    --accent: 36 100% 50%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 74% 50%;
-    --destructive-foreground: 60 36% 92%;
-
-    --border: 24 15% 25%;
-    --input: 24 15% 25%;
-    --ring: 24 100% 50%;
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 72.2% 50.6%;
+    --primary-foreground: 0 85.7% 97.3%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 72.2% 50.6%;
+    --bakery-danger: 357 76% 59%;
+    --bakery-warning: 38 92% 60%;
+    --bakery-success: 142 71% 55%;
   }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground antialiased;
-    font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
-  }
-  
-  /* Making touch targets larger for tablet use */
-  button, a, input, select, textarea {
-    @apply min-h-10 min-w-10;
-  }
-}
-
-@layer components {
-  .status-badge {
-    @apply text-white font-medium rounded-full px-3 py-1 text-sm;
-  }
-  
-  .status-queued {
-    @apply bg-status-queued;
-  }
-  
-  .status-baking {
-    @apply bg-status-baking;
-  }
-  
-  .status-done {
-    @apply bg-status-done;
-  }
-  
-  .priority-flag {
-    @apply text-bakery-danger font-bold;
-  }
-  
-  .order-card {
-    @apply bg-white dark:bg-card rounded-xl shadow-md p-4 border transition-all 
-    hover:shadow-lg hover:border-bakery-accent/50 relative;
-  }
-  
-  .order-card-urgent {
-    @apply border-l-4 border-l-bakery-danger;
-  }
-  
-  .print-badge {
-    @apply bg-gray-200 dark:bg-gray-700 text-xs rounded-full px-2 py-0.5 inline-flex items-center;
-  }
-  
-  .alert-overdue {
-    @apply border-2 border-bakery-danger animate-pulse-attention;
-  }
-
-  .ipad-container {
-    @apply max-w-[1024px] max-h-[768px] h-screen w-screen mx-auto overflow-hidden; /* iPad 10.2" dimensions */
-  }
-  
-  .ipad-safe-area {
-    @apply p-4 md:p-6;
-  }
-}
-
-/* Custom scrollbar for WebKit browsers */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
 }
