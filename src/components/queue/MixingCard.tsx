@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { PlusCircle, MinusCircle, PlayCircle } from 'lucide-react';
+import { PlusCircle, MinusCircle, PlayCircle, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CakeFlavor, CakeShape } from '@/types/queue';
@@ -16,7 +16,7 @@ interface MixingCardProps {
   requestedAt: Date;
   isPriority?: boolean;
   notes?: string;
-  onQuantityChange: (delta: number) => void;
+  onQuantityChange?: (delta: number) => void;
   onStartMixing: () => void;
 }
 
@@ -26,19 +26,17 @@ const MixingCard: React.FC<MixingCardProps> = ({
   size,
   batchLabel,
   requestedQuantity,
-  producedQuantity,
   requestedAt,
   isPriority = false,
   notes,
-  onQuantityChange,
   onStartMixing
 }) => {
   const bgColor = flavor === 'vanilla' 
     ? 'bg-amber-50 text-amber-950' 
     : 'bg-amber-900 text-amber-50';
   
-  // Split batch label into parts (assuming format like "ROUND VANILLA 16CM")
-  const parts = batchLabel.split(' ');
+  // Format the shape and size for display
+  const formattedShapeSize = `${shape.charAt(0).toUpperCase() + shape.slice(1)} ${size}CM`;
   
   return (
     <Card className={`
@@ -46,50 +44,36 @@ const MixingCard: React.FC<MixingCardProps> = ({
       ${bgColor} 
       ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
       hover:shadow-md w-[240px] h-[300px] flex-shrink-0
-    `}>      
-      <CardContent className="p-3 h-full flex flex-col space-y-2">
-        {/* Shape */}
-        <div className="text-xl font-bold leading-tight">{parts[0] || ''}</div>
+    `}>
+      {isPriority && (
+        <div className="absolute top-2 right-2">
+          <Zap className="h-5 w-5 text-red-500" />
+        </div>
+      )}
+      
+      <CardContent className="p-3 h-full flex flex-col">
+        {/* Shape and size */}
+        <div className="text-2xl font-bold leading-tight mb-1">{formattedShapeSize}</div>
         
         {/* Flavor */}
-        <div className="text-xl font-bold leading-tight">{parts[1] || ''}</div>
+        <div className="text-2xl font-bold leading-tight mb-2">
+          {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
+        </div>
         
         {/* Date */}
-        <div className="text-xs opacity-70">
+        <div className="text-xs opacity-70 mb-2">
           {formatDateTime(requestedAt)}
         </div>
         
-        {notes && (
-          <div className="text-xs bg-muted/50 p-1 rounded">
-            {notes}
-          </div>
-        )}
+        <div className="text-base font-medium mb-2">Asked Qty: {requestedQuantity}</div>
         
-        <div className="flex flex-col space-y-2 mt-auto">
-          <div className="text-base font-medium">Asked Qty: {requestedQuantity}</div>
-          
-          <div className="flex items-center justify-between">
-            <span className="text-base font-medium">Actual Qty: <span className="text-lg font-bold">{producedQuantity}</span></span>
-            <div className="flex space-x-2">
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="h-8 w-8 rounded-full"
-                onClick={() => onQuantityChange(-1)}
-                disabled={producedQuantity <= 1}
-              >
-                <MinusCircle className="h-5 w-5" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="h-8 w-8 rounded-full"
-                onClick={() => onQuantityChange(1)}
-              >
-                <PlusCircle className="h-5 w-5" />
-              </Button>
+        {/* Notes section - position fixed above start mixing button */}
+        <div className="flex-1">
+          {notes && (
+            <div className="text-xs bg-muted/50 p-1 rounded">
+              {notes}
             </div>
-          </div>
+          )}
         </div>
         
         <Button 

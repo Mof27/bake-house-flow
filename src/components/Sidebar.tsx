@@ -34,6 +34,10 @@ const Sidebar: React.FC<SidebarProps> = ({ dailyCompleted, dailyTarget }) => {
   const { hasNewOrders, hasOverdueOrders, newOrdersCount, overdueOrdersCount, markNewOrdersSeen } = useNotifications();
   const location = useLocation();
 
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   return (
     <div 
       className={cn(
@@ -49,8 +53,8 @@ const Sidebar: React.FC<SidebarProps> = ({ dailyCompleted, dailyTarget }) => {
         <Button 
           variant="ghost" 
           size="icon" 
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="rounded-full"
+          onClick={toggleCollapse}
+          className="rounded-full z-50"
         >
           {isCollapsed ? <PanelLeft size={20} /> : <PanelLeftClose size={20} />}
         </Button>

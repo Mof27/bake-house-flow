@@ -81,8 +81,8 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
       <CardContent className="p-1 pt-0 flex flex-col h-[calc(100%-28px)]">
         {isActive && timeRemaining !== undefined ? (
           <div className="flex flex-col h-full">
-            <div className="text-center py-1">
-              <div className="text-lg font-bold">
+            <div className="text-center py-0.5">
+              <div className="text-base font-bold">
                 {timeRemaining > 0 
                   ? formatTime(timeRemaining) 
                   : `+${formatTime(Math.abs(timeRemaining))}`
@@ -92,27 +92,27 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
               {timeRemaining > 0 && (
                 <Progress 
                   value={(timeRemaining / OVEN_TIME) * 100} 
-                  className="w-full h-1 my-1" 
+                  className="w-full h-1 my-0.5" 
                 />
               )}
               
               <Button
                 variant="default"
                 size="sm"
-                className="w-full my-1 text-xs py-0 h-6"
+                className="w-full my-0.5 text-xs py-0 h-5"
                 onClick={onComplete}
               >
                 <CheckCircle2 className="mr-1 h-3 w-3" /> DONE
               </Button>
             </div>
             
-            <div className="flex-1 overflow-hidden mt-1">
+            <div className="flex-1 overflow-hidden mt-0.5">
               {batches.length > 0 ? (
                 <div className="grid grid-cols-1 gap-0.5 h-full">
                   {batches.map((batch, index) => (
                     <div key={batch.id} style={{ 
                       height: `${100 / batches.length}%`,
-                      minHeight: '28px'
+                      minHeight: '24px'
                     }}>
                       <OvenItem 
                         batchLabel={batch.batchLabel}

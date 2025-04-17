@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import Layout from '@/components/Layout';
@@ -184,9 +185,10 @@ const QueuePage: React.FC = () => {
   });
   
   const handleQuantityChange = (orderId: string, delta: number) => {
+    // Now this will be used for the oven ready cards instead
     setMockData(prev => ({
       ...prev,
-      pendingOrders: prev.pendingOrders.map(order => 
+      ovenReady: prev.ovenReady.map(order => 
         order.id === orderId 
           ? { ...order, producedQuantity: Math.max(1, order.producedQuantity + delta) }
           : order
@@ -488,7 +490,6 @@ const QueuePage: React.FC = () => {
                           requestedAt={order.requestedAt}
                           isPriority={order.isPriority}
                           notes={order.notes}
-                          onQuantityChange={(delta) => handleQuantityChange(order.id, delta)}
                           onStartMixing={() => handleStartMixing(order.id)}
                         />
                       ))}
@@ -541,6 +542,7 @@ const QueuePage: React.FC = () => {
                               producedQuantity={order.producedQuantity}
                               isPriority={order.isPriority}
                               onDragStart={handleDragStart}
+                              onQuantityChange={(delta) => handleQuantityChange(order.id, delta)}
                             />
                           ))}
                         </ScrollableCardSection>

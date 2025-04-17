@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Flame, MoveHorizontal } from 'lucide-react';
+import { MoveHorizontal, PlusCircle, MinusCircle, Zap } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { CakeFlavor, CakeShape } from '@/types/queue';
 import { formatDateTime } from '@/lib/date-utils';
 
@@ -15,6 +16,7 @@ interface OvenReadyCardProps {
   producedQuantity: number;
   isPriority?: boolean;
   onDragStart: (e: React.DragEvent, id: string) => void;
+  onQuantityChange: (delta: number) => void;
   id: string;
 }
 
@@ -28,14 +30,15 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
   requestedQuantity,
   producedQuantity,
   isPriority = false,
-  onDragStart
+  onDragStart,
+  onQuantityChange
 }) => {
   const bgColor = flavor === 'vanilla' 
     ? 'bg-amber-50 text-amber-950' 
     : 'bg-amber-900 text-amber-50';
     
-  // Split batch label into parts (assuming format like "ROUND VANILLA 16CM")
-  const parts = batchLabel.split(' ');
+  // Format the shape and size for display
+  const formattedShapeSize = `${shape.charAt(0).toUpperCase() + shape.slice(1)} ${size}CM`;
   
   return (
     <Card 
@@ -48,23 +51,54 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
       draggable="true"
       onDragStart={(e) => onDragStart(e, id)}
     >
-      <CardContent className="p-3 h-full flex flex-col space-y-2">
-        {/* Shape */}
-        <div className="text-xl font-bold leading-tight">{parts[0] || ''}</div>
+      {isPriority && (
+        <div className="absolute top-2 right-2">
+          <Zap className="h-5 w-5 text-red-500" />
+        </div>
+      )}
+      
+      <CardContent className="p-3 h-full flex flex-col">
+        {/* Shape and size */}
+        <div className="text-2xl font-bold leading-tight mb-1">{formattedShapeSize}</div>
         
         {/* Flavor */}
-        <div className="text-xl font-bold leading-tight">{parts[1] || ''}</div>
+        <div className="text-2xl font-bold leading-tight mb-2">
+          {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
+        </div>
         
         {/* Date */}
-        <div className="text-xs opacity-70">
+        <div className="text-xs opacity-70 mb-2">
           {formatDateTime(requestedAt)}
         </div>
         
-        <div className="text-base font-medium mt-auto">
-          Qty: <span className="text-xl font-bold">{producedQuantity}</span>
+        <div className="text-base font-medium">
+          Asked Qty: {requestedQuantity}
         </div>
         
-        <div className="flex justify-center items-center mt-2 text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex items-center justify-between mt-2">
+          <span className="text-base font-medium">Actual Qty: <span className="text-lg font-bold">{producedQuantity}</span></span>
+          <div className="flex space-x-2">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="h-8 w-8 rounded-full"
+              onClick={() => onQuantityChange(-1)}
+              disabled={producedQuantity <= 1}
+            >
+              <MinusCircle className="h-5 w-5" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="h-8 w-8 rounded-full"
+              onClick={() => onQuantityChange(1)}
+            >
+              <PlusCircle className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+        
+        <div className="flex justify-center items-center mt-auto text-xs text-gray-500 dark:text-gray-400">
           <MoveHorizontal className="h-3 w-3 mr-1" /> Drag to an oven slot
         </div>
       </CardContent>
