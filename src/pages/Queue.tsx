@@ -280,7 +280,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
 // Main Queue Component
 const QueuePage: React.FC = () => {
   const navigate = useNavigate();
-  const { orders, updateOrderStatus } = useOrders();
+  const { orders, updateOrderStatus, updateOrderQuantity } = useOrders();
   const [queuedOrders, setQueuedOrders] = useState<Order[]>([]);
   const [mixingOrders, setMixingOrders] = useState<Order[]>([]);
   const [ovenReadyOrders, setOvenReadyOrders] = useState<Order[]>([]);
@@ -335,8 +335,15 @@ const QueuePage: React.FC = () => {
   // Handle quantity change
   const handleQuantityChange = (orderId: string, delta: number) => {
     console.log(`Changed quantity by ${delta} for order ${orderId}`);
-    toast.success(`Updated quantity`);
-    // In a real app, you would update the order in the database here
+    // Use the updateOrderQuantity function from the context to actually update the order
+    updateOrderQuantity(orderId, delta)
+      .then(() => {
+        // Toast will be shown by the context function
+      })
+      .catch(error => {
+        toast.error("Failed to update quantity");
+        console.error(error);
+      });
   };
   
   return (
