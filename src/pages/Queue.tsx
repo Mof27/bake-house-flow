@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import Layout from '@/components/Layout'; // Fixed import statement
+import Layout from '@/components/Layout';
 import { 
   Tabs, 
   TabsList, 
@@ -18,132 +18,176 @@ import {
   PlusCircle, 
   MinusCircle,
   Printer,
-  Flame
+  Flame,
+  Moon,
+  Sun,
+  Search,
+  Flag,
+  Draggable,
+  RefreshCw,
+  TimerOff
 } from 'lucide-react';
 import { useOrders, Order } from '@/contexts/OrderContext';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import { useTheme } from '@/contexts/ThemeContext';
 
-interface WorkOrderCardProps {
-  order: Order;
+// Utility functions
+const formatTime = (seconds: number) => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
+
+const generateBatchLabel = () => {
+  const size = Math.floor(Math.random() * 10) + 15; // 15-24cm
+  const type = Math.random() > 0.5 ? 'VC' : 'CC'; // Vanilla Cake or Chocolate Cake
+  const date = new Date();
+  const dateStr = `${date.getDate().toString().padStart(2, '0')}${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][date.getMonth()]}`;
+  const timeStr = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+  return `${size}cm | ${type} | ${dateStr}-${timeStr}`;
+};
+
+const generateRandomCode = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
+
+// Component for mixing queue cards
+interface MixingCardProps {
+  flavor: 'vanilla' | 'chocolate';
+  batchLabel: string;
+  quantity: number;
+  secretCode: string;
+  isPriority?: boolean;
+  notes?: string;
   isNew?: boolean;
-  onStartMixing?: (id: string) => void;
-  onQuantityChange?: (id: string, delta: number) => void;
+  onQuantityChange: (delta: number) => void;
+  onStartMixing: () => void;
 }
 
-const WorkOrderCard: React.FC<WorkOrderCardProps> = ({ 
-  order, 
+const MixingCard: React.FC<MixingCardProps> = ({
+  flavor,
+  batchLabel,
+  quantity,
+  secretCode,
+  isPriority = false,
+  notes,
   isNew = false,
-  onStartMixing,
-  onQuantityChange
+  onQuantityChange,
+  onStartMixing
 }) => {
-  // Extract flavor from notes
-  const flavorMatch = order.notes.match(/Flavor: (vanilla|chocolate)/i);
-  const flavor = flavorMatch ? flavorMatch[1].toLowerCase() : 'vanilla';
+  // Card background color based on flavor
+  const bgColor = flavor === 'vanilla' 
+    ? 'bg-amber-50 text-amber-950' 
+    : 'bg-amber-900 text-amber-50';
   
-  // Calculate if the order was created less than 5 minutes ago
-  const createdLessThan5MinutesAgo = () => {
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-    return new Date(order.createdAt) > fiveMinutesAgo;
-  };
-  
-  // Extract quantity from notes
-  const quantityMatch = order.notes.match(/Quantity: (\d+)/i);
-  const quantity = quantityMatch ? parseInt(quantityMatch[1]) : 1;
-  
-  // Base card style
-  const cardStyle = `
-    relative p-1 h-full
-    ${flavor === 'vanilla' ? 'bg-amber-50' : 'bg-amber-200'}
-    ${order.isPriority ? 'border-2 border-red-500' : ''}
-  `;
-
   return (
-    <Card className={cardStyle}>
-      <CardContent className="p-3">
-        {/* New badge */}
-        {isNew && createdLessThan5MinutesAgo() && (
-          <Badge className="absolute top-2 right-2 bg-blue-500">NEW</Badge>
-        )}
+    <Card className={`
+      relative overflow-hidden transition-all
+      ${bgColor} 
+      ${isPriority ? 'border-2 border-yellow-500' : 'border border-gray-200'}
+      hover:shadow-md
+    `}>
+      {/* New badge */}
+      {isNew && (
+        <Badge className="absolute top-2 right-2 bg-blue-500 z-10">NEW</Badge>
+      )}
+      
+      {/* Priority indicator */}
+      {isPriority && (
+        <div className="absolute top-0 right-0">
+          <div className="w-0 h-0 
+            border-t-[30px] border-t-yellow-500
+            border-l-[30px] border-l-transparent">
+          </div>
+          <Flame className="absolute top-1 right-1 h-4 w-4 text-white" />
+        </div>
+      )}
+      
+      <CardContent className="p-4">
+        {/* Batch label */}
+        <h3 className="font-bold text-lg">{batchLabel}</h3>
         
-        {/* Priority indicator */}
-        {order.isPriority && (
-          <div className="absolute top-2 left-2 flex items-center">
-            <Flame className="h-4 w-4 text-red-500 mr-1" />
-            <span className="text-xs font-bold text-red-500">RUSH</span>
+        {/* Secret code */}
+        <div className="text-xs opacity-70 mb-3">Code: {secretCode}</div>
+        
+        {/* Notes if they exist */}
+        {notes && (
+          <div className="bg-gray-200 dark:bg-gray-700 rounded-full px-3 py-1 mb-3 text-sm overflow-hidden whitespace-nowrap text-ellipsis">
+            {notes}
           </div>
         )}
         
-        {/* Batch label */}
-        <h3 className="font-medium text-lg mt-4">{order.designName}</h3>
-        
         {/* Quantity controls */}
-        <div className="flex items-center justify-between mt-3">
-          <span className="text-sm font-medium">Quantity:</span>
-          <div className="flex items-center">
+        <div className="flex items-center justify-between mb-4">
+          <span className="font-medium">Qty: {quantity}</span>
+          <div className="flex space-x-2">
             <Button 
-              variant="outline" 
-              size="sm" 
-              className="h-7 w-7 p-0"
-              onClick={() => onQuantityChange && onQuantityChange(order.id, -1)}
+              variant="ghost" 
+              size="icon"
+              className="h-11 w-11 rounded-full"
+              onClick={() => onQuantityChange(-1)}
               disabled={quantity <= 1}
             >
-              <MinusCircle className="h-4 w-4" />
+              <MinusCircle />
             </Button>
-            <span className="mx-2 font-bold">{quantity}</span>
             <Button 
-              variant="outline" 
-              size="sm" 
-              className="h-7 w-7 p-0"
-              onClick={() => onQuantityChange && onQuantityChange(order.id, 1)}
+              variant="ghost" 
+              size="icon"
+              className="h-11 w-11 rounded-full"
+              onClick={() => onQuantityChange(1)}
             >
-              <PlusCircle className="h-4 w-4" />
+              <PlusCircle />
             </Button>
           </div>
         </div>
         
         {/* Start mixing button */}
         <Button 
-          className="w-full mt-4"
-          onClick={() => onStartMixing && onStartMixing(order.id)}
+          className="w-full" 
+          onClick={onStartMixing}
         >
-          <PlayCircle className="h-4 w-4 mr-2" />
-          Start Mixing
+          <PlayCircle className="mr-2" /> Start Mixing
         </Button>
       </CardContent>
     </Card>
   );
 };
 
-interface MixingCardProps {
-  order: Order;
-  onMixingComplete: (id: string) => void;
-  onResetTimer: (id: string) => void;
-  onAddMinutes: (id: string, minutes: number) => void;
+// Component for active mixing cards with timer
+interface ActiveMixingCardProps {
+  flavor: 'vanilla' | 'chocolate';
+  batchLabel: string;
+  secretCode: string;
+  isPriority?: boolean;
+  onReset: () => void;
+  onComplete: () => void;
 }
 
-const MixingCard: React.FC<MixingCardProps> = ({ 
-  order, 
-  onMixingComplete,
-  onResetTimer,
-  onAddMinutes
+const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
+  flavor,
+  batchLabel,
+  secretCode,
+  isPriority = false,
+  onReset,
+  onComplete
 }) => {
   const [timeLeft, setTimeLeft] = useState<number>(600); // 10 minutes in seconds
   const [timerActive, setTimerActive] = useState<boolean>(true);
-  const [showExtendPrompt, setShowExtendPrompt] = useState<boolean>(false);
   
-  // Extract flavor from notes
-  const flavorMatch = order.notes.match(/Flavor: (vanilla|chocolate)/i);
-  const flavor = flavorMatch ? flavorMatch[1].toLowerCase() : 'vanilla';
-  
-  // Format seconds to MM:SS
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-  
+  // Card background color based on flavor
+  const bgColor = flavor === 'vanilla' 
+    ? 'bg-amber-50 text-amber-950' 
+    : 'bg-amber-900 text-amber-50';
+    
   // Timer effect
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -154,53 +198,55 @@ const MixingCard: React.FC<MixingCardProps> = ({
           // When 1 minute is left, show notification
           if (prev === 60) {
             toast("1 minute left on mixing timer!", {
-              description: `${order.designName} mixing will be done soon!`,
+              description: `${batchLabel} mixing will be done soon!`,
               duration: 5000,
             });
-          }
-          
-          // When timer ends
-          if (prev === 1) {
-            setTimerActive(false);
-            setShowExtendPrompt(true);
           }
           
           return prev - 1;
         });
       }, 1000);
+    } else if (timeLeft === 0) {
+      toast.success("Mixing complete!", {
+        description: `${batchLabel} is ready to be moved to oven queue`,
+      });
     }
     
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [timerActive, timeLeft, order.designName]);
+  }, [timerActive, timeLeft, batchLabel]);
   
   // Calculate progress percentage
   const progressPercentage = (timeLeft / 600) * 100;
   
-  // Base card style
-  const cardStyle = `
-    relative p-1 h-full
-    ${flavor === 'vanilla' ? 'bg-amber-50' : 'bg-amber-200'}
-    ${order.isPriority ? 'border-2 border-red-500' : ''}
-  `;
-  
   return (
-    <Card className={cardStyle}>
-      <CardContent className="p-3">
-        {/* Priority indicator */}
-        {order.isPriority && (
-          <div className="absolute top-2 left-2 flex items-center">
-            <Flame className="h-4 w-4 text-red-500 mr-1" />
-            <span className="text-xs font-bold text-red-500">RUSH</span>
+    <Card className={`
+      relative overflow-hidden transition-all
+      ${bgColor} 
+      ${isPriority ? 'border-2 border-yellow-500' : 'border border-gray-200'}
+      hover:shadow-md
+    `}>
+      {/* Priority indicator */}
+      {isPriority && (
+        <div className="absolute top-0 right-0">
+          <div className="w-0 h-0 
+            border-t-[30px] border-t-yellow-500
+            border-l-[30px] border-l-transparent">
           </div>
-        )}
-        
+          <Flame className="absolute top-1 right-1 h-4 w-4 text-white" />
+        </div>
+      )}
+      
+      <CardContent className="p-4">
         {/* Batch label */}
-        <h3 className="font-medium text-lg mt-4">{order.designName}</h3>
+        <h3 className="font-bold text-lg">{batchLabel}</h3>
+        
+        {/* Secret code */}
+        <div className="text-xs opacity-70 mb-3">Code: {secretCode}</div>
         
         {/* Timer display */}
-        <div className="flex flex-col items-center mt-4">
+        <div className="flex flex-col items-center mt-4 mb-4">
           <div className="flex items-center">
             <Clock className="h-5 w-5 mr-2" />
             <span className="text-xl font-bold">{formatTime(timeLeft)}</span>
@@ -212,64 +258,122 @@ const MixingCard: React.FC<MixingCardProps> = ({
           />
         </div>
         
-        {showExtendPrompt ? (
-          <div className="mt-4 space-y-2">
-            <p className="text-center text-sm font-medium">Add more mixing time?</p>
-            <div className="flex justify-around">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  onAddMinutes(order.id, 2);
-                  setTimeLeft(120); // 2 minutes
-                  setTimerActive(true);
-                  setShowExtendPrompt(false);
-                }}
-              >
-                +2 min
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  onAddMinutes(order.id, 5);
-                  setTimeLeft(300); // 5 minutes
-                  setTimerActive(true);
-                  setShowExtendPrompt(false);
-                }}
-              >
-                +5 min
-              </Button>
-              <Button 
-                variant="default"
-                size="sm"
-                onClick={() => onMixingComplete(order.id)}
-              >
-                Done
-              </Button>
+        {/* Control buttons */}
+        <div className="flex space-x-2">
+          <Button 
+            variant="outline" 
+            className="flex-1"
+            onClick={onReset}
+          >
+            <RefreshCw /> Reset
+          </Button>
+          <Button 
+            variant="default"
+            className="flex-1"
+            onClick={onComplete}
+          >
+            <TimerOff /> Finish
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Component for oven queue cards (ready to be moved to oven)
+interface OvenReadyCardProps {
+  flavor: 'vanilla' | 'chocolate';
+  batchLabel: string;
+  secretCode: string;
+  isPriority?: boolean;
+}
+
+const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
+  flavor,
+  batchLabel,
+  secretCode,
+  isPriority = false
+}) => {
+  // Card background color based on flavor
+  const bgColor = flavor === 'vanilla' 
+    ? 'bg-amber-50 text-amber-950' 
+    : 'bg-amber-900 text-amber-50';
+    
+  return (
+    <Card className={`
+      relative overflow-hidden transition-all
+      ${bgColor} 
+      ${isPriority ? 'border-2 border-yellow-500' : 'border border-gray-200'}
+      hover:shadow-md cursor-move
+    `}>
+      {/* Priority indicator */}
+      {isPriority && (
+        <div className="absolute top-0 right-0">
+          <div className="w-0 h-0 
+            border-t-[30px] border-t-yellow-500
+            border-l-[30px] border-l-transparent">
+          </div>
+          <Flame className="absolute top-1 right-1 h-4 w-4 text-white" />
+        </div>
+      )}
+      
+      <CardContent className="p-4">
+        {/* Batch label */}
+        <h3 className="font-bold text-lg">{batchLabel}</h3>
+        
+        {/* Secret code */}
+        <div className="text-xs opacity-70">{secretCode}</div>
+        
+        {/* Drag indicator */}
+        <div className="flex justify-center items-center mt-3 text-sm text-gray-500 dark:text-gray-400">
+          <Draggable className="h-4 w-4 mr-1" /> Drag to an oven slot
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Component for oven slots
+interface OvenSlotProps {
+  ovenNumber: number;
+  isActive?: boolean;
+  timeRemaining?: number;
+}
+
+const OvenSlot: React.FC<OvenSlotProps> = ({
+  ovenNumber,
+  isActive = false,
+  timeRemaining
+}) => {
+  return (
+    <Card className={`
+      border-2 ${isActive 
+        ? 'border-green-500 bg-green-50 dark:bg-green-900/20' 
+        : 'border-dashed border-gray-300 bg-gray-50 dark:bg-gray-800/50'} 
+      transition-all
+    `}>
+      <CardHeader className="p-4 pb-0">
+        <CardTitle className="text-xl flex justify-between">
+          <span>OVEN {ovenNumber}</span>
+          <Badge className={isActive ? 'bg-green-500' : 'bg-gray-400'}>
+            {isActive ? 'BAKING' : 'STANDBY'}
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-4">
+        {isActive && timeRemaining ? (
+          <div className="flex flex-col items-center">
+            <div className="text-2xl font-bold mb-2">
+              {formatTime(timeRemaining)}
             </div>
+            <Progress 
+              value={(timeRemaining / 1800) * 100} 
+              className="w-full h-2" 
+            />
           </div>
         ) : (
-          <div className="flex mt-4 space-x-2">
-            <Button 
-              variant="outline" 
-              className="flex-1"
-              onClick={() => {
-                setTimerActive(false);
-                onResetTimer(order.id);
-                setTimeLeft(600); // Reset to 10 minutes
-                setTimerActive(true);
-              }}
-            >
-              Reset
-            </Button>
-            <Button 
-              variant="default"
-              className="flex-1"
-              onClick={() => onMixingComplete(order.id)}
-            >
-              Stop Mixing
-            </Button>
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md">
+            Drop batch here to start baking
           </div>
         )}
       </CardContent>
@@ -280,173 +384,329 @@ const MixingCard: React.FC<MixingCardProps> = ({
 // Main Queue Component
 const QueuePage: React.FC = () => {
   const navigate = useNavigate();
-  const { orders, updateOrderStatus, updateOrderQuantity } = useOrders();
-  const [queuedOrders, setQueuedOrders] = useState<Order[]>([]);
-  const [mixingOrders, setMixingOrders] = useState<Order[]>([]);
-  const [ovenReadyOrders, setOvenReadyOrders] = useState<Order[]>([]);
+  const { theme, setTheme } = useTheme();
+  const [searchQuery, setSearchQuery] = useState<string>('');
   
-  // Filter and sort orders based on their status
-  useEffect(() => {
-    // Get queued orders and sort by priority first, then creation time
-    const queued = orders.filter(order => order.status === 'queued');
-    queued.sort((a, b) => {
-      if (a.isPriority !== b.isPriority) {
-        return a.isPriority ? -1 : 1;
+  // Mock data for UI demonstration
+  const [mockData, setMockData] = useState({
+    dailyCompleted: 12,
+    dailyTarget: 20,
+    pendingOrders: [
+      {
+        id: '1',
+        flavor: 'vanilla' as 'vanilla',
+        batchLabel: generateBatchLabel(),
+        quantity: 4,
+        secretCode: generateRandomCode(),
+        isPriority: true,
+        notes: 'Birthday cake for Sarah',
+        isNew: true
+      },
+      {
+        id: '2',
+        flavor: 'chocolate' as 'chocolate',
+        batchLabel: generateBatchLabel(),
+        quantity: 2,
+        secretCode: generateRandomCode(),
+        isPriority: false,
+        isNew: false
       }
-      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-    });
-    
-    // Filter for orders in mixing
-    const mixing = orders.filter(order => order.status === 'baking');
-    
-    // For now, we'll use this status for oven-ready orders (could be extended later)
-    const ovenReady = orders.filter(order => order.status === 'done' && !order.completedAt);
-    
-    setQueuedOrders(queued);
-    setMixingOrders(mixing);
-    setOvenReadyOrders(ovenReady);
-  }, [orders]);
-
-  // Handle starting the mixing process
+    ],
+    activeMixing: [
+      {
+        id: '3',
+        flavor: 'vanilla' as 'vanilla',
+        batchLabel: generateBatchLabel(),
+        secretCode: generateRandomCode(),
+        isPriority: false
+      }
+    ],
+    ovenReady: [
+      {
+        id: '4',
+        flavor: 'chocolate' as 'chocolate',
+        batchLabel: generateBatchLabel(),
+        secretCode: generateRandomCode(),
+        isPriority: true
+      }
+    ],
+    ovens: [
+      {
+        number: 1,
+        isActive: true,
+        timeRemaining: 1250 // seconds
+      },
+      {
+        number: 2,
+        isActive: false
+      }
+    ]
+  });
+  
+  // Handle quantity change
+  const handleQuantityChange = (orderId: string, delta: number) => {
+    setMockData(prev => ({
+      ...prev,
+      pendingOrders: prev.pendingOrders.map(order => 
+        order.id === orderId 
+          ? { ...order, quantity: Math.max(1, order.quantity + delta) }
+          : order
+      )
+    }));
+  };
+  
+  // Handle start mixing
   const handleStartMixing = (orderId: string) => {
-    updateOrderStatus(orderId, 'baking');
+    // Find the order
+    const orderToMove = mockData.pendingOrders.find(order => order.id === orderId);
+    if (!orderToMove) return;
+    
+    // Move from pending to active mixing
+    setMockData(prev => ({
+      ...prev,
+      pendingOrders: prev.pendingOrders.filter(order => order.id !== orderId),
+      activeMixing: [...prev.activeMixing, { 
+        id: orderToMove.id,
+        flavor: orderToMove.flavor,
+        batchLabel: orderToMove.batchLabel,
+        secretCode: orderToMove.secretCode,
+        isPriority: orderToMove.isPriority
+      }]
+    }));
+    
     toast.success("Started mixing process");
+  };
+  
+  // Handle reset timer
+  const handleResetTimer = (orderId: string) => {
+    toast("Timer reset", { 
+      description: "Mixing timer has been reset to 10 minutes" 
+    });
   };
   
   // Handle mixing complete
   const handleMixingComplete = (orderId: string) => {
-    // Update order to some intermediate status or just use 'done' for now
-    updateOrderStatus(orderId, 'done');
+    // Find the order
+    const orderToMove = mockData.activeMixing.find(order => order.id === orderId);
+    if (!orderToMove) return;
+    
+    // Move from active mixing to oven ready
+    setMockData(prev => ({
+      ...prev,
+      activeMixing: prev.activeMixing.filter(order => order.id !== orderId),
+      ovenReady: [...prev.ovenReady, { 
+        id: orderToMove.id,
+        flavor: orderToMove.flavor,
+        batchLabel: orderToMove.batchLabel,
+        secretCode: orderToMove.secretCode,
+        isPriority: orderToMove.isPriority
+      }]
+    }));
+    
     toast.success("Mixing complete! Order ready for oven.");
   };
   
-  // Handle resetting timer
-  const handleResetTimer = (orderId: string) => {
-    console.log(`Reset timer for order ${orderId}`);
-    toast("Timer reset", { description: "Mixing timer has been reset to 10 minutes" });
+  // Create a new mock order
+  const handleAddNewOrder = () => {
+    const newOrder = {
+      id: `new-${Date.now()}`,
+      flavor: Math.random() > 0.5 ? 'vanilla' : 'chocolate' as 'vanilla' | 'chocolate',
+      batchLabel: generateBatchLabel(),
+      quantity: Math.floor(Math.random() * 5) + 1,
+      secretCode: generateRandomCode(),
+      isPriority: Math.random() > 0.7,
+      isNew: true
+    };
+    
+    setMockData(prev => ({
+      ...prev,
+      pendingOrders: [...prev.pendingOrders, newOrder]
+    }));
+    
+    if (newOrder.isPriority) {
+      // Show priority notification
+      toast(
+        <div className="flex flex-col items-center">
+          <AlertTriangle className="h-6 w-6 text-red-500 mb-2" />
+          <div className="text-lg font-bold">Priority Order Added!</div>
+          <div>New priority batch added to the queue</div>
+        </div>,
+        {
+          duration: 5000,
+        }
+      );
+    } else {
+      toast.success("New order added to queue");
+    }
   };
   
-  // Handle adding minutes to timer
-  const handleAddMinutes = (orderId: string, minutes: number) => {
-    console.log(`Added ${minutes} minutes to order ${orderId}`);
-    toast.success(`Added ${minutes} minutes to mixing time`);
+  // Toggle theme
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
   
-  // Handle quantity change
-  const handleQuantityChange = (orderId: string, delta: number) => {
-    console.log(`Changed quantity by ${delta} for order ${orderId}`);
-    // Use the updateOrderQuantity function from the context to actually update the order
-    updateOrderQuantity(orderId, delta)
-      .then(() => {
-        // Toast will be shown by the context function
-      })
-      .catch(error => {
-        toast.error("Failed to update quantity");
-        console.error(error);
-      });
-  };
+  // Daily progress percentage
+  const dailyProgressPercentage = (mockData.dailyCompleted / mockData.dailyTarget) * 100;
   
   return (
     <Layout title="Queue">
-      <Tabs defaultValue="queue" className="w-full">
-        <TabsList className="grid grid-cols-3 mb-4">
-          <TabsTrigger value="queue">Queue</TabsTrigger>
-          <TabsTrigger value="in-oven">In Oven</TabsTrigger>
-          <TabsTrigger value="done">Done</TabsTrigger>
-        </TabsList>
+      <div className="pb-4">
+        <div className="flex items-center justify-between mb-6">
+          <Tabs defaultValue="queue" className="w-full">
+            <TabsList className="w-fit">
+              <TabsTrigger value="queue" className="font-bold text-primary">QUEUE</TabsTrigger>
+              <TabsTrigger value="in-oven">IN OVEN</TabsTrigger>
+              <TabsTrigger value="done">DONE</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          
+          <div className="flex items-center gap-6">
+            {/* Daily KPI */}
+            <div className="hidden md:flex flex-col items-end">
+              <div className="text-sm font-medium">{mockData.dailyCompleted} / {mockData.dailyTarget} Batches Completed</div>
+              <Progress value={dailyProgressPercentage} className="w-40 h-1.5 mt-1" />
+            </div>
+            
+            {/* Action icons */}
+            <div className="flex items-center gap-2">
+              <Button size="icon" variant="ghost" className="rounded-full">
+                <Bell />
+              </Button>
+              <Button size="icon" variant="ghost" className="rounded-full" onClick={toggleTheme}>
+                {theme === 'dark' ? <Sun /> : <Moon />}
+              </Button>
+            </div>
+          </div>
+        </div>
         
-        <TabsContent value="queue" className="space-y-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">Work Order Queue</h2>
-            <Button onClick={() => navigate('/new-order')}>
-              <PlusCircle className="h-4 w-4 mr-2" /> New Order
+        {/* Toolbar */}
+        <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <Button size="pill" onClick={() => toast("Printing all queued orders...")}>
+              <Printer className="mr-1" /> Print All Queued
+            </Button>
+            <Button variant="priority" size="pill" onClick={handleAddNewOrder}>
+              <Flag className="mr-1" /> Add Test Order
             </Button>
           </div>
           
-          {/* Queued Orders Section */}
-          <div>
-            <h3 className="text-lg font-medium mb-3">Pending Orders ({queuedOrders.length})</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {queuedOrders.map(order => (
-                <WorkOrderCard 
-                  key={order.id} 
-                  order={order}
-                  isNew={true}
-                  onStartMixing={handleStartMixing}
-                  onQuantityChange={handleQuantityChange}
-                />
-              ))}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center max-w-xs relative">
+              <Search className="absolute left-3 h-4 w-4 opacity-50" />
+              <Input 
+                placeholder="Search batches..." 
+                className="pl-9 w-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
             
-            {queuedOrders.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                No pending orders. Create a new order to get started.
-              </div>
-            )}
-          </div>
-          
-          {/* Mixing Orders Section */}
-          <div className="mt-8">
-            <h3 className="text-lg font-medium mb-3">Mixing in Progress ({mixingOrders.length})</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {mixingOrders.map(order => (
-                <MixingCard 
-                  key={order.id} 
-                  order={order}
-                  onMixingComplete={handleMixingComplete}
-                  onResetTimer={handleResetTimer}
-                  onAddMinutes={handleAddMinutes}
-                />
-              ))}
+            <div className="flex items-center text-sm">
+              <Badge className="bg-blue-500 h-2 w-2 rounded-full p-0 mr-2" />
+              <span className="text-muted-foreground">NEW = added &lt; 5 min ago</span>
             </div>
-            
-            {mixingOrders.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                No orders currently mixing.
-              </div>
-            )}
           </div>
-          
-          {/* Oven Queue Section */}
-          <div className="mt-8">
-            <h3 className="text-lg font-medium mb-3">Ready for Oven ({ovenReadyOrders.length})</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {ovenReadyOrders.map(order => (
-                <Card key={order.id} className="p-4">
-                  <h4 className="font-medium">{order.designName}</h4>
-                  <div className="mt-2 flex justify-center">
-                    <p className="text-sm text-muted-foreground">Drag to an oven slot</p>
+        </div>
+        
+        {/* Main content with resizable panels */}
+        <ResizablePanelGroup direction="horizontal" className="h-[calc(100vh-240px)] rounded-lg border">
+          {/* Left panel: Mixing queue and oven queue */}
+          <ResizablePanel defaultSize={70} minSize={40}>
+            <div className="h-full overflow-y-auto p-4 space-y-6">
+              {/* Mixing Queue Section */}
+              <div>
+                <h2 className="text-xl font-bold mb-4">Mixing Queue</h2>
+                
+                {mockData.pendingOrders.length === 0 ? (
+                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
+                    <p className="text-muted-foreground">No batches in the mixing queue</p>
                   </div>
-                </Card>
-              ))}
-            </div>
-            
-            {ovenReadyOrders.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                No orders ready for oven.
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {mockData.pendingOrders.map(order => (
+                      <MixingCard 
+                        key={order.id}
+                        flavor={order.flavor}
+                        batchLabel={order.batchLabel}
+                        quantity={order.quantity}
+                        secretCode={order.secretCode}
+                        isPriority={order.isPriority}
+                        notes={order.notes}
+                        isNew={order.isNew}
+                        onQuantityChange={(delta) => handleQuantityChange(order.id, delta)}
+                        onStartMixing={() => handleStartMixing(order.id)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="in-oven">
-          <div className="text-center py-12">
-            <h2 className="text-xl font-bold mb-4">In Oven View</h2>
-            <p className="text-muted-foreground">
-              This tab will show orders currently in the oven with live countdowns.
-            </p>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="done">
-          <div className="text-center py-12">
-            <h2 className="text-xl font-bold mb-4">Done Orders</h2>
-            <p className="text-muted-foreground">
-              This tab will show completed orders in a list view.
-            </p>
-          </div>
-        </TabsContent>
-      </Tabs>
+              
+              {/* Active Mixing Section */}
+              {mockData.activeMixing.length > 0 && (
+                <div>
+                  <h2 className="text-xl font-bold mb-4">Currently Mixing</h2>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {mockData.activeMixing.map(order => (
+                      <ActiveMixingCard 
+                        key={order.id}
+                        flavor={order.flavor}
+                        batchLabel={order.batchLabel}
+                        secretCode={order.secretCode}
+                        isPriority={order.isPriority}
+                        onReset={() => handleResetTimer(order.id)}
+                        onComplete={() => handleMixingComplete(order.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Oven Queue Section */}
+              <div>
+                <h2 className="text-xl font-bold mb-4">Oven Queue</h2>
+                
+                {mockData.ovenReady.length === 0 ? (
+                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
+                    <p className="text-muted-foreground">Drag here once mixing is complete</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {mockData.ovenReady.map(order => (
+                      <OvenReadyCard 
+                        key={order.id}
+                        flavor={order.flavor}
+                        batchLabel={order.batchLabel}
+                        secretCode={order.secretCode}
+                        isPriority={order.isPriority}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </ResizablePanel>
+          
+          <ResizableHandle withHandle />
+          
+          {/* Right panel: Oven slots */}
+          <ResizablePanel defaultSize={30} minSize={20}>
+            <div className="h-full overflow-y-auto p-4 space-y-6">
+              <h2 className="text-xl font-bold mb-4">Oven Slots</h2>
+              
+              <div className="space-y-6">
+                {mockData.ovens.map(oven => (
+                  <OvenSlot 
+                    key={oven.number}
+                    ovenNumber={oven.number}
+                    isActive={oven.isActive}
+                    timeRemaining={oven.timeRemaining}
+                  />
+                ))}
+              </div>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
     </Layout>
   );
 };
