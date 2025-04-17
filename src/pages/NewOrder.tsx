@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PlusCircle, MinusCircle, ChevronLeft } from 'lucide-react';
@@ -15,16 +15,6 @@ import { useOrders } from '@/contexts/OrderContext';
 
 // Predefined sizes for different shapes
 const SIZES = [16, 18, 22, 25, 30, 35];
-
-// Function to generate a random 6-character alphanumeric code
-const generateSecretCode = () => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Excluded similar-looking characters
-  let result = '';
-  for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-};
 
 // Function to generate a batch label: {size} cm | {VC/DC} | {DDMMM-HH:MM}
 const generateBatchLabel = (size: string, flavor: string) => {
@@ -50,13 +40,7 @@ const NewOrder: React.FC = () => {
   const [quantity, setQuantity] = useState<number>(1);
   const [flavor, setFlavor] = useState<'vanilla' | 'chocolate'>('vanilla');
   const [notes, setNotes] = useState<string>('');
-  const [secretCode, setSecretCode] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  
-  // Generate secret code on first render
-  useEffect(() => {
-    setSecretCode(generateSecretCode());
-  }, []);
   
   // Handle quantity change with constraints
   const handleQuantityChange = (delta: number) => {
@@ -103,7 +87,6 @@ const NewOrder: React.FC = () => {
         quantity,
         flavor,
         notes,
-        secretCode,
         batchLabel,
         priority: false, // Default to non-priority
         status: 'queued' as 'queued' | 'mixing' | 'baking' | 'done',
@@ -114,7 +97,7 @@ const NewOrder: React.FC = () => {
         designName: batchLabel,
         complexity: Math.ceil(quantity / 2) as 1 | 2 | 3 | 4 | 5, // Complexity based on quantity
         isPriority: false,
-        notes: `Shape: ${shape}\nDimensions: ${orderData.dimensions} cm\nFlavor: ${flavor}\nQuantity: ${quantity}\nSecret Code: ${secretCode}\n${notes}`
+        notes: `Shape: ${shape}\nDimensions: ${orderData.dimensions} cm\nFlavor: ${flavor}\nQuantity: ${quantity}\n${notes}`
       });
       
       toast.success('Order created successfully');
@@ -208,16 +191,18 @@ const NewOrder: React.FC = () => {
                     <span className="font-bold text-xl">{size} cm</span>
                   </div>
                   
-                  <Slider
-                    value={[size]}
-                    min={15}
-                    max={36}
-                    step={1}
-                    onValueChange={handleSizeChange}
-                    className="py-4"
-                  />
+                  <div className="px-4"> {/* Added padding to align slider */}
+                    <Slider
+                      value={[size]}
+                      min={15}
+                      max={36}
+                      step={1}
+                      onValueChange={handleSizeChange}
+                      className="py-4"
+                    />
+                  </div>
                   
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-sm px-4"> {/* Added padding to align sizes */}
                     {SIZES.map((s) => (
                       <div 
                         key={s} 
@@ -319,20 +304,6 @@ const NewOrder: React.FC = () => {
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
                 />
-              </div>
-              
-              {/* Secret Code (Display Only) */}
-              <div className="space-y-2">
-                <Label htmlFor="secretCode">Secret Code</Label>
-                <Input
-                  id="secretCode"
-                  value={secretCode}
-                  readOnly
-                  className="font-mono text-center"
-                />
-                <p className="text-sm text-muted-foreground">
-                  This code will be used for verification on pickup
-                </p>
               </div>
             </form>
           </CardContent>
