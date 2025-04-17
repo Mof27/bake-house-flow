@@ -44,7 +44,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
       
       <CardContent className="p-3 h-full flex flex-col rounded-2xl bg-inherit">
         {/* Shape and size */}
-        <div className="text-2xl font-bold leading-tight mb-1 italic">{formattedShapeSize}</div>
+        <div className="text-xl font-bold leading-tight mb-1 italic">{formattedShapeSize}</div>
         
         {/* Flavor */}
         <div className="text-2xl font-bold leading-tight mb-2">
