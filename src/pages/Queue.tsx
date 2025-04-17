@@ -26,7 +26,8 @@ import {
   MoveHorizontal,
   RefreshCw,
   TimerOff,
-  CheckCircle2
+  CheckCircle2,
+  XCircle
 } from 'lucide-react';
 import { useOrders, Order } from '@/contexts/OrderContext';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -65,6 +66,7 @@ interface MockData {
     batchLabel: string;
     requestedAt: Date;
     isPriority: boolean;
+    startTime?: Date;
   }[];
   ovenReady: {
     id: string;
@@ -192,7 +194,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
           <div className="text-sm font-medium">Asked Qty: {requestedQuantity}</div>
           
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Produced Qty: <span className="text-xl font-bold">{producedQuantity}</span></span>
+            <span className="text-sm font-medium">Produced Qty: <span className="text-2xl font-bold">{producedQuantity}</span></span>
             <div className="flex space-x-2">
               <Button 
                 variant="ghost" 
@@ -235,8 +237,9 @@ interface ActiveMixingCardProps {
   batchLabel: string;
   requestedAt: Date;
   isPriority?: boolean;
-  onReset: () => void;
+  onCancel: () => void;
   onComplete: () => void;
+  startTime?: Date;
 }
 
 const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
@@ -246,16 +249,42 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
   batchLabel,
   requestedAt,
   isPriority = false,
-  onReset,
-  onComplete
+  onCancel,
+  onComplete,
+  startTime
 }) => {
-  const [timeLeft, setTimeLeft] = useState<number>(600); // 10 minutes in seconds
-  const [timerActive, setTimerActive] = useState<boolean>(true);
+  const MIXING_TIME = 120; // 2 minutes in seconds
+  const WARNING_TIME = 30; // 30 seconds
   
-  // Card background color based on flavor
-  const bgColor = flavor === 'vanilla' 
+  const [timeLeft, setTimeLeft] = useState<number>(MIXING_TIME);
+  const [timerActive, setTimerActive] = useState<boolean>(true);
+  const [elapsedTime, setElapsedTime] = useState<number>(0);
+  const [isTimerExpired, setIsTimerExpired] = useState<boolean>(false);
+  
+  // Card background color based on flavor and timer state
+  let bgColor = flavor === 'vanilla' 
     ? 'bg-amber-50 text-amber-950' 
     : 'bg-amber-900 text-amber-50';
+    
+  // Add warning style when timer is low
+  if (timeLeft <= WARNING_TIME && !isTimerExpired) {
+    bgColor = 'bg-red-200 text-red-900 animate-pulse';
+    
+    // For chocolate cakes, ensure text is still readable with warning
+    if (flavor === 'chocolate') {
+      bgColor = 'bg-red-700 text-white animate-pulse';
+    }
+  }
+  
+  // Card turns red when timer expires
+  if (isTimerExpired) {
+    bgColor = 'bg-red-500 text-white';
+    
+    // For chocolate cakes, ensure enough contrast
+    if (flavor === 'chocolate') {
+      bgColor = 'bg-red-600 text-white';
+    }
+  }
     
   // Timer effect
   useEffect(() => {
@@ -264,30 +293,43 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
     if (timerActive && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft(prev => {
-          // When 1 minute is left, show notification
-          if (prev === 60) {
-            toast("1 minute left on mixing timer!", {
+          // When 30 seconds are left, show notification
+          if (prev === WARNING_TIME) {
+            toast.warning("30 seconds left on mixing timer!", {
               description: `${batchLabel} mixing will be done soon!`,
               duration: 5000,
             });
+            // Play a beep sound
+            try {
+              const audio = new Audio('/beep.mp3');
+              audio.play();
+            } catch (error) {
+              console.log('Audio notification failed:', error);
+            }
           }
           
           return prev - 1;
         });
       }, 1000);
-    } else if (timeLeft === 0) {
+    } else if (timeLeft === 0 && !isTimerExpired) {
+      setIsTimerExpired(true);
       toast.success("Mixing complete!", {
         description: `${batchLabel} is ready to be moved to oven queue`,
       });
+      
+      // Start counting up
+      interval = setInterval(() => {
+        setElapsedTime(prev => prev + 1);
+      }, 1000);
     }
     
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [timerActive, timeLeft, batchLabel]);
+  }, [timerActive, timeLeft, batchLabel, isTimerExpired]);
   
   // Calculate progress percentage
-  const progressPercentage = (timeLeft / 600) * 100;
+  const progressPercentage = (timeLeft / MIXING_TIME) * 100;
   
   return (
     <Card className={`
@@ -320,13 +362,19 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
         <div className="flex flex-col items-center mt-4 mb-4">
           <div className="flex items-center">
             <Clock className="h-5 w-5 mr-2" />
-            <span className="text-xl font-bold">{formatTime(timeLeft)}</span>
+            {!isTimerExpired ? (
+              <span className="text-xl font-bold">{formatTime(timeLeft)}</span>
+            ) : (
+              <span className="text-xl font-bold">+{formatTime(elapsedTime)}</span>
+            )}
           </div>
           
-          <Progress 
-            value={progressPercentage} 
-            className="w-full h-2 mt-2" 
-          />
+          {!isTimerExpired && (
+            <Progress 
+              value={progressPercentage} 
+              className="w-full h-2 mt-2" 
+            />
+          )}
         </div>
         
         {/* Control buttons */}
@@ -334,9 +382,9 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
           <Button 
             variant="outline" 
             className="flex-1"
-            onClick={onReset}
+            onClick={onCancel}
           >
-            <RefreshCw className="mr-1" /> Reset
+            <XCircle className="mr-1" /> Cancel
           </Button>
           <Button 
             variant="default"
@@ -390,7 +438,7 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
         ${isPriority ? 'border-2 border-yellow-500' : 'border border-gray-200'}
         hover:shadow-md cursor-move
       `}
-      draggable
+      draggable="true"
       onDragStart={(e) => onDragStart(e, id)}
     >
       {/* Priority indicator */}
@@ -415,7 +463,7 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
         
         {/* Quantity */}
         <div className="text-sm font-medium mb-2">
-          Qty: <span className="text-xl font-bold">{producedQuantity}</span>
+          Qty: <span className="text-2xl font-bold">{producedQuantity}</span>
         </div>
         
         {/* Drag indicator */}
@@ -458,7 +506,7 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
         border-2 ${isActive 
           ? 'border-green-500 bg-green-50 dark:bg-green-900/20' 
           : 'border-dashed border-gray-300 bg-gray-50 dark:bg-gray-800/50'} 
-        transition-all flex-1
+        transition-all flex-1 h-full
       `}
       onDragOver={onDragOver}
       onDrop={onDrop}
@@ -471,13 +519,13 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 flex-1 flex flex-col">
+      <CardContent className="p-4 flex-1 flex flex-col h-full">
         {isActive && timeRemaining && currentBatch ? (
           <div className="flex flex-col items-center flex-1 justify-center">
             <div className="text-center w-full">
               <h3 className="font-bold text-lg mb-2">{currentBatch.batchLabel}</h3>
               <p className="font-medium mb-3">
-                Qty: <span className="text-xl">{currentBatch.producedQuantity}</span>
+                Qty: <span className="text-2xl">{currentBatch.producedQuantity}</span>
               </p>
             </div>
             <div className="text-3xl font-bold mb-2 mt-2">
@@ -490,10 +538,10 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
             <Button
               variant="default"
               size="lg"
-              className="w-full mt-2"
+              className="w-full mt-2 text-xl py-6"
               onClick={onComplete}
             >
-              <CheckCircle2 className="mr-2" />
+              <CheckCircle2 className="mr-2 h-6 w-6" />
               DONE
             </Button>
           </div>
@@ -562,7 +610,8 @@ const QueuePage: React.FC = () => {
         size: 18,
         batchLabel: 'ROUND VANILLA 18CM',
         requestedAt: generateRequestDate(),
-        isPriority: false
+        isPriority: false,
+        startTime: new Date()
       }
     ],
     ovenReady: [
@@ -620,17 +669,39 @@ const QueuePage: React.FC = () => {
         size: orderToMove.size,
         batchLabel: orderToMove.batchLabel,
         requestedAt: orderToMove.requestedAt,
-        isPriority: orderToMove.isPriority
+        isPriority: orderToMove.isPriority,
+        startTime: new Date()
       }]
     }));
     
     toast.success("Started mixing process");
   };
   
-  // Handle reset timer
-  const handleResetTimer = (orderId: string) => {
-    toast("Timer reset", { 
-      description: "Mixing timer has been reset to 10 minutes" 
+  // Handle cancel timer
+  const handleCancelTimer = (orderId: string) => {
+    // Find the order
+    const orderToMove = mockData.activeMixing.find(order => order.id === orderId);
+    if (!orderToMove) return;
+    
+    // Move from active mixing back to pending
+    setMockData(prev => ({
+      ...prev,
+      activeMixing: prev.activeMixing.filter(order => order.id !== orderId),
+      pendingOrders: [...prev.pendingOrders, { 
+        id: orderToMove.id,
+        flavor: orderToMove.flavor,
+        shape: orderToMove.shape,
+        size: orderToMove.size,
+        batchLabel: orderToMove.batchLabel,
+        requestedAt: orderToMove.requestedAt,
+        isPriority: orderToMove.isPriority,
+        requestedQuantity: 5, // Default values for returning to pending
+        producedQuantity: 5
+      }]
+    }));
+    
+    toast("Mixing cancelled", { 
+      description: "Order returned to pending queue" 
     });
   };
   
@@ -900,13 +971,13 @@ const QueuePage: React.FC = () => {
           {/* Left panel: Mixing queue and oven queue */}
           <ResizablePanel defaultSize={70} minSize={40}>
             <div className="h-full overflow-y-auto p-4 space-y-6">
-              {/* Mixing Queue Section */}
+              {/* Pending Queue Section (renamed from Mixing Queue) */}
               <div>
-                <h2 className="text-xl font-bold mb-4">Mixing Queue</h2>
+                <h2 className="text-xl font-bold mb-4">Pending</h2>
                 
                 {mockData.pendingOrders.length === 0 ? (
                   <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-                    <p className="text-muted-foreground">No batches in the mixing queue</p>
+                    <p className="text-muted-foreground">No batches in the pending queue</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -945,7 +1016,8 @@ const QueuePage: React.FC = () => {
                         batchLabel={order.batchLabel}
                         requestedAt={order.requestedAt}
                         isPriority={order.isPriority}
-                        onReset={() => handleResetTimer(order.id)}
+                        startTime={order.startTime}
+                        onCancel={() => handleCancelTimer(order.id)}
                         onComplete={() => handleMixingComplete(order.id)}
                       />
                     ))}
@@ -991,7 +1063,7 @@ const QueuePage: React.FC = () => {
             <div className="h-full flex flex-col p-4">
               <h2 className="text-xl font-bold mb-4">Oven Slots</h2>
               
-              <div className="flex flex-col flex-1 space-y-4">
+              <div className="flex flex-col flex-1 space-y-4 h-full">
                 {mockData.ovens.map(oven => (
                   <OvenSlot 
                     key={oven.number}
@@ -1014,4 +1086,3 @@ const QueuePage: React.FC = () => {
 };
 
 export default QueuePage;
-
