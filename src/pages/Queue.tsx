@@ -25,7 +25,8 @@ import {
   Flag,
   MoveHorizontal,
   RefreshCw,
-  TimerOff
+  TimerOff,
+  CheckCircle2
 } from 'lucide-react';
 import { useOrders, Order } from '@/contexts/OrderContext';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -71,6 +72,8 @@ interface MockData {
     shape: CakeShape;
     size: number;
     batchLabel: string;
+    requestedQuantity: number;
+    producedQuantity: number;
     requestedAt: Date;
     isPriority: boolean;
   }[];
@@ -78,6 +81,12 @@ interface MockData {
     number: number;
     isActive: boolean;
     timeRemaining?: number;
+    currentBatch?: {
+      id: string;
+      batchLabel: string;
+      flavor: CakeFlavor;
+      producedQuantity: number;
+    }
   }[];
 }
 
@@ -183,7 +192,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
           <div className="text-sm font-medium">Asked Qty: {requestedQuantity}</div>
           
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Produced Qty: {producedQuantity}</span>
+            <span className="text-sm font-medium">Produced Qty: <span className="text-xl font-bold">{producedQuantity}</span></span>
             <div className="flex space-x-2">
               <Button 
                 variant="ghost" 
@@ -349,16 +358,24 @@ interface OvenReadyCardProps {
   size: number;
   batchLabel: string;
   requestedAt: Date;
+  requestedQuantity: number;
+  producedQuantity: number;
   isPriority?: boolean;
+  onDragStart: (e: React.DragEvent, id: string) => void;
+  id: string;
 }
 
 const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
+  id,
   flavor,
   shape,
   size,
   batchLabel,
   requestedAt,
-  isPriority = false
+  requestedQuantity,
+  producedQuantity,
+  isPriority = false,
+  onDragStart
 }) => {
   // Card background color based on flavor
   const bgColor = flavor === 'vanilla' 
@@ -366,12 +383,16 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
     : 'bg-amber-900 text-amber-50';
     
   return (
-    <Card className={`
-      relative overflow-hidden transition-all
-      ${bgColor} 
-      ${isPriority ? 'border-2 border-yellow-500' : 'border border-gray-200'}
-      hover:shadow-md cursor-move
-    `}>
+    <Card 
+      className={`
+        relative overflow-hidden transition-all
+        ${bgColor} 
+        ${isPriority ? 'border-2 border-yellow-500' : 'border border-gray-200'}
+        hover:shadow-md cursor-move
+      `}
+      draggable
+      onDragStart={(e) => onDragStart(e, id)}
+    >
       {/* Priority indicator */}
       {isPriority && (
         <div className="absolute top-0 right-0">
@@ -392,6 +413,11 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
           requested at {formatDateTime(requestedAt)}
         </div>
         
+        {/* Quantity */}
+        <div className="text-sm font-medium mb-2">
+          Qty: <span className="text-xl font-bold">{producedQuantity}</span>
+        </div>
+        
         {/* Drag indicator */}
         <div className="flex justify-center items-center mt-3 text-sm text-gray-500 dark:text-gray-400">
           <MoveHorizontal className="h-4 w-4 mr-1" /> Drag to an oven slot
@@ -406,20 +432,37 @@ interface OvenSlotProps {
   ovenNumber: number;
   isActive?: boolean;
   timeRemaining?: number;
+  onDragOver: (e: React.DragEvent) => void;
+  onDrop: (e: React.DragEvent) => void;
+  currentBatch?: {
+    id: string;
+    batchLabel: string;
+    flavor: CakeFlavor;
+    producedQuantity: number;
+  };
+  onComplete: () => void;
 }
 
 const OvenSlot: React.FC<OvenSlotProps> = ({
   ovenNumber,
   isActive = false,
-  timeRemaining
+  timeRemaining,
+  onDragOver,
+  onDrop,
+  currentBatch,
+  onComplete
 }) => {
   return (
-    <Card className={`
-      border-2 ${isActive 
-        ? 'border-green-500 bg-green-50 dark:bg-green-900/20' 
-        : 'border-dashed border-gray-300 bg-gray-50 dark:bg-gray-800/50'} 
-      transition-all h-1/2
-    `}>
+    <Card 
+      className={`
+        border-2 ${isActive 
+          ? 'border-green-500 bg-green-50 dark:bg-green-900/20' 
+          : 'border-dashed border-gray-300 bg-gray-50 dark:bg-gray-800/50'} 
+        transition-all flex-1
+      `}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+    >
       <CardHeader className="p-4 pb-0">
         <CardTitle className="text-xl flex justify-between">
           <span>OVEN {ovenNumber}</span>
@@ -429,15 +472,30 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4 flex-1 flex flex-col">
-        {isActive && timeRemaining ? (
+        {isActive && timeRemaining && currentBatch ? (
           <div className="flex flex-col items-center flex-1 justify-center">
-            <div className="text-2xl font-bold mb-2">
+            <div className="text-center w-full">
+              <h3 className="font-bold text-lg mb-2">{currentBatch.batchLabel}</h3>
+              <p className="font-medium mb-3">
+                Qty: <span className="text-xl">{currentBatch.producedQuantity}</span>
+              </p>
+            </div>
+            <div className="text-3xl font-bold mb-2 mt-2">
               {formatTime(timeRemaining)}
             </div>
             <Progress 
-              value={(timeRemaining / 1800) * 100} 
-              className="w-full h-2" 
+              value={(timeRemaining / 1680) * 100} 
+              className="w-full h-2 mb-4" 
             />
+            <Button
+              variant="default"
+              size="lg"
+              className="w-full mt-2"
+              onClick={onComplete}
+            >
+              <CheckCircle2 className="mr-2" />
+              DONE
+            </Button>
           </div>
         ) : (
           <div className="text-center py-8 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md flex-1 flex items-center justify-center">
@@ -454,6 +512,7 @@ const QueuePage: React.FC = () => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
   
   // Generate a request date in the past few hours
   const generateRequestDate = () => {
@@ -513,6 +572,8 @@ const QueuePage: React.FC = () => {
         shape: 'round',
         size: 22,
         batchLabel: 'ROUND CHOCOLATE 22CM',
+        requestedQuantity: 5,
+        producedQuantity: 5,
         requestedAt: generateRequestDate(),
         isPriority: true
       }
@@ -590,11 +651,97 @@ const QueuePage: React.FC = () => {
         size: orderToMove.size,
         batchLabel: orderToMove.batchLabel,
         requestedAt: orderToMove.requestedAt,
-        isPriority: orderToMove.isPriority
+        isPriority: orderToMove.isPriority,
+        requestedQuantity: 5, // Default values since activeMixing doesn't track these
+        producedQuantity: 5
       }]
     }));
     
     toast.success("Mixing complete! Order ready for oven.");
+  };
+  
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    setDraggedItemId(id);
+  };
+  
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault(); // Necessary to allow drop
+  };
+  
+  const handleDrop = (ovenNumber: number) => (e: React.DragEvent) => {
+    e.preventDefault();
+    if (!draggedItemId) return;
+    
+    // Find the order being dragged
+    const draggedOrder = mockData.ovenReady.find(order => order.id === draggedItemId);
+    if (!draggedOrder) return;
+    
+    // Move to oven and start 28 minute timer (1680 seconds)
+    setMockData(prev => {
+      const updatedOvens = prev.ovens.map(oven => {
+        if (oven.number === ovenNumber) {
+          return {
+            ...oven,
+            isActive: true,
+            timeRemaining: 1680, // 28 minutes in seconds
+            currentBatch: {
+              id: draggedOrder.id,
+              batchLabel: draggedOrder.batchLabel,
+              flavor: draggedOrder.flavor,
+              producedQuantity: draggedOrder.producedQuantity
+            }
+          };
+        }
+        return oven;
+      });
+      
+      return {
+        ...prev,
+        ovenReady: prev.ovenReady.filter(order => order.id !== draggedItemId),
+        ovens: updatedOvens
+      };
+    });
+    
+    setDraggedItemId(null);
+    toast.success(`${draggedOrder.batchLabel} moved to Oven ${ovenNumber}. 28 minute timer started!`);
+  };
+  
+  // Handle oven complete
+  const handleOvenComplete = (ovenNumber: number) => {
+    setMockData(prev => {
+      const updatedOvens = prev.ovens.map(oven => {
+        if (oven.number === ovenNumber) {
+          // Find the batch that was in this oven
+          const batch = oven.currentBatch;
+          
+          // Increment the daily completed count
+          const newDailyCompleted = prev.dailyCompleted + 1;
+          
+          // Show a completion toast
+          if (batch) {
+            toast.success(`${batch.batchLabel} complete!`, {
+              description: `${batch.producedQuantity} items successfully baked.`
+            });
+          }
+          
+          // Reset the oven
+          return {
+            ...oven,
+            isActive: false,
+            timeRemaining: undefined,
+            currentBatch: undefined
+          };
+        }
+        return oven;
+      });
+      
+      return {
+        ...prev,
+        dailyCompleted: Math.min(prev.dailyCompleted + 1, prev.dailyTarget),
+        ovens: updatedOvens
+      };
+    });
   };
   
   // Create a new mock order
@@ -639,6 +786,51 @@ const QueuePage: React.FC = () => {
       toast.success("New order added to queue");
     }
   };
+  
+  // Update oven timers
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMockData(prev => {
+        // Check if any ovens have active timers
+        const anyActiveOvens = prev.ovens.some(oven => oven.isActive && oven.timeRemaining);
+        if (!anyActiveOvens) return prev;
+        
+        // Update timers for all active ovens
+        return {
+          ...prev,
+          ovens: prev.ovens.map(oven => {
+            if (oven.isActive && oven.timeRemaining) {
+              const newTimeRemaining = Math.max(0, oven.timeRemaining - 1);
+              
+              // When 1 minute is left, show notification
+              if (newTimeRemaining === 60) {
+                toast("1 minute left on oven timer!", {
+                  description: `Oven ${oven.number} will be done soon!`,
+                  duration: 5000,
+                });
+              }
+              
+              // If timer reached 0
+              if (newTimeRemaining === 0) {
+                toast.success(`Oven ${oven.number} baking complete!`, {
+                  description: `Ready to be removed from oven`,
+                  duration: 8000,
+                });
+              }
+              
+              return {
+                ...oven,
+                timeRemaining: newTimeRemaining
+              };
+            }
+            return oven;
+          })
+        };
+      });
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
   
   // Daily progress percentage
   const dailyProgressPercentage = (mockData.dailyCompleted / mockData.dailyTarget) * 100;
@@ -774,12 +966,16 @@ const QueuePage: React.FC = () => {
                     {mockData.ovenReady.map(order => (
                       <OvenReadyCard 
                         key={order.id}
+                        id={order.id}
                         flavor={order.flavor}
                         shape={order.shape}
                         size={order.size}
                         batchLabel={order.batchLabel}
                         requestedAt={order.requestedAt}
+                        requestedQuantity={order.requestedQuantity}
+                        producedQuantity={order.producedQuantity}
                         isPriority={order.isPriority}
+                        onDragStart={handleDragStart}
                       />
                     ))}
                   </div>
@@ -802,6 +998,10 @@ const QueuePage: React.FC = () => {
                     ovenNumber={oven.number}
                     isActive={oven.isActive}
                     timeRemaining={oven.timeRemaining}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop(oven.number)}
+                    currentBatch={oven.currentBatch}
+                    onComplete={() => handleOvenComplete(oven.number)}
                   />
                 ))}
               </div>
@@ -814,3 +1014,4 @@ const QueuePage: React.FC = () => {
 };
 
 export default QueuePage;
+
