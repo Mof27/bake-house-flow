@@ -1,335 +1,35 @@
+
 import React, { useState, useEffect } from 'react';
-import { toast } from 'sonner';
 import Layout from '@/components/Layout';
 import Sidebar from '@/components/Sidebar';
 import { 
   Tabs, 
   TabsList, 
   TabsTrigger, 
-  TabsContent 
 } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { 
-  Moon,
-  Sun,
-} from 'lucide-react';
-import { useOrders } from '@/contexts/OrderContext';
+import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { MockData } from '@/types/queue';
+import { useQueueState } from '@/hooks/useQueueState';
+import { useQueueOperations } from '@/hooks/useQueueOperations';
 
-import MixingCard from '@/components/queue/MixingCard';
-import ActiveMixingCard from '@/components/queue/ActiveMixingCard';
-import OvenReadyCard from '@/components/queue/OvenReadyCard';
-import OvenSlot from '@/components/queue/OvenSlot';
-import CompletedBatchItem from '@/components/queue/CompletedBatchItem';
-import ScrollableCardSection from '@/components/queue/ScrollableCardSection';
+import PendingOrdersTab from '@/components/queue/tabs/PendingOrdersTab';
+import InProgressTab from '@/components/queue/tabs/InProgressTab';
+import CompletedTab from '@/components/queue/tabs/CompletedTab';
 
 const QueuePage: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('pending');
   
-  const generateRequestDate = () => {
-    const now = new Date();
-    const hoursAgo = Math.random() * 5;
-    now.setHours(now.getHours() - hoursAgo);
-    return now;
-  };
-  
-  const [mockData, setMockData] = useState<MockData>({
-    dailyCompleted: 12,
-    dailyTarget: 20,
-    pendingOrders: [
-      {
-        id: '1',
-        flavor: 'vanilla',
-        shape: 'round',
-        size: 16,
-        batchLabel: 'ROUND VANILLA 16CM',
-        requestedQuantity: 4,
-        producedQuantity: 4,
-        requestedAt: generateRequestDate(),
-        isPriority: true,
-        isNew: true,
-        notes: 'Birthday cake for Sarah'
-      },
-      {
-        id: '2',
-        flavor: 'chocolate',
-        shape: 'square',
-        size: 20,
-        batchLabel: 'SQUARE CHOCOLATE 20CM',
-        requestedQuantity: 2,
-        producedQuantity: 2,
-        requestedAt: generateRequestDate(),
-        isPriority: false
-      },
-      {
-        id: '3',
-        flavor: 'vanilla',
-        shape: 'round',
-        size: 18,
-        batchLabel: 'ROUND VANILLA 18CM',
-        requestedQuantity: 3,
-        producedQuantity: 3,
-        requestedAt: generateRequestDate(),
-        isPriority: true
-      },
-      {
-        id: '4',
-        flavor: 'chocolate',
-        shape: 'square',
-        size: 22,
-        batchLabel: 'SQUARE CHOCOLATE 22CM',
-        requestedQuantity: 5,
-        producedQuantity: 5,
-        requestedAt: generateRequestDate(),
-        isPriority: false
-      },
-      {
-        id: '5',
-        flavor: 'vanilla',
-        shape: 'round',
-        size: 20,
-        batchLabel: 'ROUND VANILLA 20CM',
-        requestedQuantity: 2,
-        producedQuantity: 2,
-        requestedAt: generateRequestDate(),
-        isPriority: true
-      },
-      {
-        id: '6',
-        flavor: 'chocolate',
-        shape: 'square',
-        size: 16,
-        batchLabel: 'SQUARE CHOCOLATE 16CM',
-        requestedQuantity: 4,
-        producedQuantity: 4,
-        requestedAt: generateRequestDate(),
-        isPriority: false
-      },
-      {
-        id: '7',
-        flavor: 'vanilla',
-        shape: 'round',
-        size: 22,
-        batchLabel: 'ROUND VANILLA 22CM',
-        requestedQuantity: 3,
-        producedQuantity: 3,
-        requestedAt: generateRequestDate(),
-        isPriority: true
-      },
-      {
-        id: '8',
-        flavor: 'chocolate',
-        shape: 'square',
-        size: 18,
-        batchLabel: 'SQUARE CHOCOLATE 18CM',
-        requestedQuantity: 5,
-        producedQuantity: 5,
-        requestedAt: generateRequestDate(),
-        isPriority: false
-      },
-      {
-        id: '9',
-        flavor: 'vanilla',
-        shape: 'round',
-        size: 16,
-        batchLabel: 'ROUND VANILLA 16CM',
-        requestedQuantity: 2,
-        producedQuantity: 2,
-        requestedAt: generateRequestDate(),
-        isPriority: true
-      },
-      {
-        id: '10',
-        flavor: 'chocolate',
-        shape: 'square',
-        size: 20,
-        batchLabel: 'SQUARE CHOCOLATE 20CM',
-        requestedQuantity: 4,
-        producedQuantity: 4,
-        requestedAt: generateRequestDate(),
-        isPriority: false
-      }
-    ],
-    activeMixing: [
-      {
-        id: '3',
-        flavor: 'vanilla',
-        shape: 'round',
-        size: 18,
-        batchLabel: 'ROUND VANILLA 18CM',
-        requestedAt: generateRequestDate(),
-        isPriority: false,
-        startTime: new Date()
-      }
-    ],
-    ovenReady: [
-      {
-        id: '4',
-        flavor: 'chocolate',
-        shape: 'round',
-        size: 22,
-        batchLabel: 'ROUND CHOCOLATE 22CM',
-        requestedQuantity: 5,
-        producedQuantity: 5,
-        requestedAt: generateRequestDate(),
-        isPriority: true
-      },
-      {
-        id: '8',
-        flavor: 'vanilla',
-        shape: 'square',
-        size: 16,
-        batchLabel: 'SQUARE VANILLA 16CM',
-        requestedQuantity: 2,
-        producedQuantity: 2,
-        requestedAt: generateRequestDate(),
-        isPriority: false
-      }
-    ],
-    ovens: [
-      {
-        number: 1,
-        isActive: true,
-        timeRemaining: 1250,
-        currentBatch: {
-          id: '5',
-          batchLabel: 'ROUND VANILLA 18CM',
-          flavor: 'vanilla',
-          producedQuantity: 3
-        },
-        batches: [
-          {
-            id: '5',
-            batchLabel: 'ROUND VANILLA 18CM',
-            flavor: 'vanilla',
-            shape: 'round',
-            size: 18,
-            producedQuantity: 3
-          }
-        ]
-      },
-      {
-        number: 2,
-        isActive: false,
-        batches: []
-      }
-    ],
-    completedBatches: [
-      {
-        id: '10',
-        batchLabel: 'SQUARE VANILLA 20CM',
-        flavor: 'vanilla',
-        shape: 'square',
-        size: 20,
-        producedQuantity: 4,
-        completedAt: generateRequestDate()
-      },
-      {
-        id: '11',
-        batchLabel: 'ROUND CHOCOLATE 18CM',
-        flavor: 'chocolate',
-        shape: 'round',
-        size: 18,
-        producedQuantity: 3,
-        completedAt: generateRequestDate()
-      },
-      {
-        id: '12',
-        batchLabel: 'SQUARE CHOCOLATE 22CM',
-        flavor: 'chocolate',
-        shape: 'square',
-        size: 22,
-        producedQuantity: 6,
-        completedAt: generateRequestDate()
-      }
-    ]
-  });
-  
-  const handleQuantityChange = (orderId: string, delta: number) => {
-    setMockData(prev => ({
-      ...prev,
-      ovenReady: prev.ovenReady.map(order => 
-        order.id === orderId 
-          ? { ...order, producedQuantity: Math.max(1, order.producedQuantity + delta) }
-          : order
-      )
-    }));
-  };
-  
-  const handleStartMixing = (orderId: string) => {
-    const orderToMove = mockData.pendingOrders.find(order => order.id === orderId);
-    if (!orderToMove) return;
-    
-    setMockData(prev => ({
-      ...prev,
-      pendingOrders: prev.pendingOrders.filter(order => order.id !== orderId),
-      activeMixing: [...prev.activeMixing, { 
-        id: orderToMove.id,
-        flavor: orderToMove.flavor,
-        shape: orderToMove.shape,
-        size: orderToMove.size,
-        batchLabel: orderToMove.batchLabel,
-        requestedAt: orderToMove.requestedAt,
-        isPriority: orderToMove.isPriority,
-        startTime: new Date()
-      }]
-    }));
-    
-    toast.success("Started mixing process");
-    setActiveTab('in-progress');
-  };
-  
-  const handleCancelTimer = (orderId: string) => {
-    const orderToMove = mockData.activeMixing.find(order => order.id === orderId);
-    if (!orderToMove) return;
-    
-    setMockData(prev => ({
-      ...prev,
-      activeMixing: prev.activeMixing.filter(order => order.id !== orderId),
-      pendingOrders: [...prev.pendingOrders, { 
-        id: orderToMove.id,
-        flavor: orderToMove.flavor,
-        shape: orderToMove.shape,
-        size: orderToMove.size,
-        batchLabel: orderToMove.batchLabel,
-        requestedAt: orderToMove.requestedAt,
-        isPriority: orderToMove.isPriority,
-        requestedQuantity: 5,
-        producedQuantity: 5
-      }]
-    }));
-    
-    toast("Mixing cancelled", { 
-      description: "Order returned to pending queue" 
-    });
-  };
-  
-  const handleMixingComplete = (orderId: string) => {
-    const orderToMove = mockData.activeMixing.find(order => order.id === orderId);
-    if (!orderToMove) return;
-    
-    setMockData(prev => ({
-      ...prev,
-      activeMixing: prev.activeMixing.filter(order => order.id !== orderId),
-      ovenReady: [...prev.ovenReady, { 
-        id: orderToMove.id,
-        flavor: orderToMove.flavor,
-        shape: orderToMove.shape,
-        size: orderToMove.size,
-        batchLabel: orderToMove.batchLabel,
-        requestedAt: orderToMove.requestedAt,
-        isPriority: orderToMove.isPriority,
-        requestedQuantity: 5,
-        producedQuantity: 5
-      }]
-    }));
-    
-    toast.success("Mixing complete! Order ready for oven.");
-  };
+  const { mockData, setMockData } = useQueueState();
+  const {
+    handleQuantityChange,
+    handleStartMixing,
+    handleCancelTimer,
+    handleMixingComplete,
+    handleOvenComplete
+  } = useQueueOperations(mockData, setMockData);
   
   const handleDragStart = (e: React.DragEvent, id: string) => {
     setDraggedItemId(id);
@@ -348,9 +48,9 @@ const QueuePage: React.FC = () => {
     
     setMockData(prev => {
       const targetOven = prev.ovens.find(oven => oven.number === ovenNumber);
-      let updatedOvens;
-      
       if (!targetOven) return prev;
+      
+      let updatedOvens;
       
       if (!targetOven.isActive) {
         updatedOvens = prev.ovens.map(oven => {
@@ -410,60 +110,8 @@ const QueuePage: React.FC = () => {
     });
     
     setDraggedItemId(null);
-    toast.success(`${draggedOrder.batchLabel} moved to Oven ${ovenNumber}. 28 minute timer started!`);
   };
-  
-  const handleOvenComplete = (ovenNumber: number) => {
-    setMockData(prev => {
-      const oven = prev.ovens.find(o => o.number === ovenNumber);
-      if (!oven) return prev;
-      
-      const newDailyCompleted = Math.min(
-        prev.dailyCompleted + oven.batches.length,
-        prev.dailyTarget
-      );
-      
-      toast.success(`Oven ${ovenNumber} complete!`, {
-        description: `${oven.batches.length} batches successfully baked.`
-      });
-      
-      const completedBatches = oven.batches.map(batch => ({
-        ...batch,
-        completedAt: new Date()
-      }));
-      
-      const updatedOvens = prev.ovens.map(o => {
-        if (o.number === ovenNumber) {
-          return {
-            ...o,
-            isActive: false,
-            timeRemaining: undefined,
-            currentBatch: undefined,
-            batches: []
-          };
-        }
-        return o;
-      });
-      
-      return {
-        ...prev,
-        dailyCompleted: newDailyCompleted,
-        ovens: updatedOvens,
-        completedBatches: [...prev.completedBatches, ...completedBatches]
-      };
-    });
-    
-    if (activeTab === 'in-progress') {
-      const noActiveMixing = mockData.activeMixing.length === 0;
-      const noOvenReady = mockData.ovenReady.length === 0;
-      const noActiveOvens = mockData.ovens.every(oven => !oven.isActive);
-      
-      if (noActiveMixing && noOvenReady && noActiveOvens) {
-        setActiveTab('done');
-      }
-    }
-  };
-  
+
   useEffect(() => {
     const interval = setInterval(() => {
       setMockData(prev => {
@@ -503,10 +151,6 @@ const QueuePage: React.FC = () => {
     
     return () => clearInterval(interval);
   }, []);
-  
-  const anyInProgress = mockData.activeMixing.length > 0 || 
-                        mockData.ovenReady.length > 0 || 
-                        mockData.ovens.some(oven => oven.isActive);
 
   const sidebar = (
     <Sidebar 
@@ -537,136 +181,27 @@ const QueuePage: React.FC = () => {
           </div>
 
           <div className="h-[calc(100vh-60px)] overflow-hidden">
-            <TabsContent value="pending" className="mt-0 h-full">
-              <ScrollArea className="h-full">
-                <div className="space-y-4 pb-4">
-                  {mockData.pendingOrders.length > 0 ? (
-                    <ScrollableCardSection title="Pending Orders">
-                      {mockData.pendingOrders.map(order => (
-                        <MixingCard 
-                          key={order.id}
-                          flavor={order.flavor}
-                          shape={order.shape}
-                          size={order.size}
-                          batchLabel={order.batchLabel}
-                          requestedQuantity={order.requestedQuantity}
-                          requestedAt={order.requestedAt}
-                          isPriority={order.isPriority}
-                          isNew={order.isNew}
-                          notes={order.notes}
-                          onStartMixing={() => handleStartMixing(order.id)}
-                        />
-                      ))}
-                    </ScrollableCardSection>
-                  ) : (
-                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-                      <p className="text-muted-foreground">No batches in the pending queue</p>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </TabsContent>
+            <PendingOrdersTab
+              pendingOrders={mockData.pendingOrders}
+              onStartMixing={(id) => handleStartMixing(id, setActiveTab)}
+            />
             
-            <TabsContent value="in-progress" className="mt-0 h-full">
-              <ScrollArea className="h-full">
-                <div className="space-y-4 pb-4">
-                  <div className="flex gap-4">
-                    <div className="flex-1 space-y-4">
-                      {mockData.activeMixing.length > 0 && (
-                        <ScrollableCardSection title="Currently Mixing">
-                          {mockData.activeMixing.map(order => (
-                            <ActiveMixingCard 
-                              key={order.id}
-                              flavor={order.flavor}
-                              shape={order.shape}
-                              size={order.size}
-                              batchLabel={order.batchLabel}
-                              requestedAt={order.requestedAt}
-                              isPriority={order.isPriority}
-                              startTime={order.startTime}
-                              onCancel={() => handleCancelTimer(order.id)}
-                              onComplete={() => handleMixingComplete(order.id)}
-                            />
-                          ))}
-                        </ScrollableCardSection>
-                      )}
-                      
-                      {mockData.ovenReady.length > 0 && (
-                        <ScrollableCardSection title="Oven Queue">
-                          {mockData.ovenReady.map(order => (
-                            <OvenReadyCard 
-                              key={order.id}
-                              id={order.id}
-                              flavor={order.flavor}
-                              shape={order.shape}
-                              size={order.size}
-                              batchLabel={order.batchLabel}
-                              requestedAt={order.requestedAt}
-                              requestedQuantity={order.requestedQuantity}
-                              producedQuantity={order.producedQuantity}
-                              isPriority={order.isPriority}
-                              onDragStart={handleDragStart}
-                              onQuantityChange={(delta) => handleQuantityChange(order.id, delta)}
-                            />
-                          ))}
-                        </ScrollableCardSection>
-                      )}
-                    </div>
-                    
-                    <div className="w-[180px] flex flex-col space-y-3">
-                      <h2 className="text-lg font-bold">Oven Slots</h2>
-                      {mockData.ovens.map(oven => (
-                        <OvenSlot 
-                          key={oven.number}
-                          ovenNumber={oven.number}
-                          isActive={oven.isActive}
-                          timeRemaining={oven.timeRemaining}
-                          onDragOver={handleDragOver}
-                          onDrop={handleDrop(oven.number)}
-                          currentBatch={oven.currentBatch}
-                          batches={oven.batches}
-                          onComplete={() => handleOvenComplete(oven.number)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {!anyInProgress && (
-                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-                      <p className="text-muted-foreground">No batches currently in progress</p>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </TabsContent>
+            <InProgressTab
+              activeMixing={mockData.activeMixing}
+              ovenReady={mockData.ovenReady}
+              ovens={mockData.ovens}
+              onCancelTimer={handleCancelTimer}
+              onMixingComplete={handleMixingComplete}
+              onQuantityChange={handleQuantityChange}
+              onDragStart={handleDragStart}
+              onOvenDragOver={handleDragOver}
+              onOvenDrop={handleDrop}
+              onOvenComplete={(ovenNumber) => handleOvenComplete(ovenNumber, activeTab, setActiveTab)}
+            />
             
-            <TabsContent value="done" className="mt-0 h-full">
-              <ScrollArea className="h-full">
-                <div className="pb-4">
-                  <h2 className="text-lg font-bold mb-2">Completed Batches</h2>
-                  
-                  {mockData.completedBatches.length === 0 ? (
-                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-                      <p className="text-muted-foreground">No completed batches yet</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-1">
-                      {mockData.completedBatches.map(batch => (
-                        <CompletedBatchItem 
-                          key={batch.id}
-                          batchLabel={batch.batchLabel}
-                          flavor={batch.flavor}
-                          shape={batch.shape}
-                          size={batch.size}
-                          producedQuantity={batch.producedQuantity}
-                          completedAt={batch.completedAt}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </TabsContent>
+            <CompletedTab
+              completedBatches={mockData.completedBatches}
+            />
           </div>
         </Tabs>
       </div>
