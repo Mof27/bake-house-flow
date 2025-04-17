@@ -477,7 +477,7 @@ const OvenItem: React.FC<OvenItemProps> = ({
 
   return (
     <div className={`p-1.5 ${bgColor} rounded-md text-xs w-full h-full flex flex-col justify-center`}>
-      <h4 className="font-bold text-xs">{batchLabel}</h4>
+      <h4 className="font-bold text-xs truncate">{batchLabel}</h4>
       <div className="text-xs">
         Qty: <span className="font-bold">{producedQuantity}</span>
       </div>
@@ -582,7 +582,7 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
               </Button>
             </div>
             
-            <div className="flex-1 overflow-hidden space-y-0.5">
+            <div className="flex-1 overflow-hidden">
               {batches.length > 0 && (
                 <div className="grid grid-cols-1 gap-0.5 h-full">
                   {batches.map((batch, index) => (
