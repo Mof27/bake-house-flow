@@ -23,7 +23,7 @@ import {
   Sun,
   Search,
   Flag,
-  Draggable,
+  MoveHorizontal,
   RefreshCw,
   TimerOff
 } from 'lucide-react';
@@ -34,6 +34,44 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { useTheme } from '@/contexts/ThemeContext';
+
+// Define a union type for flavors to ensure type safety
+type CakeFlavor = 'vanilla' | 'chocolate';
+
+// Define interface for mock data structure
+interface MockData {
+  dailyCompleted: number;
+  dailyTarget: number;
+  pendingOrders: {
+    id: string;
+    flavor: CakeFlavor;
+    batchLabel: string;
+    quantity: number;
+    secretCode: string;
+    isPriority: boolean;
+    notes?: string;
+    isNew?: boolean;
+  }[];
+  activeMixing: {
+    id: string;
+    flavor: CakeFlavor;
+    batchLabel: string;
+    secretCode: string;
+    isPriority: boolean;
+  }[];
+  ovenReady: {
+    id: string;
+    flavor: CakeFlavor;
+    batchLabel: string;
+    secretCode: string;
+    isPriority: boolean;
+  }[];
+  ovens: {
+    number: number;
+    isActive: boolean;
+    timeRemaining?: number;
+  }[];
+}
 
 // Utility functions
 const formatTime = (seconds: number) => {
@@ -62,7 +100,7 @@ const generateRandomCode = () => {
 
 // Component for mixing queue cards
 interface MixingCardProps {
-  flavor: 'vanilla' | 'chocolate';
+  flavor: CakeFlavor;
   batchLabel: string;
   quantity: number;
   secretCode: string;
@@ -164,7 +202,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
 
 // Component for active mixing cards with timer
 interface ActiveMixingCardProps {
-  flavor: 'vanilla' | 'chocolate';
+  flavor: CakeFlavor;
   batchLabel: string;
   secretCode: string;
   isPriority?: boolean;
@@ -282,7 +320,7 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
 
 // Component for oven queue cards (ready to be moved to oven)
 interface OvenReadyCardProps {
-  flavor: 'vanilla' | 'chocolate';
+  flavor: CakeFlavor;
   batchLabel: string;
   secretCode: string;
   isPriority?: boolean;
@@ -326,7 +364,7 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
         
         {/* Drag indicator */}
         <div className="flex justify-center items-center mt-3 text-sm text-gray-500 dark:text-gray-400">
-          <Draggable className="h-4 w-4 mr-1" /> Drag to an oven slot
+          <MoveHorizontal className="h-4 w-4 mr-1" /> Drag to an oven slot
         </div>
       </CardContent>
     </Card>
@@ -384,17 +422,17 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
 // Main Queue Component
 const QueuePage: React.FC = () => {
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState<string>('');
   
   // Mock data for UI demonstration
-  const [mockData, setMockData] = useState({
+  const [mockData, setMockData] = useState<MockData>({
     dailyCompleted: 12,
     dailyTarget: 20,
     pendingOrders: [
       {
         id: '1',
-        flavor: 'vanilla' as 'vanilla',
+        flavor: 'vanilla',
         batchLabel: generateBatchLabel(),
         quantity: 4,
         secretCode: generateRandomCode(),
@@ -404,7 +442,7 @@ const QueuePage: React.FC = () => {
       },
       {
         id: '2',
-        flavor: 'chocolate' as 'chocolate',
+        flavor: 'chocolate',
         batchLabel: generateBatchLabel(),
         quantity: 2,
         secretCode: generateRandomCode(),
@@ -415,7 +453,7 @@ const QueuePage: React.FC = () => {
     activeMixing: [
       {
         id: '3',
-        flavor: 'vanilla' as 'vanilla',
+        flavor: 'vanilla',
         batchLabel: generateBatchLabel(),
         secretCode: generateRandomCode(),
         isPriority: false
@@ -424,7 +462,7 @@ const QueuePage: React.FC = () => {
     ovenReady: [
       {
         id: '4',
-        flavor: 'chocolate' as 'chocolate',
+        flavor: 'chocolate',
         batchLabel: generateBatchLabel(),
         secretCode: generateRandomCode(),
         isPriority: true
@@ -510,7 +548,7 @@ const QueuePage: React.FC = () => {
   const handleAddNewOrder = () => {
     const newOrder = {
       id: `new-${Date.now()}`,
-      flavor: Math.random() > 0.5 ? 'vanilla' : 'chocolate' as 'vanilla' | 'chocolate',
+      flavor: Math.random() > 0.5 ? 'vanilla' : 'chocolate' as CakeFlavor,
       batchLabel: generateBatchLabel(),
       quantity: Math.floor(Math.random() * 5) + 1,
       secretCode: generateRandomCode(),
@@ -538,11 +576,6 @@ const QueuePage: React.FC = () => {
     } else {
       toast.success("New order added to queue");
     }
-  };
-  
-  // Toggle theme
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
   
   // Daily progress percentage
