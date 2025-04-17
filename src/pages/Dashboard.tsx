@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useOrders } from '@/contexts/OrderContext';
 import Layout from '@/components/Layout';
@@ -9,7 +8,7 @@ import OrderCard from '@/components/OrderCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useNavigate } from 'react-router-dom';
-import { Package, CheckCircle, Loader2, Clock, ListOrdered, PlusCircle } from 'lucide-react';
+import { Package, CheckCircle, Loader2, Clock, ListOrdered } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { StatCard } from '@/components/StatCard';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -50,17 +49,6 @@ const Dashboard: React.FC = () => {
                 </Badge>
               )}
             </Button>
-            
-            {user?.role === 'leader' && (
-              <Button
-                onClick={() => navigate('/new-order')}
-                variant="default"
-                className="gap-2"
-              >
-                <PlusCircle className="h-5 w-5" />
-                <span>New Order</span>
-              </Button>
-            )}
           </div>
         </div>
         
