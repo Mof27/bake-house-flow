@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Badge } from '@/components/ui/badge';
 import { CakeFlavor, CakeShape } from '@/types/queue';
 import { formatDateTime } from '@/lib/date-utils';
 
@@ -10,6 +11,8 @@ interface CompletedBatchItemProps {
   size: number;
   producedQuantity: number;
   completedAt: Date;
+  isPriority?: boolean;
+  isNew?: boolean;
 }
 
 const CompletedBatchItem: React.FC<CompletedBatchItemProps> = ({
@@ -18,7 +21,9 @@ const CompletedBatchItem: React.FC<CompletedBatchItemProps> = ({
   shape,
   size,
   producedQuantity,
-  completedAt
+  completedAt,
+  isPriority = false,
+  isNew = false
 }) => {
   const bgColor = flavor === 'vanilla' 
     ? 'bg-amber-50 text-amber-950' 
@@ -34,6 +39,20 @@ const CompletedBatchItem: React.FC<CompletedBatchItemProps> = ({
           <div className="font-bold text-base">{parts[0] || ''}</div>
           <div className="font-bold text-base">{parts[1] || ''}</div>
           <div className="text-sm">Qty: {producedQuantity}</div>
+          
+          {/* Tags section */}
+          <div className="flex space-x-2 mt-1">
+            {isPriority && (
+              <Badge variant="destructive" className="text-xs">
+                Priority
+              </Badge>
+            )}
+            {isNew && (
+              <Badge variant="secondary" className="text-xs bg-bakery-primary/10 text-bakery-primary">
+                New
+              </Badge>
+            )}
+          </div>
         </div>
         <div className="text-xs opacity-70">
           {formatDateTime(completedAt)}

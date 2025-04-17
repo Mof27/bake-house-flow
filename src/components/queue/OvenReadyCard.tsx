@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { MoveHorizontal, PlusCircle, MinusCircle, Zap } from 'lucide-react';
+import { MoveHorizontal, PlusCircle, MinusCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { CakeFlavor, CakeShape } from '@/types/queue';
 import { formatDateTime } from '@/lib/date-utils';
 
@@ -15,6 +16,7 @@ interface OvenReadyCardProps {
   requestedQuantity: number;
   producedQuantity: number;
   isPriority?: boolean;
+  isNew?: boolean;
   onDragStart: (e: React.DragEvent, id: string) => void;
   onQuantityChange: (delta: number) => void;
   id: string;
@@ -30,6 +32,7 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
   requestedQuantity,
   producedQuantity,
   isPriority = false,
+  isNew = false,
   onDragStart,
   onQuantityChange
 }) => {
@@ -46,20 +49,14 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
         relative overflow-hidden transition-all
         ${bgColor} 
         ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
-        hover:shadow-md cursor-move w-[240px] h-[240px] flex-shrink-0
+        hover:shadow-md cursor-move w-[240px] h-[300px] flex-shrink-0
       `}
       draggable="true"
       onDragStart={(e) => onDragStart(e, id)}
     >
-      {isPriority && (
-        <div className="absolute top-2 right-2">
-          <Zap className="h-5 w-5 text-red-500" />
-        </div>
-      )}
-      
       <CardContent className="p-3 h-full flex flex-col">
         {/* Shape and size */}
-        <div className="text-2xl font-bold leading-tight mb-1">{formattedShapeSize}</div>
+        <div className="text-2xl font-bold leading-tight italic">{formattedShapeSize}</div>
         
         {/* Flavor */}
         <div className="text-2xl font-bold leading-tight mb-2">
@@ -71,12 +68,24 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
           {formatDateTime(requestedAt)}
         </div>
         
-        <div className="text-base font-medium">
-          Asked Qty: {requestedQuantity}
+        {/* Tags section */}
+        <div className="space-y-2 mb-2">
+          <div className="flex space-x-2">
+            {isPriority && (
+              <Badge variant="destructive" className="text-xs">
+                Priority
+              </Badge>
+            )}
+            {isNew && (
+              <Badge variant="secondary" className="text-xs bg-bakery-primary/10 text-bakery-primary">
+                New
+              </Badge>
+            )}
+          </div>
         </div>
         
-        <div className="flex items-center justify-between mt-2">
-          <span className="text-base font-medium">Actual Qty: <span className="text-lg font-bold">{producedQuantity}</span></span>
+        <div className="flex items-center justify-between mt-auto">
+          <span className="text-base font-medium">Asked Qty: {requestedQuantity}</span>
           <div className="flex space-x-2">
             <Button 
               variant="ghost" 
@@ -98,7 +107,9 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
           </div>
         </div>
         
-        <div className="flex justify-center items-center mt-auto text-xs text-gray-500 dark:text-gray-400">
+        <span className="text-base font-medium mt-1">Actual Qty: {producedQuantity}</span>
+        
+        <div className="flex justify-center items-center mt-2 text-xs text-gray-500 dark:text-gray-400">
           <MoveHorizontal className="h-3 w-3 mr-1" /> Drag to an oven slot
         </div>
       </CardContent>
