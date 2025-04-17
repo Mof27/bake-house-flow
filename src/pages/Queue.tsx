@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -16,14 +17,10 @@ import {
   PlayCircle,
   PlusCircle, 
   MinusCircle,
-  Printer,
   Flame,
   Moon,
   Sun,
-  Search,
-  Flag,
   MoveHorizontal,
-  RefreshCw,
   TimerOff,
   CheckCircle2,
   XCircle
@@ -32,9 +29,15 @@ import { useOrders, Order } from '@/contexts/OrderContext';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Input } from '@/components/ui/input';
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { useTheme } from '@/contexts/ThemeContext';
+import { 
+  Sheet,
+  SheetTrigger,
+  SheetContent, 
+  SheetHeader,
+  SheetTitle,
+  SheetDescription
+} from "@/components/ui/sheet";
 
 type CakeFlavor = 'vanilla' | 'chocolate';
 type CakeShape = 'round' | 'square';
@@ -53,7 +56,6 @@ interface MockData {
     requestedAt: Date;
     isPriority: boolean;
     notes?: string;
-    isNew?: boolean;
   }[];
   activeMixing: {
     id: string;
@@ -95,6 +97,15 @@ interface MockData {
       producedQuantity: number;
     }[];
   }[];
+  completedBatches: {
+    id: string;
+    batchLabel: string;
+    flavor: CakeFlavor;
+    shape: CakeShape;
+    size: number;
+    producedQuantity: number;
+    completedAt: Date;
+  }[];
 }
 
 const formatTime = (seconds: number) => {
@@ -112,13 +123,6 @@ const formatDateTime = (date: Date) => {
   });
 };
 
-const generateBatchLabel = () => {
-  const shape = Math.random() > 0.5 ? 'ROUND' : 'SQUARE';
-  const type = Math.random() > 0.5 ? 'VANILLA' : 'CHOCOLATE';
-  const size = Math.floor(Math.random() * 10) + 15; // 15-24cm
-  return `${shape} ${type} ${size}CM`;
-};
-
 interface MixingCardProps {
   flavor: CakeFlavor;
   shape: CakeShape;
@@ -129,7 +133,6 @@ interface MixingCardProps {
   requestedAt: Date;
   isPriority?: boolean;
   notes?: string;
-  isNew?: boolean;
   onQuantityChange: (delta: number) => void;
   onStartMixing: () => void;
 }
@@ -144,7 +147,6 @@ const MixingCard: React.FC<MixingCardProps> = ({
   requestedAt,
   isPriority = false,
   notes,
-  isNew = false,
   onQuantityChange,
   onStartMixing
 }) => {
@@ -159,10 +161,6 @@ const MixingCard: React.FC<MixingCardProps> = ({
       ${isPriority ? 'border-2 border-yellow-500' : 'border border-gray-200'}
       hover:shadow-md
     `}>
-      {isNew && (
-        <Badge className="absolute top-2 right-2 bg-blue-500 z-10">NEW</Badge>
-      )}
-      
       {isPriority && (
         <div className="absolute top-0 right-0">
           <div className="w-0 h-0 
@@ -173,51 +171,51 @@ const MixingCard: React.FC<MixingCardProps> = ({
         </div>
       )}
       
-      <CardContent className="p-4">
-        <h3 className="font-bold text-lg">{batchLabel}</h3>
+      <CardContent className="p-3">
+        <h3 className="font-bold text-sm truncate">{batchLabel}</h3>
         
-        <div className="text-xs opacity-70 mb-3">
+        <div className="text-xs opacity-70 mb-2">
           requested at {formatDateTime(requestedAt)}
         </div>
         
         {notes && (
-          <div className="bg-gray-200 dark:bg-gray-700 rounded-full px-3 py-1 mb-3 text-sm overflow-hidden whitespace-nowrap text-ellipsis">
+          <div className="bg-gray-200 dark:bg-gray-700 rounded-full px-2 py-1 mb-2 text-xs overflow-hidden whitespace-nowrap text-ellipsis">
             {notes}
           </div>
         )}
         
-        <div className="flex flex-col space-y-2 mb-4">
-          <div className="text-sm font-medium">Asked Qty: {requestedQuantity}</div>
+        <div className="flex flex-col space-y-1 mb-3">
+          <div className="text-xs font-medium">Asked Qty: {requestedQuantity}</div>
           
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Produced Qty: <span className="text-3xl font-bold">{producedQuantity}</span></span>
-            <div className="flex space-x-2">
+            <span className="text-xs font-medium">Produced Qty: <span className="text-xl font-bold">{producedQuantity}</span></span>
+            <div className="flex space-x-1">
               <Button 
                 variant="ghost" 
                 size="icon"
-                className="h-8 w-8 rounded-full"
+                className="h-6 w-6 rounded-full"
                 onClick={() => onQuantityChange(-1)}
                 disabled={producedQuantity <= 1}
               >
-                <MinusCircle className="h-4 w-4" />
+                <MinusCircle className="h-3 w-3" />
               </Button>
               <Button 
                 variant="ghost" 
                 size="icon"
-                className="h-8 w-8 rounded-full"
+                className="h-6 w-6 rounded-full"
                 onClick={() => onQuantityChange(1)}
               >
-                <PlusCircle className="h-4 w-4" />
+                <PlusCircle className="h-3 w-3" />
               </Button>
             </div>
           </div>
         </div>
         
         <Button 
-          className="w-full" 
+          className="w-full text-xs py-1 h-8" 
           onClick={onStartMixing}
         >
-          <PlayCircle className="mr-2" /> Start Mixing
+          <PlayCircle className="mr-1 h-3 w-3" /> Start Mixing
         </Button>
       </CardContent>
     </Card>
@@ -271,6 +269,7 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
   if (isTimerExpired) {
     bgColorClass = expiredBgColor;
     textColorClass = expiredTextColor;
+    animationClass = 'animate-pulse';
   } else if (timeLeft <= WARNING_TIME) {
     bgColorClass = warningBgColor;
     textColorClass = warningTextColor;
@@ -341,16 +340,16 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
         </div>
       )}
       
-      <CardContent className="p-4">
-        <h3 className="font-bold text-lg">{batchLabel}</h3>
+      <CardContent className="p-3">
+        <h3 className="font-bold text-sm truncate">{batchLabel}</h3>
         
-        <div className="text-xs opacity-70 mb-3">
+        <div className="text-xs opacity-70 mb-2">
           requested at {formatDateTime(requestedAt)}
         </div>
         
-        <div className="flex flex-col items-center mt-4 mb-4">
+        <div className="flex flex-col items-center mt-2 mb-3">
           <div className="flex items-center">
-            <Clock className="h-5 w-5 mr-2" />
+            <Clock className="h-4 w-4 mr-1" />
             {!isTimerExpired ? (
               <span className="text-xl font-bold">{formatTime(timeLeft)}</span>
             ) : (
@@ -369,17 +368,17 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
         <div className="flex space-x-2">
           <Button 
             variant="cancel"
-            className="flex-1" 
+            className="flex-1 text-xs py-1 h-8" 
             onClick={onCancel}
           >
-            <XCircle className="mr-1" /> Cancel
+            <XCircle className="mr-1 h-3 w-3" /> Cancel
           </Button>
           <Button 
             variant="default"
-            className="flex-1"
+            className="flex-1 text-xs py-1 h-8"
             onClick={onComplete}
           >
-            <TimerOff className="mr-1" /> Finish
+            <TimerOff className="mr-1 h-3 w-3" /> Finish
           </Button>
         </div>
       </CardContent>
@@ -437,19 +436,19 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
         </div>
       )}
       
-      <CardContent className="p-4">
-        <h3 className="font-bold text-lg">{batchLabel}</h3>
+      <CardContent className="p-3">
+        <h3 className="font-bold text-sm truncate">{batchLabel}</h3>
         
-        <div className="text-xs opacity-70 mb-3">
+        <div className="text-xs opacity-70 mb-2">
           requested at {formatDateTime(requestedAt)}
         </div>
         
-        <div className="text-sm font-medium mb-2">
-          Qty: <span className="text-3xl font-bold">{producedQuantity}</span>
+        <div className="text-xs font-medium mb-2">
+          Qty: <span className="text-xl font-bold">{producedQuantity}</span>
         </div>
         
-        <div className="flex justify-center items-center mt-3 text-sm text-gray-500 dark:text-gray-400">
-          <MoveHorizontal className="h-4 w-4 mr-1" /> Drag to an oven slot
+        <div className="flex justify-center items-center mt-2 text-xs text-gray-500 dark:text-gray-400">
+          <MoveHorizontal className="h-3 w-3 mr-1" /> Drag to an oven slot
         </div>
       </CardContent>
     </Card>
@@ -545,8 +544,8 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
-      <CardHeader className="p-3 pb-1">
-        <CardTitle className="text-xl flex justify-between">
+      <CardHeader className="p-2 pb-0">
+        <CardTitle className="text-lg flex justify-between items-center">
           <span>OVEN {ovenNumber}</span>
           <Badge className={isActive ? (showWarning ? 'bg-red-500' : 'bg-green-500') : 'bg-gray-400'}>
             {isActive ? 'BAKING' : 'STANDBY'}
@@ -554,30 +553,31 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="p-3 pt-0 flex-1 flex flex-col h-full">
+      <CardContent className="p-2 pt-1 flex-1 flex flex-col h-full">
         {isActive && timeRemaining !== undefined ? (
           <div className="flex flex-col h-full">
-            <div className="mb-2 text-center">
-              <div className="text-3xl font-bold mb-2">
+            <div className="text-center">
+              <div className="text-3xl font-bold">
                 {timeRemaining > 0 
                   ? formatTime(timeRemaining) 
                   : `+${formatTime(Math.abs(timeRemaining))}`
                 }
               </div>
+              
               {timeRemaining > 0 && (
                 <Progress 
                   value={(timeRemaining / OVEN_TIME) * 100} 
-                  className="w-full h-2 mb-2" 
+                  className="w-full h-2 my-2" 
                 />
               )}
               
               <Button
                 variant="default"
-                size="lg"
-                className="w-full my-2 text-lg py-2"
+                size="sm"
+                className="w-full my-2 text-sm"
                 onClick={onComplete}
               >
-                <CheckCircle2 className="mr-2 h-5 w-5" />
+                <CheckCircle2 className="mr-1 h-4 w-4" />
                 DONE
               </Button>
             </div>
@@ -613,11 +613,45 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
   );
 };
 
+interface CompletedBatchItemProps {
+  batchLabel: string;
+  flavor: CakeFlavor;
+  shape: CakeShape;
+  size: number;
+  producedQuantity: number;
+  completedAt: Date;
+}
+
+const CompletedBatchItem: React.FC<CompletedBatchItemProps> = ({
+  batchLabel,
+  flavor,
+  shape,
+  size,
+  producedQuantity,
+  completedAt
+}) => {
+  const bgColor = flavor === 'vanilla' 
+    ? 'bg-amber-50 text-amber-950' 
+    : 'bg-amber-900 text-amber-50';
+    
+  return (
+    <div className={`flex items-center justify-between p-3 ${bgColor} rounded-md mb-1`}>
+      <div>
+        <div className="font-bold text-sm">{batchLabel}</div>
+        <div className="text-xs">Qty: {producedQuantity}</div>
+      </div>
+      <div className="text-xs opacity-70">
+        {formatDateTime(completedAt)}
+      </div>
+    </div>
+  );
+};
+
 const QueuePage: React.FC = () => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-  const [searchQuery, setSearchQuery] = useState<string>('');
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('pending');
   
   const generateRequestDate = () => {
     const now = new Date();
@@ -640,8 +674,7 @@ const QueuePage: React.FC = () => {
         producedQuantity: 4,
         requestedAt: generateRequestDate(),
         isPriority: true,
-        notes: 'Birthday cake for Sarah',
-        isNew: true
+        notes: 'Birthday cake for Sarah'
       },
       {
         id: '2',
@@ -652,8 +685,7 @@ const QueuePage: React.FC = () => {
         requestedQuantity: 2,
         producedQuantity: 2,
         requestedAt: generateRequestDate(),
-        isPriority: false,
-        isNew: false
+        isPriority: false
       }
     ],
     activeMixing: [
@@ -708,6 +740,26 @@ const QueuePage: React.FC = () => {
         isActive: false,
         batches: []
       }
+    ],
+    completedBatches: [
+      {
+        id: '10',
+        batchLabel: 'SQUARE VANILLA 20CM',
+        flavor: 'vanilla',
+        shape: 'square',
+        size: 20,
+        producedQuantity: 4,
+        completedAt: generateRequestDate()
+      },
+      {
+        id: '11',
+        batchLabel: 'ROUND CHOCOLATE 18CM',
+        flavor: 'chocolate',
+        shape: 'round',
+        size: 18,
+        producedQuantity: 3,
+        completedAt: generateRequestDate()
+      }
     ]
   });
   
@@ -742,6 +794,7 @@ const QueuePage: React.FC = () => {
     }));
     
     toast.success("Started mixing process");
+    setActiveTab('in-progress');
   };
   
   const handleCancelTimer = (orderId: string) => {
@@ -888,6 +941,12 @@ const QueuePage: React.FC = () => {
         description: `${oven.batches.length} batches successfully baked.`
       });
       
+      // Move batches to completed
+      const completedBatches = oven.batches.map(batch => ({
+        ...batch,
+        completedAt: new Date()
+      }));
+      
       const updatedOvens = prev.ovens.map(o => {
         if (o.number === ovenNumber) {
           return {
@@ -904,49 +963,20 @@ const QueuePage: React.FC = () => {
       return {
         ...prev,
         dailyCompleted: newDailyCompleted,
-        ovens: updatedOvens
+        ovens: updatedOvens,
+        completedBatches: [...prev.completedBatches, ...completedBatches]
       };
     });
-  };
-  
-  const handleAddNewOrder = () => {
-    const shape = Math.random() > 0.5 ? 'round' : 'square' as CakeShape;
-    const flavor = Math.random() > 0.5 ? 'vanilla' : 'chocolate' as CakeFlavor;
-    const size = Math.floor(Math.random() * 10) + 15;
-    const requestedQuantity = Math.floor(Math.random() * 5) + 1;
-    const isPriority = Math.random() > 0.7;
     
-    const newOrder = {
-      id: `new-${Date.now()}`,
-      flavor,
-      shape,
-      size,
-      batchLabel: `${shape.toUpperCase()} ${flavor.toUpperCase()} ${size}CM`,
-      requestedQuantity,
-      producedQuantity: requestedQuantity,
-      requestedAt: new Date(),
-      isPriority,
-      isNew: true
-    };
-    
-    setMockData(prev => ({
-      ...prev,
-      pendingOrders: [...prev.pendingOrders, newOrder]
-    }));
-    
-    if (newOrder.isPriority) {
-      toast(
-        <div className="flex flex-col items-center">
-          <AlertTriangle className="h-6 w-6 text-red-500 mb-2" />
-          <div className="text-lg font-bold">Priority Order Added!</div>
-          <div>New priority batch added to the queue</div>
-        </div>,
-        {
-          duration: 5000,
-        }
-      );
-    } else {
-      toast.success("New order added to queue");
+    if (activeTab === 'in-progress') {
+      // Check if there are no more active mixing, oven ready, or active ovens
+      const noActiveMixing = mockData.activeMixing.length === 0;
+      const noOvenReady = mockData.ovenReady.length === 0;
+      const noActiveOvens = mockData.ovens.every(oven => !oven.isActive);
+      
+      if (noActiveMixing && noOvenReady && noActiveOvens) {
+        setActiveTab('done');
+      }
     }
   };
   
@@ -992,172 +1022,202 @@ const QueuePage: React.FC = () => {
   
   const dailyProgressPercentage = (mockData.dailyCompleted / mockData.dailyTarget) * 100;
   
+  const anyInProgress = mockData.activeMixing.length > 0 || 
+                        mockData.ovenReady.length > 0 || 
+                        mockData.ovens.some(oven => oven.isActive);
+  
   return (
     <Layout title="Queue">
       <div className="pb-4">
-        <div className="flex items-center justify-between mb-6">
-          <Tabs defaultValue="queue" className="w-full">
-            <TabsList className="w-fit">
-              <TabsTrigger value="queue" className="font-bold text-primary">QUEUE</TabsTrigger>
-              <TabsTrigger value="in-oven">IN OVEN</TabsTrigger>
-              <TabsTrigger value="done">DONE</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          
-          <div className="flex items-center gap-6">
-            <div className="hidden md:flex flex-col items-end">
-              <div className="text-sm font-medium">{mockData.dailyCompleted} / {mockData.dailyTarget} Batches Completed</div>
-              <Progress value={dailyProgressPercentage} className="w-40 h-1.5 mt-1" />
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Button size="icon" variant="ghost" className="rounded-full">
-                <Bell />
-              </Button>
-              <Button size="icon" variant="ghost" className="rounded-full" onClick={toggleTheme}>
-                {theme === 'dark' ? <Sun /> : <Moon />}
-              </Button>
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
-          <div className="flex items-center gap-4">
-            <Button size="pill" onClick={() => toast("Printing all queued orders...")}>
-              <Printer className="mr-1" /> Print All Queued
-            </Button>
-            <Button variant="priority" size="pill" onClick={handleAddNewOrder}>
-              <Flag className="mr-1" /> Add Test Order
-            </Button>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <div className="flex items-center max-w-xs relative">
-              <Search className="absolute left-3 h-4 w-4 opacity-50" />
-              <Input 
-                placeholder="Search batches..." 
-                className="pl-9 w-full"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            
-            <div className="flex items-center text-sm">
-              <Badge className="bg-blue-500 h-2 w-2 rounded-full p-0 mr-2" />
-              <span className="text-muted-foreground">NEW = added &lt; 5 min ago</span>
-            </div>
-          </div>
-        </div>
-        
-        <ResizablePanelGroup direction="horizontal" className="h-[calc(100vh-240px)] rounded-lg border">
-          <ResizablePanel defaultSize={70} minSize={40}>
-            <div className="h-full overflow-y-auto p-4 space-y-6">
-              <div>
-                <h2 className="text-xl font-bold mb-4">Pending</h2>
-                
-                {mockData.pendingOrders.length === 0 ? (
-                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-                    <p className="text-muted-foreground">No batches in the pending queue</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {mockData.pendingOrders.map(order => (
-                      <MixingCard 
-                        key={order.id}
-                        flavor={order.flavor}
-                        shape={order.shape}
-                        size={order.size}
-                        batchLabel={order.batchLabel}
-                        requestedQuantity={order.requestedQuantity}
-                        producedQuantity={order.producedQuantity}
-                        requestedAt={order.requestedAt}
-                        isPriority={order.isPriority}
-                        notes={order.notes}
-                        isNew={order.isNew}
-                        onQuantityChange={(delta) => handleQuantityChange(order.id, delta)}
-                        onStartMixing={() => handleStartMixing(order.id)}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
+        <div className="flex items-center justify-between mb-4">
+          <Tabs 
+            defaultValue="pending" 
+            className="w-full" 
+            value={activeTab} 
+            onValueChange={setActiveTab}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <TabsList className="w-fit">
+                <TabsTrigger value="pending" className="font-bold">PENDING</TabsTrigger>
+                <TabsTrigger value="in-progress" className="font-bold">IN PROGRESS</TabsTrigger>
+                <TabsTrigger value="done" className="font-bold">DONE</TabsTrigger>
+              </TabsList>
               
-              {mockData.activeMixing.length > 0 && (
-                <div>
-                  <h2 className="text-xl font-bold mb-4">Currently Mixing</h2>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {mockData.activeMixing.map(order => (
-                      <ActiveMixingCard 
-                        key={order.id}
-                        flavor={order.flavor}
-                        shape={order.shape}
-                        size={order.size}
-                        batchLabel={order.batchLabel}
-                        requestedAt={order.requestedAt}
-                        isPriority={order.isPriority}
-                        startTime={order.startTime}
-                        onCancel={() => handleCancelTimer(order.id)}
-                        onComplete={() => handleMixingComplete(order.id)}
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button size="icon" variant="ghost" className="rounded-full">
+                    {theme === 'dark' ? <Sun /> : <Moon />}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right">
+                  <SheetHeader>
+                    <SheetTitle>Dashboard</SheetTitle>
+                    <SheetDescription>
+                      Daily Progress: {mockData.dailyCompleted} / {mockData.dailyTarget} Batches
+                      <Progress value={dailyProgressPercentage} className="h-1.5 mt-1" />
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="mt-4">
+                    <Button onClick={toggleTheme} className="w-full">
+                      Toggle {theme === 'dark' ? 'Light' : 'Dark'} Mode
+                    </Button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+
+            <div className="h-[calc(100vh-160px)] overflow-y-auto">
+              <TabsContent value="pending" className="mt-0">
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-xl font-bold mb-4">Pending Orders</h2>
+                    
+                    {mockData.pendingOrders.length === 0 ? (
+                      <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
+                        <p className="text-muted-foreground">No batches in the pending queue</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2">
+                        {mockData.pendingOrders.map(order => (
+                          <MixingCard 
+                            key={order.id}
+                            flavor={order.flavor}
+                            shape={order.shape}
+                            size={order.size}
+                            batchLabel={order.batchLabel}
+                            requestedQuantity={order.requestedQuantity}
+                            producedQuantity={order.producedQuantity}
+                            requestedAt={order.requestedAt}
+                            isPriority={order.isPriority}
+                            notes={order.notes}
+                            onQuantityChange={(delta) => handleQuantityChange(order.id, delta)}
+                            onStartMixing={() => handleStartMixing(order.id)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    {mockData.ovens.map(oven => (
+                      <OvenSlot 
+                        key={oven.number}
+                        ovenNumber={oven.number}
+                        isActive={oven.isActive}
+                        timeRemaining={oven.timeRemaining}
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop(oven.number)}
+                        currentBatch={oven.currentBatch}
+                        batches={oven.batches}
+                        onComplete={() => handleOvenComplete(oven.number)}
                       />
                     ))}
                   </div>
                 </div>
-              )}
+              </TabsContent>
               
-              <div>
-                <h2 className="text-xl font-bold mb-4">Oven Queue</h2>
-                
-                {mockData.ovenReady.length === 0 ? (
-                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-                    <p className="text-muted-foreground">Drag here once mixing is complete</p>
+              <TabsContent value="in-progress" className="mt-0">
+                <div className="space-y-6">
+                  {mockData.activeMixing.length > 0 && (
+                    <div>
+                      <h2 className="text-xl font-bold mb-4">Currently Mixing</h2>
+                      <div className="grid grid-cols-2 gap-2">
+                        {mockData.activeMixing.map(order => (
+                          <ActiveMixingCard 
+                            key={order.id}
+                            flavor={order.flavor}
+                            shape={order.shape}
+                            size={order.size}
+                            batchLabel={order.batchLabel}
+                            requestedAt={order.requestedAt}
+                            isPriority={order.isPriority}
+                            startTime={order.startTime}
+                            onCancel={() => handleCancelTimer(order.id)}
+                            onComplete={() => handleMixingComplete(order.id)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {mockData.ovenReady.length > 0 && (
+                    <div>
+                      <h2 className="text-xl font-bold mb-4">Oven Queue</h2>
+                      <div className="grid grid-cols-2 gap-2">
+                        {mockData.ovenReady.map(order => (
+                          <OvenReadyCard 
+                            key={order.id}
+                            id={order.id}
+                            flavor={order.flavor}
+                            shape={order.shape}
+                            size={order.size}
+                            batchLabel={order.batchLabel}
+                            requestedAt={order.requestedAt}
+                            requestedQuantity={order.requestedQuantity}
+                            producedQuantity={order.producedQuantity}
+                            isPriority={order.isPriority}
+                            onDragStart={handleDragStart}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div>
+                    <h2 className="text-xl font-bold mb-4">Oven Slots</h2>
+                    <div className="grid grid-cols-2 gap-2">
+                      {mockData.ovens.map(oven => (
+                        <OvenSlot 
+                          key={oven.number}
+                          ovenNumber={oven.number}
+                          isActive={oven.isActive}
+                          timeRemaining={oven.timeRemaining}
+                          onDragOver={handleDragOver}
+                          onDrop={handleDrop(oven.number)}
+                          currentBatch={oven.currentBatch}
+                          batches={oven.batches}
+                          onComplete={() => handleOvenComplete(oven.number)}
+                        />
+                      ))}
+                    </div>
                   </div>
-                ) : (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {mockData.ovenReady.map(order => (
-                      <OvenReadyCard 
-                        key={order.id}
-                        id={order.id}
-                        flavor={order.flavor}
-                        shape={order.shape}
-                        size={order.size}
-                        batchLabel={order.batchLabel}
-                        requestedAt={order.requestedAt}
-                        requestedQuantity={order.requestedQuantity}
-                        producedQuantity={order.producedQuantity}
-                        isPriority={order.isPriority}
-                        onDragStart={handleDragStart}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </ResizablePanel>
-          
-          <ResizableHandle withHandle />
-          
-          <ResizablePanel defaultSize={30} minSize={20}>
-            <div className="h-full flex flex-col p-4">
-              <h2 className="text-xl font-bold mb-4">Oven Slots</h2>
+                  
+                  {!anyInProgress && (
+                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
+                      <p className="text-muted-foreground">No batches currently in progress</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
               
-              <div className="flex flex-col flex-1 space-y-4 h-full">
-                {mockData.ovens.map(oven => (
-                  <OvenSlot 
-                    key={oven.number}
-                    ovenNumber={oven.number}
-                    isActive={oven.isActive}
-                    timeRemaining={oven.timeRemaining}
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop(oven.number)}
-                    currentBatch={oven.currentBatch}
-                    batches={oven.batches}
-                    onComplete={() => handleOvenComplete(oven.number)}
-                  />
-                ))}
-              </div>
+              <TabsContent value="done" className="mt-0">
+                <div>
+                  <h2 className="text-xl font-bold mb-4">Completed Batches</h2>
+                  
+                  {mockData.completedBatches.length === 0 ? (
+                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
+                      <p className="text-muted-foreground">No completed batches yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {mockData.completedBatches.map(batch => (
+                        <CompletedBatchItem 
+                          key={batch.id}
+                          batchLabel={batch.batchLabel}
+                          flavor={batch.flavor}
+                          shape={batch.shape}
+                          size={batch.size}
+                          producedQuantity={batch.producedQuantity}
+                          completedAt={batch.completedAt}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
             </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          </Tabs>
+        </div>
       </div>
     </Layout>
   );
