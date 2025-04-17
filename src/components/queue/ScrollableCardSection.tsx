@@ -21,20 +21,19 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({ children,
         opts={{
           align: "start",
           dragFree: true,
-          loop: false,
         }}
-        className="w-full relative"
+        className="w-full"
       >
-        <CarouselContent className="-ml-2 md:-ml-4">
+        <CarouselContent>
           {React.Children.map(children, (child) => (
-            <CarouselItem className="pl-2 md:pl-4 basis-[240px] md:basis-[240px]">
+            <CarouselItem className="pl-4 md:basis-auto min-w-[240px]">
               {child}
             </CarouselItem>
           ))}
         </CarouselContent>
-        <div className="hidden md:block">
-          <CarouselPrevious className="left-0" />
-          <CarouselNext className="right-0" />
+        <div className="absolute top-1/2 -translate-y-1/2 flex justify-between w-full z-10">
+          <CarouselPrevious className="relative -left-2" />
+          <CarouselNext className="relative -right-2" />
         </div>
       </Carousel>
     </div>

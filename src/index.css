@@ -63,3 +63,19 @@
     --bakery-success: 142 71% 55%;
   }
 }
+
+@keyframes flash-priority {
+  0%, 100% {
+    background-color: #ea384c;
+    color: #fff;
+  }
+  50% {
+    background-color: #fff;
+    color: #ea384c;
+    border: 1px solid #ea384c;
+  }
+}
+
+.animate-flash-priority {
+  animation: flash-priority 1s ease-in-out infinite;
+}

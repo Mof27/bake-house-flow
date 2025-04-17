@@ -51,8 +51,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
   return (
     <Card className={`
       relative overflow-hidden transition-all
-      ${bgColor} 
-      ${isPriority ? 'animate-pulse-attention' : ''}
+      ${bgColor}
       hover:shadow-md w-[240px] h-[300px] flex-shrink-0
     `}>
       <CardContent className="p-3 h-full flex flex-col rounded-2xl bg-inherit">
@@ -81,7 +80,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
           
           <div className="flex flex-wrap gap-2">
             {isPriority && (
-              <Badge variant="destructive" className="text-xs">
+              <Badge variant="destructive" className="text-xs animate-flash-priority">
                 Priority
               </Badge>
             )}
