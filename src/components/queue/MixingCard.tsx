@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CakeFlavor, CakeShape } from '@/types/queue';
 import { formatDateTime } from '@/lib/date-utils';
-
 interface MixingCardProps {
   flavor: CakeFlavor;
   shape: CakeShape;
@@ -18,7 +17,6 @@ interface MixingCardProps {
   onQuantityChange?: (delta: number) => void;
   onStartMixing: () => void;
 }
-
 const MixingCard: React.FC<MixingCardProps> = ({
   flavor,
   shape,
@@ -44,7 +42,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
           <Zap className="h-5 w-5 text-red-500" />
         </div>}
       
-      <CardContent className="p-3 h-full flex flex-col rounded-2xl">
+      <CardContent className="p-3 h-full flex flex-col rounded-2xl bg-inherit">
         {/* Shape and size */}
         <div className="text-2xl font-bold leading-tight mb-1 italic">{formattedShapeSize}</div>
         
@@ -67,11 +65,10 @@ const MixingCard: React.FC<MixingCardProps> = ({
             </div>}
         </div>
         
-        <Button className="w-full py-1 h-10 mt-auto" onClick={onStartMixing}>
+        <Button onClick={onStartMixing} className="w-full py-1 h-10 mt-auto text-zinc-50 bg-bakery-primary">
           <PlayCircle className="mr-1 h-4 w-4" /> Start Mixing
         </Button>
       </CardContent>
     </Card>;
 };
-
 export default MixingCard;
