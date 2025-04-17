@@ -39,7 +39,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
       hover:shadow-md w-[240px] h-[300px] flex-shrink-0
     `}>
       {isPriority && <div className="absolute top-2 right-2">
-          <Zap className="h-5 w-5 text-red-500" />
+          <Zap className="h-10 w-10 text-red-500" />
         </div>}
       
       <CardContent className="p-3 h-full flex flex-col rounded-2xl bg-inherit">
