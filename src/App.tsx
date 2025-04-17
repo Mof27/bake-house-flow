@@ -1,4 +1,5 @@
 
+import React from "react"; // Add explicit React import
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,37 +18,42 @@ import OrderDetails from "./pages/OrderDetails";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 import NewOrder from "./pages/NewOrder";
-import Queue from "./pages/Queue"; // Add import for the Queue page
+import Queue from "./pages/Queue";
 
+// Create QueryClient in a way that ensures it's created only once
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <ThemeProvider>
-        <AuthProvider>
-          <OrderProvider>
-            <NotificationProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <Routes>
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                  <Route path="/create-order" element={<ProtectedRoute roleRequired="leader"><CreateOrder /></ProtectedRoute>} />
-                  <Route path="/new-order" element={<ProtectedRoute roleRequired="leader"><NewOrder /></ProtectedRoute>} />
-                  <Route path="/queue" element={<ProtectedRoute><Queue /></ProtectedRoute>} />
-                  <Route path="/orders/:id" element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />
-                  <Route path="/index" element={<Index />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </TooltipProvider>
-            </NotificationProvider>
-          </OrderProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </BrowserRouter>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <ThemeProvider>
+            <AuthProvider>
+              <OrderProvider>
+                <NotificationProvider>
+                  <TooltipProvider>
+                    <Toaster />
+                    <Sonner />
+                    <Routes>
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                      <Route path="/create-order" element={<ProtectedRoute roleRequired="leader"><CreateOrder /></ProtectedRoute>} />
+                      <Route path="/new-order" element={<ProtectedRoute roleRequired="leader"><NewOrder /></ProtectedRoute>} />
+                      <Route path="/queue" element={<ProtectedRoute><Queue /></ProtectedRoute>} />
+                      <Route path="/orders/:id" element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />
+                      <Route path="/index" element={<Index />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </TooltipProvider>
+                </NotificationProvider>
+              </OrderProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </React.StrictMode>
+  );
+};
 
 export default App;

@@ -15,7 +15,7 @@ const ScrollArea = React.forwardRef<
   >
     <ScrollAreaPrimitive.Viewport 
       className="h-full w-full rounded-[inherit]"
-      style={{ touchAction: 'pan-y' }} // Improve touch behavior for iPad
+      style={{ touchAction: 'pan-y pan-x' }} // Enable both horizontal and vertical touch actions
     >
       {children}
     </ScrollAreaPrimitive.Viewport>
@@ -42,7 +42,9 @@ const ScrollBar = React.forwardRef<
     )}
     {...props}
   >
-    <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-border" />
+    <ScrollAreaPrimitive.ScrollAreaThumb 
+      className="relative flex-1 rounded-full bg-border" 
+    />
   </ScrollAreaPrimitive.ScrollAreaScrollbar>
 ))
 ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName
