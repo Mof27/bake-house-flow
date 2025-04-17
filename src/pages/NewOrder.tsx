@@ -11,7 +11,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import Layout from '@/components/Layout';
-import { useOrders } from '@/contexts/OrderContext';
 
 // Predefined sizes for different shapes
 const SIZES = [16, 18, 22, 25, 30, 35];
@@ -30,7 +29,6 @@ const generateBatchLabel = (size: string, flavor: string) => {
 
 const NewOrder: React.FC = () => {
   const navigate = useNavigate();
-  const { createOrder } = useOrders();
   
   // State for form fields
   const [shape, setShape] = useState<'round' | 'square' | 'bowl' | 'rectangle'>('round');
@@ -63,7 +61,7 @@ const NewOrder: React.FC = () => {
     setSize(closestSize);
   };
   
-  // Handle form submission
+  // Handle form submission - mocked for visual purposes
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsSubmitting(true);
@@ -80,7 +78,7 @@ const NewOrder: React.FC = () => {
       // Generate batch label
       const batchLabel = generateBatchLabel(dimensions, flavor);
       
-      // Create new order
+      // Create mock order data (not actually saved)
       const orderData = {
         shape,
         dimensions: shape === 'rectangle' ? `${width}×${length}` : `${size}`,
@@ -88,24 +86,23 @@ const NewOrder: React.FC = () => {
         flavor,
         notes,
         batchLabel,
-        priority: false, // Default to non-priority
+        priority: false,
         status: 'queued' as 'queued' | 'mixing' | 'baking' | 'done',
       };
       
-      // Call API to create order (using OrderContext for now)
-      await createOrder({
-        designName: batchLabel,
-        complexity: Math.ceil(quantity / 2) as 1 | 2 | 3 | 4 | 5, // Complexity based on quantity
-        isPriority: false,
-        notes: `Shape: ${shape}\nDimensions: ${orderData.dimensions} cm\nFlavor: ${flavor}\nQuantity: ${quantity}\n${notes}`
-      });
+      console.log('Order data (mock, not saved):', orderData);
       
-      toast.success('Order created successfully');
-      navigate('/'); // Navigate to dashboard after submission
+      // Simulate delay for a real API call
+      setTimeout(() => {
+        toast.success('Order created successfully (visual demo only)');
+        setIsSubmitting(false);
+        // Navigate after a brief delay to simulate real flow
+        setTimeout(() => navigate('/'), 500);
+      }, 800);
+      
     } catch (error) {
       console.error('Error creating order:', error);
       toast.error('Failed to create order');
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -191,7 +188,7 @@ const NewOrder: React.FC = () => {
                     <span className="font-bold text-xl">{size} cm</span>
                   </div>
                   
-                  <div className="px-4"> {/* Added padding to align slider */}
+                  <div className="px-4">
                     <Slider
                       value={[size]}
                       min={15}
@@ -202,7 +199,7 @@ const NewOrder: React.FC = () => {
                     />
                   </div>
                   
-                  <div className="flex justify-between text-sm px-4"> {/* Added padding to align sizes */}
+                  <div className="flex justify-between text-sm px-4">
                     {SIZES.map((s) => (
                       <div 
                         key={s} 
