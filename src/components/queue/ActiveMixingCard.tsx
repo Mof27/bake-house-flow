@@ -52,6 +52,9 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
   let textColorClass = baseTextColor;
   let animationClass = '';
   
+  // Split batch label into parts (assuming format like "ROUND VANILLA 16CM")
+  const parts = batchLabel.split(' ');
+  
   if (isTimerExpired) {
     bgColorClass = expiredBgColor;
     textColorClass = expiredTextColor;
@@ -113,23 +116,18 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
     <Card className={`
       relative overflow-hidden transition-all
       ${bgColorClass} ${textColorClass} ${animationClass}
-      ${isPriority ? 'border-2 border-yellow-500' : 'border border-gray-200'}
-      hover:shadow-md w-[180px] h-[180px] flex-shrink-0
-    `}>
-      {isPriority && (
-        <div className="absolute top-0 right-0">
-          <div className="w-0 h-0 
-            border-t-[30px] border-t-yellow-500
-            border-l-[30px] border-l-transparent">
-          </div>
-          <Flame className="absolute top-1 right-1 h-4 w-4 text-white" />
-        </div>
-      )}
-      
-      <CardContent className="p-2 h-full flex flex-col">
-        <h3 className="font-bold text-sm truncate">{batchLabel}</h3>
+      ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
+      hover:shadow-md w-[240px] h-[240px] flex-shrink-0
+    `}>      
+      <CardContent className="p-3 h-full flex flex-col space-y-2">
+        {/* Shape */}
+        <div className="text-xl font-bold leading-tight">{parts[0] || ''}</div>
         
-        <div className="text-xs opacity-70 mb-1">
+        {/* Flavor */}
+        <div className="text-xl font-bold leading-tight">{parts[1] || ''}</div>
+        
+        {/* Date */}
+        <div className="text-xs opacity-70">
           {formatDateTime(requestedAt)}
         </div>
         
@@ -154,6 +152,7 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
         <div className="flex space-x-2 mt-auto">
           <Button 
             variant="cancel"
+            size="sm"
             className="flex-1 text-xs py-1 h-8" 
             onClick={onCancel}
           >
@@ -161,6 +160,7 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
           </Button>
           <Button 
             variant="default"
+            size="sm"
             className="flex-1 text-xs py-1 h-8"
             onClick={onComplete}
           >

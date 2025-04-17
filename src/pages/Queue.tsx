@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import Layout from '@/components/Layout';
+import Sidebar from '@/components/Sidebar';
 import { 
   Tabs, 
   TabsList, 
@@ -14,7 +14,6 @@ import {
   Sun,
 } from 'lucide-react';
 import { useOrders } from '@/contexts/OrderContext';
-import { Progress } from '@/components/ui/progress';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MockData } from '@/types/queue';
@@ -362,7 +361,6 @@ const QueuePage: React.FC = () => {
         description: `${oven.batches.length} batches successfully baked.`
       });
       
-      // Move batches to completed
       const completedBatches = oven.batches.map(batch => ({
         ...batch,
         completedAt: new Date()
@@ -390,7 +388,6 @@ const QueuePage: React.FC = () => {
     });
     
     if (activeTab === 'in-progress') {
-      // Check if there are no more active mixing, oven ready, or active ovens
       const noActiveMixing = mockData.activeMixing.length === 0;
       const noOvenReady = mockData.ovenReady.length === 0;
       const noActiveOvens = mockData.ovens.every(oven => !oven.isActive);
@@ -441,179 +438,166 @@ const QueuePage: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
   
-  const dailyProgressPercentage = (mockData.dailyCompleted / mockData.dailyTarget) * 100;
-  
   const anyInProgress = mockData.activeMixing.length > 0 || 
                         mockData.ovenReady.length > 0 || 
                         mockData.ovens.some(oven => oven.isActive);
 
-  return (
-    <Layout title="Queue">
-      <div className="py-0">
-        <div className="flex items-start">
-          {/* Main content - 75% width */}
-          <div className="w-3/4 pr-2">
-            <Tabs 
-              defaultValue="pending" 
-              className="w-full" 
-              value={activeTab} 
-              onValueChange={setActiveTab}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <TabsList className="w-fit">
-                  <TabsTrigger value="pending" className="font-bold">PENDING</TabsTrigger>
-                  <TabsTrigger value="in-progress" className="font-bold">IN PROGRESS</TabsTrigger>
-                  <TabsTrigger value="done" className="font-bold">DONE</TabsTrigger>
-                </TabsList>
-                
-                <Button size="icon" variant="ghost" className="rounded-full" onClick={toggleTheme}>
-                  {theme === 'dark' ? <Sun /> : <Moon />}
-                </Button>
-              </div>
+  const sidebar = (
+    <Sidebar 
+      dailyCompleted={mockData.dailyCompleted} 
+      dailyTarget={mockData.dailyTarget} 
+    />
+  );
 
-              <div className="h-[calc(100vh-150px)] overflow-hidden">
-                <TabsContent value="pending" className="mt-0 h-full">
-                  <ScrollArea className="h-full">
-                    <div className="space-y-4 pb-4">
-                      {mockData.pendingOrders.length > 0 ? (
-                        <ScrollableCardSection title="Pending Orders">
-                          {mockData.pendingOrders.map(order => (
-                            <MixingCard 
-                              key={order.id}
-                              flavor={order.flavor}
-                              shape={order.shape}
-                              size={order.size}
-                              batchLabel={order.batchLabel}
-                              requestedQuantity={order.requestedQuantity}
-                              producedQuantity={order.producedQuantity}
-                              requestedAt={order.requestedAt}
-                              isPriority={order.isPriority}
-                              notes={order.notes}
-                              onQuantityChange={(delta) => handleQuantityChange(order.id, delta)}
-                              onStartMixing={() => handleStartMixing(order.id)}
-                            />
-                          ))}
-                        </ScrollableCardSection>
-                      ) : (
-                        <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-                          <p className="text-muted-foreground">No batches in the pending queue</p>
-                        </div>
-                      )}
-                    </div>
-                  </ScrollArea>
-                </TabsContent>
-                
-                <TabsContent value="in-progress" className="mt-0 h-full">
-                  <ScrollArea className="h-full">
-                    <div className="space-y-4 pb-4">
-                      {mockData.activeMixing.length > 0 && (
-                        <ScrollableCardSection title="Currently Mixing">
-                          {mockData.activeMixing.map(order => (
-                            <ActiveMixingCard 
-                              key={order.id}
-                              flavor={order.flavor}
-                              shape={order.shape}
-                              size={order.size}
-                              batchLabel={order.batchLabel}
-                              requestedAt={order.requestedAt}
-                              isPriority={order.isPriority}
-                              startTime={order.startTime}
-                              onCancel={() => handleCancelTimer(order.id)}
-                              onComplete={() => handleMixingComplete(order.id)}
-                            />
-                          ))}
-                        </ScrollableCardSection>
-                      )}
-                      
-                      {mockData.ovenReady.length > 0 && (
-                        <ScrollableCardSection title="Oven Queue">
-                          {mockData.ovenReady.map(order => (
-                            <OvenReadyCard 
-                              key={order.id}
-                              id={order.id}
-                              flavor={order.flavor}
-                              shape={order.shape}
-                              size={order.size}
-                              batchLabel={order.batchLabel}
-                              requestedAt={order.requestedAt}
-                              requestedQuantity={order.requestedQuantity}
-                              producedQuantity={order.producedQuantity}
-                              isPriority={order.isPriority}
-                              onDragStart={handleDragStart}
-                            />
-                          ))}
-                        </ScrollableCardSection>
-                      )}
-                      
-                      {!anyInProgress && (
-                        <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-                          <p className="text-muted-foreground">No batches currently in progress</p>
-                        </div>
-                      )}
-                    </div>
-                  </ScrollArea>
-                </TabsContent>
-                
-                <TabsContent value="done" className="mt-0 h-full">
-                  <ScrollArea className="h-full">
-                    <div className="pb-4">
-                      <h2 className="text-lg font-bold mb-2">Completed Batches</h2>
-                      
-                      {mockData.completedBatches.length === 0 ? (
-                        <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-                          <p className="text-muted-foreground">No completed batches yet</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-1">
-                          {mockData.completedBatches.map(batch => (
-                            <CompletedBatchItem 
-                              key={batch.id}
-                              batchLabel={batch.batchLabel}
-                              flavor={batch.flavor}
-                              shape={batch.shape}
-                              size={batch.size}
-                              producedQuantity={batch.producedQuantity}
-                              completedAt={batch.completedAt}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </ScrollArea>
-                </TabsContent>
-              </div>
-            </Tabs>
-          </div>
-          
-          {/* Fixed oven slots - 25% width */}
-          <div className="w-1/4 pl-2 pr-0">
-            <h2 className="text-lg font-bold mb-2">Oven Slots</h2>
-            <div className="space-y-2">
-              {mockData.ovens.map(oven => (
-                <OvenSlot 
-                  key={oven.number}
-                  ovenNumber={oven.number}
-                  isActive={oven.isActive}
-                  timeRemaining={oven.timeRemaining}
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop(oven.number)}
-                  currentBatch={oven.currentBatch}
-                  batches={oven.batches}
-                  onComplete={() => handleOvenComplete(oven.number)}
-                />
-              ))}
-            </div>
+  return (
+    <Layout title="Queue" sidebar={sidebar}>
+      <div className="p-4 h-[calc(100vh-64px)]">
+        <Tabs 
+          defaultValue="pending" 
+          className="w-full h-full" 
+          value={activeTab} 
+          onValueChange={setActiveTab}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <TabsList className="w-fit">
+              <TabsTrigger value="pending" className="font-bold">PENDING</TabsTrigger>
+              <TabsTrigger value="in-progress" className="font-bold">IN PROGRESS</TabsTrigger>
+              <TabsTrigger value="done" className="font-bold">DONE</TabsTrigger>
+            </TabsList>
             
-            <div className="mt-4">
-              <div className="text-sm font-medium text-muted-foreground mb-1">Daily Progress</div>
-              <div className="flex justify-between items-center text-xs mb-1">
-                <span>{mockData.dailyCompleted} batches</span>
-                <span>Target: {mockData.dailyTarget}</span>
-              </div>
-              <Progress value={dailyProgressPercentage} className="h-2" />
-            </div>
+            <Button size="icon" variant="ghost" className="rounded-full" onClick={toggleTheme}>
+              {theme === 'dark' ? <Sun /> : <Moon />}
+            </Button>
           </div>
-        </div>
+
+          <div className="h-[calc(100vh-150px)] overflow-hidden">
+            <TabsContent value="pending" className="mt-0 h-full">
+              <ScrollArea className="h-full">
+                <div className="space-y-4 pb-4">
+                  {mockData.pendingOrders.length > 0 ? (
+                    <ScrollableCardSection title="Pending Orders">
+                      {mockData.pendingOrders.map(order => (
+                        <MixingCard 
+                          key={order.id}
+                          flavor={order.flavor}
+                          shape={order.shape}
+                          size={order.size}
+                          batchLabel={order.batchLabel}
+                          requestedQuantity={order.requestedQuantity}
+                          producedQuantity={order.producedQuantity}
+                          requestedAt={order.requestedAt}
+                          isPriority={order.isPriority}
+                          notes={order.notes}
+                          onQuantityChange={(delta) => handleQuantityChange(order.id, delta)}
+                          onStartMixing={() => handleStartMixing(order.id)}
+                        />
+                      ))}
+                    </ScrollableCardSection>
+                  ) : (
+                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
+                      <p className="text-muted-foreground">No batches in the pending queue</p>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+            
+            <TabsContent value="in-progress" className="mt-0 h-full">
+              <ScrollArea className="h-full">
+                <div className="space-y-4 pb-4">
+                  {mockData.activeMixing.length > 0 && (
+                    <ScrollableCardSection title="Currently Mixing">
+                      {mockData.activeMixing.map(order => (
+                        <ActiveMixingCard 
+                          key={order.id}
+                          flavor={order.flavor}
+                          shape={order.shape}
+                          size={order.size}
+                          batchLabel={order.batchLabel}
+                          requestedAt={order.requestedAt}
+                          isPriority={order.isPriority}
+                          startTime={order.startTime}
+                          onCancel={() => handleCancelTimer(order.id)}
+                          onComplete={() => handleMixingComplete(order.id)}
+                        />
+                      ))}
+                    </ScrollableCardSection>
+                  )}
+                  
+                  {mockData.ovenReady.length > 0 && (
+                    <ScrollableCardSection title="Oven Queue">
+                      {mockData.ovenReady.map(order => (
+                        <OvenReadyCard 
+                          key={order.id}
+                          id={order.id}
+                          flavor={order.flavor}
+                          shape={order.shape}
+                          size={order.size}
+                          batchLabel={order.batchLabel}
+                          requestedAt={order.requestedAt}
+                          requestedQuantity={order.requestedQuantity}
+                          producedQuantity={order.producedQuantity}
+                          isPriority={order.isPriority}
+                          onDragStart={handleDragStart}
+                        />
+                      ))}
+                    </ScrollableCardSection>
+                  )}
+                  
+                  <div className="flex space-x-4">
+                    {mockData.ovens.map(oven => (
+                      <OvenSlot 
+                        key={oven.number}
+                        ovenNumber={oven.number}
+                        isActive={oven.isActive}
+                        timeRemaining={oven.timeRemaining}
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop(oven.number)}
+                        currentBatch={oven.currentBatch}
+                        batches={oven.batches}
+                        onComplete={() => handleOvenComplete(oven.number)}
+                      />
+                    ))}
+                  </div>
+                  
+                  {!anyInProgress && (
+                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
+                      <p className="text-muted-foreground">No batches currently in progress</p>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+            
+            <TabsContent value="done" className="mt-0 h-full">
+              <ScrollArea className="h-full">
+                <div className="pb-4">
+                  <h2 className="text-lg font-bold mb-2">Completed Batches</h2>
+                  
+                  {mockData.completedBatches.length === 0 ? (
+                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
+                      <p className="text-muted-foreground">No completed batches yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {mockData.completedBatches.map(batch => (
+                        <CompletedBatchItem 
+                          key={batch.id}
+                          batchLabel={batch.batchLabel}
+                          flavor={batch.flavor}
+                          shape={batch.shape}
+                          size={batch.size}
+                          producedQuantity={batch.producedQuantity}
+                          completedAt={batch.completedAt}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+          </div>
+        </Tabs>
       </div>
     </Layout>
   );

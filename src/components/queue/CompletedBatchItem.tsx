@@ -23,15 +23,21 @@ const CompletedBatchItem: React.FC<CompletedBatchItemProps> = ({
   const bgColor = flavor === 'vanilla' 
     ? 'bg-amber-50 text-amber-950' 
     : 'bg-amber-900 text-amber-50';
+  
+  // Split batch label into parts
+  const parts = batchLabel.split(' ');
     
   return (
-    <div className={`flex items-center justify-between p-2 ${bgColor} rounded-md mb-1`}>
-      <div>
-        <div className="font-bold text-sm truncate">{batchLabel}</div>
-        <div className="text-xs">Qty: {producedQuantity}</div>
-      </div>
-      <div className="text-xs opacity-70">
-        {formatDateTime(completedAt)}
+    <div className={`flex flex-col p-2 ${bgColor} rounded-md mb-1`}>
+      <div className="flex justify-between items-start">
+        <div>
+          <div className="font-bold text-base">{parts[0] || ''}</div>
+          <div className="font-bold text-base">{parts[1] || ''}</div>
+          <div className="text-sm">Qty: {producedQuantity}</div>
+        </div>
+        <div className="text-xs opacity-70">
+          {formatDateTime(completedAt)}
+        </div>
       </div>
     </div>
   );

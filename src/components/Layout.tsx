@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Sun, Moon, Bell, LogOut, PlusCircle } from 'lucide-react';
+import { Bell, LogOut, PlusCircle } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/contexts/NotificationContext';
@@ -17,10 +17,11 @@ import { Badge } from '@/components/ui/badge';
 interface LayoutProps {
   children: React.ReactNode;
   title: string;
+  sidebar?: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, title }) => {
-  const { theme, toggleTheme } = useTheme();
+const Layout: React.FC<LayoutProps> = ({ children, title, sidebar }) => {
+  const { theme } = useTheme();
   const { user, logout } = useAuth();
   const { hasNewOrders, hasOverdueOrders, newOrdersCount, overdueOrdersCount, markNewOrdersSeen } = useNotifications();
   const location = useLocation();
@@ -28,7 +29,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
   return (
     <div className="min-h-screen bg-background flex flex-col w-full">
       {/* Header - Not fixed anymore */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b flex justify-between items-center py-2 px-4">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b flex justify-between items-center py-2 px-4 z-10">
         <div className="flex items-center">
           <h1 className="text-2xl font-bold text-bakery-primary">{title}</h1>
           
@@ -86,19 +87,6 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
             </DropdownMenuContent>
           </DropdownMenu>
           
-          {/* Theme toggle */}
-          <Button 
-            variant="outline" 
-            size="icon"
-            onClick={toggleTheme}
-          >
-            {theme === 'dark' ? (
-              <Sun className="h-5 w-5" />
-            ) : (
-              <Moon className="h-5 w-5" />
-            )}
-          </Button>
-          
           {/* User menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -119,15 +107,13 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
         </div>
       </header>
       
-      {/* Main content - Not using overflow-auto anymore to prevent page scrolling */}
-      <main className="flex-1">
-        {children}
-      </main>
-      
-      {/* Footer */}
-      <footer className="bg-white dark:bg-gray-800 border-t py-2 px-4 text-center text-sm text-muted-foreground">
-        <p>Kitchen Display System &copy; {new Date().getFullYear()}</p>
-      </footer>
+      {/* Main content with sidebar */}
+      <div className="flex flex-1 overflow-hidden">
+        {sidebar}
+        <main className="flex-1 overflow-auto">
+          {children}
+        </main>
+      </div>
     </div>
   );
 };

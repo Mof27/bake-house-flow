@@ -21,9 +21,13 @@ const OvenItem: React.FC<OvenItemProps> = ({
     ? 'bg-amber-50 text-amber-950' 
     : 'bg-amber-900 text-amber-50';
 
+  // Split batch label into parts
+  const parts = batchLabel.split(' ');
+
   return (
-    <div className={`p-1 ${bgColor} rounded-md text-xs w-full h-full flex flex-col justify-center`}>
-      <h4 className="font-bold text-xs truncate">{batchLabel}</h4>
+    <div className={`p-2 ${bgColor} rounded-md text-xs w-full h-full flex flex-col justify-center space-y-1`}>
+      <div className="font-bold text-xs">{parts[0] || ''}</div>
+      <div className="font-bold text-xs">{parts[1] || ''}</div>
       <div className="text-xs">
         Qty: <span className="font-bold">{producedQuantity}</span>
       </div>

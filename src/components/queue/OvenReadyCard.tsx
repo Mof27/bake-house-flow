@@ -34,35 +34,33 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
     ? 'bg-amber-50 text-amber-950' 
     : 'bg-amber-900 text-amber-50';
     
+  // Split batch label into parts (assuming format like "ROUND VANILLA 16CM")
+  const parts = batchLabel.split(' ');
+  
   return (
     <Card 
       className={`
         relative overflow-hidden transition-all
         ${bgColor} 
-        ${isPriority ? 'border-2 border-yellow-500' : 'border border-gray-200'}
-        hover:shadow-md cursor-move w-[180px] h-[180px] flex-shrink-0
+        ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
+        hover:shadow-md cursor-move w-[240px] h-[240px] flex-shrink-0
       `}
       draggable="true"
       onDragStart={(e) => onDragStart(e, id)}
     >
-      {isPriority && (
-        <div className="absolute top-0 right-0">
-          <div className="w-0 h-0 
-            border-t-[30px] border-t-yellow-500
-            border-l-[30px] border-l-transparent">
-          </div>
-          <Flame className="absolute top-1 right-1 h-4 w-4 text-white" />
-        </div>
-      )}
-      
-      <CardContent className="p-2 h-full flex flex-col">
-        <h3 className="font-bold text-sm truncate">{batchLabel}</h3>
+      <CardContent className="p-3 h-full flex flex-col space-y-2">
+        {/* Shape */}
+        <div className="text-xl font-bold leading-tight">{parts[0] || ''}</div>
         
-        <div className="text-xs opacity-70 mb-1">
+        {/* Flavor */}
+        <div className="text-xl font-bold leading-tight">{parts[1] || ''}</div>
+        
+        {/* Date */}
+        <div className="text-xs opacity-70">
           {formatDateTime(requestedAt)}
         </div>
         
-        <div className="text-xs font-medium mb-1 mt-auto">
+        <div className="text-base font-medium mt-auto">
           Qty: <span className="text-xl font-bold">{producedQuantity}</span>
         </div>
         
