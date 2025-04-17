@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,22 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Bakery theme colors
+				bakery: {
+					primary: '#e65100', // Deep orange
+					secondary: '#795548', // Brown
+					accent: '#ff9800', // Orange
+					light: '#fff3e0', // Light orange
+					dark: '#3e2723', // Dark brown
+					success: '#4caf50', // Green
+					warning: '#ff9800', // Orange
+					danger: '#f44336', // Red
+				},
+				status: {
+					queued: '#3949ab', // Indigo
+					baking: '#ff9800', // Orange
+					done: '#4caf50', // Green
 				}
 			},
 			borderRadius: {
@@ -84,11 +101,38 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-light': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.8' },
+				},
+				'pulse-attention': {
+					'0%, 100%': { 
+						transform: 'scale(1)',
+						boxShadow: '0 0 0 0 rgba(255, 152, 0, 0.7)'
+					},
+					'50%': { 
+						transform: 'scale(1.05)',
+						boxShadow: '0 0 0 10px rgba(255, 152, 0, 0)'
+					},
+				},
+				'slide-in': {
+					'0%': { transform: 'translateY(-100%)' },
+					'100%': { transform: 'translateY(0)' },
+				},
+				'shake': {
+					'0%, 100%': { transform: 'translateX(0)' },
+					'10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-5px)' },
+					'20%, 40%, 60%, 80%': { transform: 'translateX(5px)' },
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-light': 'pulse-light 2s ease-in-out infinite',
+				'pulse-attention': 'pulse-attention 1.5s ease-in-out infinite',
+				'slide-in': 'slide-in 0.5s ease-out forwards',
+				'shake': 'shake 0.5s ease-in-out',
 			}
 		}
 	},
