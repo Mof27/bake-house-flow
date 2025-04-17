@@ -27,8 +27,8 @@ const buttonVariants = cva(
         default: "h-10 px-4 py-2",
         sm: "h-8 rounded-md px-2 py-1 text-xs",
         lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
-        pill: "h-10 rounded-full px-6",
+        icon: "h-8 w-8", // Changed from h-10 w-10 to make icon buttons smaller for tablet
+        pill: "h-8 rounded-full px-4", // Reduced height for tablet optimization
       },
     },
     defaultVariants: {

@@ -23,7 +23,9 @@ import {
   MoveHorizontal,
   TimerOff,
   CheckCircle2,
-  XCircle
+  XCircle,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useOrders, Order } from '@/contexts/OrderContext';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -38,6 +40,7 @@ import {
   SheetTitle,
   SheetDescription
 } from "@/components/ui/sheet";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type CakeFlavor = 'vanilla' | 'chocolate';
 type CakeShape = 'round' | 'square';
@@ -159,7 +162,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
       relative overflow-hidden transition-all
       ${bgColor} 
       ${isPriority ? 'border-2 border-yellow-500' : 'border border-gray-200'}
-      hover:shadow-md
+      hover:shadow-md w-[180px] h-[180px] flex-shrink-0
     `}>
       {isPriority && (
         <div className="absolute top-0 right-0">
@@ -171,24 +174,24 @@ const MixingCard: React.FC<MixingCardProps> = ({
         </div>
       )}
       
-      <CardContent className="p-3">
+      <CardContent className="p-2 h-full flex flex-col">
         <h3 className="font-bold text-sm truncate">{batchLabel}</h3>
         
-        <div className="text-xs opacity-70 mb-2">
-          requested at {formatDateTime(requestedAt)}
+        <div className="text-xs opacity-70 mb-1">
+          {formatDateTime(requestedAt)}
         </div>
         
         {notes && (
-          <div className="bg-gray-200 dark:bg-gray-700 rounded-full px-2 py-1 mb-2 text-xs overflow-hidden whitespace-nowrap text-ellipsis">
+          <div className="mb-1 text-xs bg-muted/50 p-1 rounded truncate">
             {notes}
           </div>
         )}
         
-        <div className="flex flex-col space-y-1 mb-3">
+        <div className="flex flex-col space-y-1 mb-2 mt-auto">
           <div className="text-xs font-medium">Asked Qty: {requestedQuantity}</div>
           
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium">Produced Qty: <span className="text-xl font-bold">{producedQuantity}</span></span>
+            <span className="text-xs font-medium">Produced: <span className="text-lg font-bold">{producedQuantity}</span></span>
             <div className="flex space-x-1">
               <Button 
                 variant="ghost" 
@@ -212,7 +215,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
         </div>
         
         <Button 
-          className="w-full text-xs py-1 h-8" 
+          className="w-full text-xs py-1 h-8 mt-auto" 
           onClick={onStartMixing}
         >
           <PlayCircle className="mr-1 h-3 w-3" /> Start Mixing
@@ -328,7 +331,7 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
       relative overflow-hidden transition-all
       ${bgColorClass} ${textColorClass} ${animationClass}
       ${isPriority ? 'border-2 border-yellow-500' : 'border border-gray-200'}
-      hover:shadow-md
+      hover:shadow-md w-[180px] h-[180px] flex-shrink-0
     `}>
       {isPriority && (
         <div className="absolute top-0 right-0">
@@ -340,14 +343,14 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
         </div>
       )}
       
-      <CardContent className="p-3">
+      <CardContent className="p-2 h-full flex flex-col">
         <h3 className="font-bold text-sm truncate">{batchLabel}</h3>
         
-        <div className="text-xs opacity-70 mb-2">
-          requested at {formatDateTime(requestedAt)}
+        <div className="text-xs opacity-70 mb-1">
+          {formatDateTime(requestedAt)}
         </div>
         
-        <div className="flex flex-col items-center mt-2 mb-3">
+        <div className="flex flex-col items-center mt-1 mb-1 flex-grow">
           <div className="flex items-center">
             <Clock className="h-4 w-4 mr-1" />
             {!isTimerExpired ? (
@@ -365,7 +368,7 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
           )}
         </div>
         
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 mt-auto">
           <Button 
             variant="cancel"
             className="flex-1 text-xs py-1 h-8" 
@@ -421,7 +424,7 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
         relative overflow-hidden transition-all
         ${bgColor} 
         ${isPriority ? 'border-2 border-yellow-500' : 'border border-gray-200'}
-        hover:shadow-md cursor-move
+        hover:shadow-md cursor-move w-[180px] h-[180px] flex-shrink-0
       `}
       draggable="true"
       onDragStart={(e) => onDragStart(e, id)}
@@ -436,14 +439,14 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
         </div>
       )}
       
-      <CardContent className="p-3">
+      <CardContent className="p-2 h-full flex flex-col">
         <h3 className="font-bold text-sm truncate">{batchLabel}</h3>
         
-        <div className="text-xs opacity-70 mb-2">
-          requested at {formatDateTime(requestedAt)}
+        <div className="text-xs opacity-70 mb-1">
+          {formatDateTime(requestedAt)}
         </div>
         
-        <div className="text-xs font-medium mb-2">
+        <div className="text-xs font-medium mb-1 mt-auto">
           Qty: <span className="text-xl font-bold">{producedQuantity}</span>
         </div>
         
@@ -475,7 +478,7 @@ const OvenItem: React.FC<OvenItemProps> = ({
     : 'bg-amber-900 text-amber-50';
 
   return (
-    <div className={`p-1.5 ${bgColor} rounded-md text-xs w-full h-full flex flex-col justify-center`}>
+    <div className={`p-1 ${bgColor} rounded-md text-xs w-full h-full flex flex-col justify-center`}>
       <h4 className="font-bold text-xs truncate">{batchLabel}</h4>
       <div className="text-xs">
         Qty: <span className="font-bold">{producedQuantity}</span>
@@ -539,12 +542,12 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
     <Card 
       className={`
         ${borderClass} ${bgColorClass} ${warningClass}
-        transition-all flex-1 h-full
+        transition-all h-[200px] mb-2
       `}
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
-      <CardHeader className="p-2 pb-0">
+      <CardHeader className="p-1 pb-0">
         <CardTitle className="text-lg flex justify-between items-center">
           <span>OVEN {ovenNumber}</span>
           <Badge className={isActive ? (showWarning ? 'bg-red-500' : 'bg-green-500') : 'bg-gray-400'}>
@@ -553,11 +556,11 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="p-2 pt-1 flex-1 flex flex-col h-full">
+      <CardContent className="p-1 pt-0 flex flex-col h-[calc(100%-32px)]">
         {isActive && timeRemaining !== undefined ? (
           <div className="flex flex-col h-full">
-            <div className="text-center">
-              <div className="text-3xl font-bold">
+            <div className="text-center py-1">
+              <div className="text-2xl font-bold">
                 {timeRemaining > 0 
                   ? formatTime(timeRemaining) 
                   : `+${formatTime(Math.abs(timeRemaining))}`
@@ -567,28 +570,27 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
               {timeRemaining > 0 && (
                 <Progress 
                   value={(timeRemaining / OVEN_TIME) * 100} 
-                  className="w-full h-2 my-2" 
+                  className="w-full h-2 my-1" 
                 />
               )}
               
               <Button
                 variant="default"
                 size="sm"
-                className="w-full my-2 text-sm"
+                className="w-full my-1 text-sm"
                 onClick={onComplete}
               >
-                <CheckCircle2 className="mr-1 h-4 w-4" />
-                DONE
+                <CheckCircle2 className="mr-1 h-3 w-3" /> DONE
               </Button>
             </div>
             
             <div className="flex-1 overflow-hidden">
-              {batches.length > 0 && (
+              {batches.length > 0 ? (
                 <div className="grid grid-cols-1 gap-0.5 h-full">
                   {batches.map((batch, index) => (
                     <div key={batch.id} style={{ 
                       height: `${100 / batches.length}%`,
-                      minHeight: '40px'
+                      minHeight: '30px'
                     }}>
                       <OvenItem 
                         batchLabel={batch.batchLabel}
@@ -600,11 +602,11 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
                     </div>
                   ))}
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md flex-1 flex items-center justify-center">
+          <div className="text-center py-2 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md flex-1 flex items-center justify-center">
             Drop batch here to start baking
           </div>
         )}
@@ -635,13 +637,92 @@ const CompletedBatchItem: React.FC<CompletedBatchItemProps> = ({
     : 'bg-amber-900 text-amber-50';
     
   return (
-    <div className={`flex items-center justify-between p-3 ${bgColor} rounded-md mb-1`}>
+    <div className={`flex items-center justify-between p-2 ${bgColor} rounded-md mb-1`}>
       <div>
-        <div className="font-bold text-sm">{batchLabel}</div>
+        <div className="font-bold text-sm truncate">{batchLabel}</div>
         <div className="text-xs">Qty: {producedQuantity}</div>
       </div>
       <div className="text-xs opacity-70">
         {formatDateTime(completedAt)}
+      </div>
+    </div>
+  );
+};
+
+interface ScrollableCardSectionProps {
+  children: React.ReactNode;
+  title: string;
+}
+
+const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({ children, title }) => {
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+  const checkForScrollButtons = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setShowLeftArrow(scrollLeft > 0);
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+    checkForScrollButtons();
+    window.addEventListener('resize', checkForScrollButtons);
+    return () => window.removeEventListener('resize', checkForScrollButtons);
+  }, []);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 200;
+      const newScrollLeft = direction === 'left' 
+        ? scrollContainerRef.current.scrollLeft - scrollAmount
+        : scrollContainerRef.current.scrollLeft + scrollAmount;
+      
+      scrollContainerRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
+      
+      setTimeout(checkForScrollButtons, 300);
+    }
+  };
+
+  return (
+    <div className="mb-4">
+      <h2 className="text-lg font-bold mb-2">{title}</h2>
+      <div className="relative">
+        {showLeftArrow && (
+          <Button 
+            variant="outline" 
+            size="icon"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur-sm"
+            onClick={() => scroll('left')}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        )}
+        
+        <div 
+          ref={scrollContainerRef}
+          className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide" 
+          style={{ scrollbarWidth: 'none' }}
+          onScroll={checkForScrollButtons}
+        >
+          {children}
+        </div>
+        
+        {showRightArrow && (
+          <Button 
+            variant="outline" 
+            size="icon"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur-sm"
+            onClick={() => scroll('right')}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -686,6 +767,28 @@ const QueuePage: React.FC = () => {
         producedQuantity: 2,
         requestedAt: generateRequestDate(),
         isPriority: false
+      },
+      {
+        id: '6',
+        flavor: 'vanilla',
+        shape: 'square',
+        size: 18,
+        batchLabel: 'SQUARE VANILLA 18CM',
+        requestedQuantity: 3,
+        producedQuantity: 3,
+        requestedAt: generateRequestDate(),
+        isPriority: false
+      },
+      {
+        id: '7',
+        flavor: 'chocolate',
+        shape: 'round',
+        size: 20,
+        batchLabel: 'ROUND CHOCOLATE 20CM',
+        requestedQuantity: 5,
+        producedQuantity: 5,
+        requestedAt: generateRequestDate(),
+        isPriority: true
       }
     ],
     activeMixing: [
@@ -711,6 +814,17 @@ const QueuePage: React.FC = () => {
         producedQuantity: 5,
         requestedAt: generateRequestDate(),
         isPriority: true
+      },
+      {
+        id: '8',
+        flavor: 'vanilla',
+        shape: 'square',
+        size: 16,
+        batchLabel: 'SQUARE VANILLA 16CM',
+        requestedQuantity: 2,
+        producedQuantity: 2,
+        requestedAt: generateRequestDate(),
+        isPriority: false
       }
     ],
     ovens: [
@@ -758,6 +872,15 @@ const QueuePage: React.FC = () => {
         shape: 'round',
         size: 18,
         producedQuantity: 3,
+        completedAt: generateRequestDate()
+      },
+      {
+        id: '12',
+        batchLabel: 'SQUARE CHOCOLATE 22CM',
+        flavor: 'chocolate',
+        shape: 'square',
+        size: 22,
+        producedQuantity: 6,
         completedAt: generateRequestDate()
       }
     ]
@@ -1025,59 +1148,36 @@ const QueuePage: React.FC = () => {
   const anyInProgress = mockData.activeMixing.length > 0 || 
                         mockData.ovenReady.length > 0 || 
                         mockData.ovens.some(oven => oven.isActive);
-  
+
   return (
     <Layout title="Queue">
-      <div className="pb-4">
-        <div className="flex items-center justify-between mb-4">
-          <Tabs 
-            defaultValue="pending" 
-            className="w-full" 
-            value={activeTab} 
-            onValueChange={setActiveTab}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <TabsList className="w-fit">
-                <TabsTrigger value="pending" className="font-bold">PENDING</TabsTrigger>
-                <TabsTrigger value="in-progress" className="font-bold">IN PROGRESS</TabsTrigger>
-                <TabsTrigger value="done" className="font-bold">DONE</TabsTrigger>
-              </TabsList>
-              
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button size="icon" variant="ghost" className="rounded-full">
-                    {theme === 'dark' ? <Sun /> : <Moon />}
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right">
-                  <SheetHeader>
-                    <SheetTitle>Dashboard</SheetTitle>
-                    <SheetDescription>
-                      Daily Progress: {mockData.dailyCompleted} / {mockData.dailyTarget} Batches
-                      <Progress value={dailyProgressPercentage} className="h-1.5 mt-1" />
-                    </SheetDescription>
-                  </SheetHeader>
-                  <div className="mt-4">
-                    <Button onClick={toggleTheme} className="w-full">
-                      Toggle {theme === 'dark' ? 'Light' : 'Dark'} Mode
-                    </Button>
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
+      <div className="py-0">
+        <div className="flex items-start">
+          {/* Main content - 75% width */}
+          <div className="w-3/4 pr-2">
+            <Tabs 
+              defaultValue="pending" 
+              className="w-full" 
+              value={activeTab} 
+              onValueChange={setActiveTab}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <TabsList className="w-fit">
+                  <TabsTrigger value="pending" className="font-bold">PENDING</TabsTrigger>
+                  <TabsTrigger value="in-progress" className="font-bold">IN PROGRESS</TabsTrigger>
+                  <TabsTrigger value="done" className="font-bold">DONE</TabsTrigger>
+                </TabsList>
+                
+                <Button size="icon" variant="ghost" className="rounded-full" onClick={toggleTheme}>
+                  {theme === 'dark' ? <Sun /> : <Moon />}
+                </Button>
+              </div>
 
-            <div className="h-[calc(100vh-160px)] overflow-y-auto">
-              <TabsContent value="pending" className="mt-0">
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-xl font-bold mb-4">Pending Orders</h2>
-                    
-                    {mockData.pendingOrders.length === 0 ? (
-                      <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-                        <p className="text-muted-foreground">No batches in the pending queue</p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-2 gap-2">
+              <div style={{ height: 'calc(100vh - 150px)', overflow: 'hidden' }}>
+                <TabsContent value="pending" className="mt-0 h-full">
+                  <div className="space-y-4 h-full overflow-y-auto pb-4">
+                    {mockData.pendingOrders.length > 0 ? (
+                      <ScrollableCardSection title="Pending Orders">
                         {mockData.pendingOrders.map(order => (
                           <MixingCard 
                             key={order.id}
@@ -1094,34 +1194,19 @@ const QueuePage: React.FC = () => {
                             onStartMixing={() => handleStartMixing(order.id)}
                           />
                         ))}
+                      </ScrollableCardSection>
+                    ) : (
+                      <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
+                        <p className="text-muted-foreground">No batches in the pending queue</p>
                       </div>
                     )}
                   </div>
-                  
-                  <div className="grid grid-cols-2 gap-2">
-                    {mockData.ovens.map(oven => (
-                      <OvenSlot 
-                        key={oven.number}
-                        ovenNumber={oven.number}
-                        isActive={oven.isActive}
-                        timeRemaining={oven.timeRemaining}
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop(oven.number)}
-                        currentBatch={oven.currentBatch}
-                        batches={oven.batches}
-                        onComplete={() => handleOvenComplete(oven.number)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="in-progress" className="mt-0">
-                <div className="space-y-6">
-                  {mockData.activeMixing.length > 0 && (
-                    <div>
-                      <h2 className="text-xl font-bold mb-4">Currently Mixing</h2>
-                      <div className="grid grid-cols-2 gap-2">
+                </TabsContent>
+                
+                <TabsContent value="in-progress" className="mt-0 h-full">
+                  <div className="space-y-4 h-full overflow-y-auto pb-4">
+                    {mockData.activeMixing.length > 0 && (
+                      <ScrollableCardSection title="Currently Mixing">
                         {mockData.activeMixing.map(order => (
                           <ActiveMixingCard 
                             key={order.id}
@@ -1136,14 +1221,11 @@ const QueuePage: React.FC = () => {
                             onComplete={() => handleMixingComplete(order.id)}
                           />
                         ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {mockData.ovenReady.length > 0 && (
-                    <div>
-                      <h2 className="text-xl font-bold mb-4">Oven Queue</h2>
-                      <div className="grid grid-cols-2 gap-2">
+                      </ScrollableCardSection>
+                    )}
+                    
+                    {mockData.ovenReady.length > 0 && (
+                      <ScrollableCardSection title="Oven Queue">
                         {mockData.ovenReady.map(order => (
                           <OvenReadyCard 
                             key={order.id}
@@ -1159,68 +1241,89 @@ const QueuePage: React.FC = () => {
                             onDragStart={handleDragStart}
                           />
                         ))}
+                      </ScrollableCardSection>
+                    )}
+                    
+                    {!anyInProgress && (
+                      <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
+                        <p className="text-muted-foreground">No batches currently in progress</p>
                       </div>
-                    </div>
-                  )}
-                  
-                  <div>
-                    <h2 className="text-xl font-bold mb-4">Oven Slots</h2>
-                    <div className="grid grid-cols-2 gap-2">
-                      {mockData.ovens.map(oven => (
-                        <OvenSlot 
-                          key={oven.number}
-                          ovenNumber={oven.number}
-                          isActive={oven.isActive}
-                          timeRemaining={oven.timeRemaining}
-                          onDragOver={handleDragOver}
-                          onDrop={handleDrop(oven.number)}
-                          currentBatch={oven.currentBatch}
-                          batches={oven.batches}
-                          onComplete={() => handleOvenComplete(oven.number)}
-                        />
-                      ))}
-                    </div>
+                    )}
                   </div>
-                  
-                  {!anyInProgress && (
-                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-                      <p className="text-muted-foreground">No batches currently in progress</p>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="done" className="mt-0">
-                <div>
-                  <h2 className="text-xl font-bold mb-4">Completed Batches</h2>
-                  
-                  {mockData.completedBatches.length === 0 ? (
-                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-                      <p className="text-muted-foreground">No completed batches yet</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-1">
-                      {mockData.completedBatches.map(batch => (
-                        <CompletedBatchItem 
-                          key={batch.id}
-                          batchLabel={batch.batchLabel}
-                          flavor={batch.flavor}
-                          shape={batch.shape}
-                          size={batch.size}
-                          producedQuantity={batch.producedQuantity}
-                          completedAt={batch.completedAt}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
+                </TabsContent>
+                
+                <TabsContent value="done" className="mt-0 h-full">
+                  <div className="h-full overflow-y-auto pb-4">
+                    <h2 className="text-lg font-bold mb-2">Completed Batches</h2>
+                    
+                    {mockData.completedBatches.length === 0 ? (
+                      <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
+                        <p className="text-muted-foreground">No completed batches yet</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        {mockData.completedBatches.map(batch => (
+                          <CompletedBatchItem 
+                            key={batch.id}
+                            batchLabel={batch.batchLabel}
+                            flavor={batch.flavor}
+                            shape={batch.shape}
+                            size={batch.size}
+                            producedQuantity={batch.producedQuantity}
+                            completedAt={batch.completedAt}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+              </div>
+            </Tabs>
+          </div>
+          
+          {/* Fixed oven slots - 25% width */}
+          <div className="w-1/4 pl-2 pr-0">
+            <h2 className="text-lg font-bold mb-2">Oven Slots</h2>
+            <div className="space-y-2">
+              {mockData.ovens.map(oven => (
+                <OvenSlot 
+                  key={oven.number}
+                  ovenNumber={oven.number}
+                  isActive={oven.isActive}
+                  timeRemaining={oven.timeRemaining}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop(oven.number)}
+                  currentBatch={oven.currentBatch}
+                  batches={oven.batches}
+                  onComplete={() => handleOvenComplete(oven.number)}
+                />
+              ))}
             </div>
-          </Tabs>
+            
+            <div className="mt-4">
+              <div className="text-sm font-medium text-muted-foreground mb-1">Daily Progress</div>
+              <div className="flex justify-between items-center text-xs mb-1">
+                <span>{mockData.dailyCompleted} batches</span>
+                <span>Target: {mockData.dailyTarget}</span>
+              </div>
+              <Progress value={dailyProgressPercentage} className="h-2" />
+            </div>
+          </div>
         </div>
       </div>
+      
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </Layout>
   );
 };
 
 export default QueuePage;
+
