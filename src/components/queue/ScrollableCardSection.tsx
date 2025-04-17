@@ -1,7 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React from 'react';
 import {
   Carousel,
   CarouselContent,
@@ -22,20 +20,21 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({ children,
       <Carousel
         opts={{
           align: "start",
-          dragFree: true
+          dragFree: true,
+          loop: false,
         }}
-        className="w-full"
+        className="w-full relative"
       >
         <CarouselContent className="-ml-2 md:-ml-4">
           {React.Children.map(children, (child) => (
-            <CarouselItem className="pl-2 md:pl-4 basis-[240px]">
+            <CarouselItem className="pl-2 md:pl-4 basis-[240px] md:basis-[240px]">
               {child}
             </CarouselItem>
           ))}
         </CarouselContent>
         <div className="hidden md:block">
-          <CarouselPrevious />
-          <CarouselNext />
+          <CarouselPrevious className="left-0" />
+          <CarouselNext className="right-0" />
         </div>
       </Carousel>
     </div>

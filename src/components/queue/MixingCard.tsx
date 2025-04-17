@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { PlayCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -32,7 +32,18 @@ const MixingCard: React.FC<MixingCardProps> = ({
   notes,
   onStartMixing
 }) => {
+  const [shouldShowNew, setShouldShowNew] = useState(isNew);
   const bgColor = flavor === 'vanilla' ? 'bg-amber-50 text-amber-950' : 'bg-amber-900 text-amber-50';
+
+  // Check if order is within 5 minutes
+  useEffect(() => {
+    if (isNew) {
+      const timer = setTimeout(() => {
+        setShouldShowNew(false);
+      }, 5 * 60 * 1000); // 5 minutes
+      return () => clearTimeout(timer);
+    }
+  }, [isNew]);
 
   // Format the shape and size for display
   const formattedShapeSize = `${shape.charAt(0).toUpperCase() + shape.slice(1)} ${size}CM`;
@@ -41,7 +52,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
     <Card className={`
       relative overflow-hidden transition-all
       ${bgColor} 
-      ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
+      ${isPriority ? 'animate-pulse-attention' : ''}
       hover:shadow-md w-[240px] h-[300px] flex-shrink-0
     `}>
       <CardContent className="p-3 h-full flex flex-col rounded-2xl bg-inherit">
@@ -68,14 +79,17 @@ const MixingCard: React.FC<MixingCardProps> = ({
             </div>
           )}
           
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap gap-2">
             {isPriority && (
               <Badge variant="destructive" className="text-xs">
                 Priority
               </Badge>
             )}
-            {isNew && (
-              <Badge variant="secondary" className="text-xs bg-bakery-primary/10 text-bakery-primary">
+            {shouldShowNew && (
+              <Badge 
+                variant="secondary" 
+                className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 animate-pulse"
+              >
                 New
               </Badge>
             )}

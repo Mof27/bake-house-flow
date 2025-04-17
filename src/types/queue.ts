@@ -22,6 +22,7 @@ export interface PendingOrder {
   producedQuantity: number;
   requestedAt: Date;
   isPriority: boolean;
+  isNew?: boolean;
   notes?: string;
 }
 
