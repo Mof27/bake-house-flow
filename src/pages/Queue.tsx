@@ -88,7 +88,15 @@ interface MockData {
       batchLabel: string;
       flavor: CakeFlavor;
       producedQuantity: number;
-    }
+    };
+    batches: {
+      id: string;
+      batchLabel: string;
+      flavor: CakeFlavor;
+      shape: CakeShape;
+      size: number;
+      producedQuantity: number;
+    }[];
   }[];
 }
 
@@ -194,7 +202,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
           <div className="text-sm font-medium">Asked Qty: {requestedQuantity}</div>
           
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Produced Qty: <span className="text-2xl font-bold">{producedQuantity}</span></span>
+            <span className="text-sm font-medium">Produced Qty: <span className="text-3xl font-bold">{producedQuantity}</span></span>
             <div className="flex space-x-2">
               <Button 
                 variant="ghost" 
@@ -261,31 +269,32 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [isTimerExpired, setIsTimerExpired] = useState<boolean>(false);
   
-  // Card background color based on flavor and timer state
-  let bgColor = flavor === 'vanilla' 
-    ? 'bg-amber-50 text-amber-950' 
-    : 'bg-amber-900 text-amber-50';
-    
-  // Add warning style when timer is low
-  if (timeLeft <= WARNING_TIME && !isTimerExpired) {
-    bgColor = 'bg-red-200 text-red-900 animate-pulse';
-    
-    // For chocolate cakes, ensure text is still readable with warning
-    if (flavor === 'chocolate') {
-      bgColor = 'bg-red-700 text-white animate-pulse';
-    }
+  // Determine card styling based on timer state and flavor
+  let baseTextColor = flavor === 'vanilla' ? 'text-amber-950' : 'text-amber-50';
+  let baseBgColor = flavor === 'vanilla' ? 'bg-amber-50' : 'bg-amber-900';
+  
+  // Warning state (under 30 seconds)
+  let warningBgColor = flavor === 'vanilla' ? 'bg-red-200' : 'bg-red-700';
+  let warningTextColor = flavor === 'vanilla' ? 'text-red-900' : 'text-white';
+  
+  // Expired state (timer done)
+  let expiredBgColor = 'bg-red-500';
+  let expiredTextColor = 'text-white';
+  
+  // Final class determination based on timer state
+  let bgColorClass = baseBgColor;
+  let textColorClass = baseTextColor;
+  let animationClass = '';
+  
+  if (isTimerExpired) {
+    bgColorClass = expiredBgColor;
+    textColorClass = expiredTextColor;
+  } else if (timeLeft <= WARNING_TIME) {
+    bgColorClass = warningBgColor;
+    textColorClass = warningTextColor;
+    animationClass = 'animate-pulse';
   }
   
-  // Card turns red when timer expires
-  if (isTimerExpired) {
-    bgColor = 'bg-red-500 text-white';
-    
-    // For chocolate cakes, ensure enough contrast
-    if (flavor === 'chocolate') {
-      bgColor = 'bg-red-600 text-white';
-    }
-  }
-    
   // Timer effect
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -334,7 +343,7 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
   return (
     <Card className={`
       relative overflow-hidden transition-all
-      ${bgColor} 
+      ${bgColorClass} ${textColorClass} ${animationClass}
       ${isPriority ? 'border-2 border-yellow-500' : 'border border-gray-200'}
       hover:shadow-md
     `}>
@@ -380,8 +389,8 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
         {/* Control buttons */}
         <div className="flex space-x-2">
           <Button 
-            variant="outline" 
-            className="flex-1"
+            variant="cancel"
+            className="flex-1" 
             onClick={onCancel}
           >
             <XCircle className="mr-1" /> Cancel
@@ -463,7 +472,7 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
         
         {/* Quantity */}
         <div className="text-sm font-medium mb-2">
-          Qty: <span className="text-2xl font-bold">{producedQuantity}</span>
+          Qty: <span className="text-3xl font-bold">{producedQuantity}</span>
         </div>
         
         {/* Drag indicator */}
@@ -472,6 +481,37 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
         </div>
       </CardContent>
     </Card>
+  );
+};
+
+// Component for items in the oven
+interface OvenItemProps {
+  batchLabel: string;
+  producedQuantity: number;
+  flavor: CakeFlavor;
+  shape: CakeShape;
+  size: number;
+}
+
+const OvenItem: React.FC<OvenItemProps> = ({
+  batchLabel,
+  producedQuantity,
+  flavor,
+  shape,
+  size
+}) => {
+  // Card background color based on flavor
+  const bgColor = flavor === 'vanilla' 
+    ? 'bg-amber-50 text-amber-950' 
+    : 'bg-amber-900 text-amber-50';
+
+  return (
+    <div className={`p-2 ${bgColor} rounded-md mb-2`}>
+      <h3 className="font-bold">{batchLabel}</h3>
+      <div className="text-sm">
+        Qty: <span className="font-bold">{producedQuantity}</span>
+      </div>
+    </div>
   );
 };
 
@@ -488,6 +528,14 @@ interface OvenSlotProps {
     flavor: CakeFlavor;
     producedQuantity: number;
   };
+  batches: {
+    id: string;
+    batchLabel: string;
+    flavor: CakeFlavor;
+    shape: CakeShape;
+    size: number;
+    producedQuantity: number;
+  }[];
   onComplete: () => void;
 }
 
@@ -498,6 +546,7 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
   onDragOver,
   onDrop,
   currentBatch,
+  batches,
   onComplete
 }) => {
   return (
@@ -511,7 +560,7 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
-      <CardHeader className="p-4 pb-0">
+      <CardHeader className="p-4 pb-2">
         <CardTitle className="text-xl flex justify-between">
           <span>OVEN {ovenNumber}</span>
           <Badge className={isActive ? 'bg-green-500' : 'bg-gray-400'}>
@@ -519,26 +568,43 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 flex-1 flex flex-col h-full">
-        {isActive && timeRemaining && currentBatch ? (
-          <div className="flex flex-col items-center flex-1 justify-center">
-            <div className="text-center w-full">
-              <h3 className="font-bold text-lg mb-2">{currentBatch.batchLabel}</h3>
-              <p className="font-medium mb-3">
-                Qty: <span className="text-2xl">{currentBatch.producedQuantity}</span>
-              </p>
+      
+      <CardContent className="p-4 pt-0 flex-1 flex flex-col h-full">
+        {isActive && timeRemaining ? (
+          <div className="flex flex-col h-full">
+            {/* Timer and progress bar section */}
+            <div className="mb-4 text-center">
+              <div className="text-3xl font-bold mb-2">
+                {formatTime(timeRemaining)}
+              </div>
+              <Progress 
+                value={(timeRemaining / 1680) * 100} 
+                className="w-full h-2 mb-2" 
+              />
             </div>
-            <div className="text-3xl font-bold mb-2 mt-2">
-              {formatTime(timeRemaining)}
+            
+            {/* Items in the oven */}
+            <div className="flex-1 overflow-y-auto mb-4" style={{ 
+              maxHeight: batches.length > 0 ? `calc(100% - 180px)` : 'auto' 
+            }}>
+              {batches.map((batch, index) => (
+                <div key={batch.id} style={{ height: `${100 / batches.length}%`, minHeight: '80px' }}>
+                  <OvenItem 
+                    batchLabel={batch.batchLabel}
+                    producedQuantity={batch.producedQuantity}
+                    flavor={batch.flavor}
+                    shape={batch.shape}
+                    size={batch.size}
+                  />
+                </div>
+              ))}
             </div>
-            <Progress 
-              value={(timeRemaining / 1680) * 100} 
-              className="w-full h-2 mb-4" 
-            />
+            
+            {/* Done button */}
             <Button
               variant="default"
               size="lg"
-              className="w-full mt-2 text-xl py-6"
+              className="w-full mt-auto text-xl py-6"
               onClick={onComplete}
             >
               <CheckCircle2 className="mr-2 h-6 w-6" />
@@ -631,11 +697,28 @@ const QueuePage: React.FC = () => {
       {
         number: 1,
         isActive: true,
-        timeRemaining: 1250 // seconds
+        timeRemaining: 1250, // seconds
+        currentBatch: {
+          id: '5',
+          batchLabel: 'ROUND VANILLA 18CM',
+          flavor: 'vanilla',
+          producedQuantity: 3
+        },
+        batches: [
+          {
+            id: '5',
+            batchLabel: 'ROUND VANILLA 18CM',
+            flavor: 'vanilla',
+            shape: 'round',
+            size: 18,
+            producedQuantity: 3
+          }
+        ]
       },
       {
         number: 2,
-        isActive: false
+        isActive: false,
+        batches: []
       }
     ]
   });
@@ -748,24 +831,65 @@ const QueuePage: React.FC = () => {
     const draggedOrder = mockData.ovenReady.find(order => order.id === draggedItemId);
     if (!draggedOrder) return;
     
-    // Move to oven and start 28 minute timer (1680 seconds)
+    // Move to oven 
     setMockData(prev => {
-      const updatedOvens = prev.ovens.map(oven => {
-        if (oven.number === ovenNumber) {
-          return {
-            ...oven,
-            isActive: true,
-            timeRemaining: 1680, // 28 minutes in seconds
-            currentBatch: {
-              id: draggedOrder.id,
-              batchLabel: draggedOrder.batchLabel,
-              flavor: draggedOrder.flavor,
-              producedQuantity: draggedOrder.producedQuantity
-            }
-          };
-        }
-        return oven;
-      });
+      // Find the oven to update
+      const targetOven = prev.ovens.find(oven => oven.number === ovenNumber);
+      let updatedOvens;
+      
+      if (!targetOven) return prev; // Safety check
+      
+      // If the oven is currently inactive, set it as active with a timer
+      if (!targetOven.isActive) {
+        updatedOvens = prev.ovens.map(oven => {
+          if (oven.number === ovenNumber) {
+            return {
+              ...oven,
+              isActive: true,
+              timeRemaining: 1680, // 28 minutes in seconds
+              currentBatch: {
+                id: draggedOrder.id,
+                batchLabel: draggedOrder.batchLabel,
+                flavor: draggedOrder.flavor,
+                producedQuantity: draggedOrder.producedQuantity
+              },
+              batches: [
+                ...oven.batches,
+                {
+                  id: draggedOrder.id,
+                  batchLabel: draggedOrder.batchLabel,
+                  flavor: draggedOrder.flavor,
+                  shape: draggedOrder.shape,
+                  size: draggedOrder.size,
+                  producedQuantity: draggedOrder.producedQuantity
+                }
+              ]
+            };
+          }
+          return oven;
+        });
+      } else {
+        // If the oven is already active, just add the item to the batches
+        updatedOvens = prev.ovens.map(oven => {
+          if (oven.number === ovenNumber) {
+            return {
+              ...oven,
+              batches: [
+                ...oven.batches,
+                {
+                  id: draggedOrder.id,
+                  batchLabel: draggedOrder.batchLabel,
+                  flavor: draggedOrder.flavor,
+                  shape: draggedOrder.shape,
+                  size: draggedOrder.size,
+                  producedQuantity: draggedOrder.producedQuantity
+                }
+              ]
+            };
+          }
+          return oven;
+        });
+      }
       
       return {
         ...prev,
@@ -781,35 +905,38 @@ const QueuePage: React.FC = () => {
   // Handle oven complete
   const handleOvenComplete = (ovenNumber: number) => {
     setMockData(prev => {
-      const updatedOvens = prev.ovens.map(oven => {
-        if (oven.number === ovenNumber) {
-          // Find the batch that was in this oven
-          const batch = oven.currentBatch;
-          
-          // Increment the daily completed count
-          const newDailyCompleted = prev.dailyCompleted + 1;
-          
-          // Show a completion toast
-          if (batch) {
-            toast.success(`${batch.batchLabel} complete!`, {
-              description: `${batch.producedQuantity} items successfully baked.`
-            });
-          }
-          
-          // Reset the oven
+      // Find the oven that's done
+      const oven = prev.ovens.find(o => o.number === ovenNumber);
+      if (!oven) return prev;
+      
+      // Increment daily completed count by the number of batches
+      const newDailyCompleted = Math.min(
+        prev.dailyCompleted + oven.batches.length, 
+        prev.dailyTarget
+      );
+      
+      // Show completion notification
+      toast.success(`Oven ${ovenNumber} complete!`, {
+        description: `${oven.batches.length} batches successfully baked.`
+      });
+      
+      // Reset the oven
+      const updatedOvens = prev.ovens.map(o => {
+        if (o.number === ovenNumber) {
           return {
-            ...oven,
+            ...o,
             isActive: false,
             timeRemaining: undefined,
-            currentBatch: undefined
+            currentBatch: undefined,
+            batches: []
           };
         }
-        return oven;
+        return o;
       });
       
       return {
         ...prev,
-        dailyCompleted: Math.min(prev.dailyCompleted + 1, prev.dailyTarget),
+        dailyCompleted: newDailyCompleted,
         ovens: updatedOvens
       };
     });
@@ -1073,6 +1200,7 @@ const QueuePage: React.FC = () => {
                     onDragOver={handleDragOver}
                     onDrop={handleDrop(oven.number)}
                     currentBatch={oven.currentBatch}
+                    batches={oven.batches}
                     onComplete={() => handleOvenComplete(oven.number)}
                   />
                 ))}
