@@ -33,18 +33,28 @@ const OrderStatsChart: React.FC<OrderStatsChartProps> = ({ orders }) => {
       
       // Count orders for each status on this date
       const completed = orders.filter(
-        order => order.status === 'done' && 
-        order.createdAt.split('T')[0] === dateStr
+        order => {
+          // Convert createdAt to string format for comparison
+          const orderDate = new Date(order.createdAt);
+          const orderDateStr = orderDate.toISOString().split('T')[0];
+          return order.status === 'done' && orderDateStr === dateStr;
+        }
       ).length;
       
       const inProgress = orders.filter(
-        order => order.status === 'baking' && 
-        order.createdAt.split('T')[0] === dateStr
+        order => {
+          const orderDate = new Date(order.createdAt);
+          const orderDateStr = orderDate.toISOString().split('T')[0];
+          return order.status === 'baking' && orderDateStr === dateStr;
+        }
       ).length;
       
       const queued = orders.filter(
-        order => order.status === 'queued' && 
-        order.createdAt.split('T')[0] === dateStr
+        order => {
+          const orderDate = new Date(order.createdAt);
+          const orderDateStr = orderDate.toISOString().split('T')[0];
+          return order.status === 'queued' && orderDateStr === dateStr;
+        }
       ).length;
       
       return {
