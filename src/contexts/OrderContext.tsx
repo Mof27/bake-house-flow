@@ -1,11 +1,10 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth, User } from './AuthContext';
 
 // Define order status types
-export type OrderStatus = 'queued' | 'baking' | 'done';
+export type OrderStatus = 'queued' | 'baking' | 'done' | 'mixing';
 
 // Define complexity level (1-5)
 export type ComplexityLevel = 1 | 2 | 3 | 4 | 5;
@@ -44,6 +43,8 @@ interface OrderContextType {
   deleteOrder: (id: string) => Promise<void>;
   isLoading: boolean;
   reorderQueue: (orderId: string, newPosition: number) => void;
+  updateOrderQuantity: (id: string, delta: number) => Promise<void>;
+  updateOrderNotes: (id: string, notes: string) => Promise<void>;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -286,6 +287,59 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     toast.success('Order queue updated');
   };
 
+  // Function to update order quantity
+  const updateOrderQuantity = async (id: string, delta: number): Promise<void> => {
+    setIsLoading(true);
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    setOrders(prevOrders => 
+      prevOrders.map(order => {
+        if (order.id === id) {
+          // Extract current quantity from notes
+          const quantityMatch = order.notes.match(/Quantity: (\d+)/i);
+          let quantity = quantityMatch ? parseInt(quantityMatch[1]) : 1;
+          
+          // Update quantity, ensuring it's at least 1
+          quantity = Math.max(1, quantity + delta);
+          
+          // Update the notes with new quantity
+          const updatedNotes = order.notes.replace(
+            /Quantity: \d+/i,
+            `Quantity: ${quantity}`
+          );
+          
+          return { ...order, notes: updatedNotes };
+        }
+        return order;
+      })
+    );
+    
+    setIsLoading(false);
+    toast.success(`Order quantity updated`);
+  };
+  
+  // Function to update order notes
+  const updateOrderNotes = async (id: string, notes: string): Promise<void> => {
+    setIsLoading(true);
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    setOrders(prevOrders => 
+      prevOrders.map(order => {
+        if (order.id === id) {
+          return { ...order, notes };
+        }
+        return order;
+      })
+    );
+    
+    setIsLoading(false);
+    toast.success(`Order notes updated`);
+  };
+
   return (
     <OrderContext.Provider value={{ 
       orders, 
@@ -295,7 +349,9 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       printLabel,
       deleteOrder,
       isLoading,
-      reorderQueue
+      reorderQueue,
+      updateOrderQuantity,
+      updateOrderNotes
     }}>
       {children}
     </OrderContext.Provider>
