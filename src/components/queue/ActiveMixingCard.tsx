@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { Clock, Flame, XCircle, TimerOff } from 'lucide-react';
+import { Clock, XCircle, TimerOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -17,7 +16,7 @@ interface ActiveMixingCardProps {
   isPriority?: boolean;
   onCancel: () => void;
   onComplete: () => void;
-  startTime?: Date;
+  startTime: Date;
 }
 
 const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
@@ -33,11 +32,17 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
 }) => {
   const MIXING_TIME = 120; // 2 minutes in seconds
   const WARNING_TIME = 30; // 30 seconds
+
+  const calculateInitialTimeLeft = () => {
+    const now = new Date();
+    const elapsedSeconds = Math.floor((now.getTime() - startTime.getTime()) / 1000);
+    return Math.max(0, MIXING_TIME - elapsedSeconds);
+  };
   
-  const [timeLeft, setTimeLeft] = useState<number>(MIXING_TIME);
+  const [timeLeft, setTimeLeft] = useState<number>(calculateInitialTimeLeft());
   const [timerActive, setTimerActive] = useState<boolean>(true);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
-  const [isTimerExpired, setIsTimerExpired] = useState<boolean>(false);
+  const [isTimerExpired, setIsTimerExpired] = useState<boolean>(calculateInitialTimeLeft() <= 0);
   
   let baseTextColor = flavor === 'vanilla' ? 'text-amber-950' : 'text-amber-50';
   let baseBgColor = flavor === 'vanilla' ? 'bg-amber-50' : 'bg-amber-900';
@@ -54,7 +59,7 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
   
   // Split batch label into parts (assuming format like "ROUND VANILLA 16CM")
   const parts = batchLabel.split(' ');
-  
+
   if (isTimerExpired) {
     bgColorClass = expiredBgColor;
     textColorClass = expiredTextColor;
@@ -71,7 +76,8 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
     if (timerActive && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft(prev => {
-          if (prev === WARNING_TIME) {
+          const newTime = prev - 1;
+          if (newTime === WARNING_TIME) {
             toast.warning("30 seconds left on mixing timer!", {
               description: `${batchLabel} mixing will be done soon!`,
               duration: 5000,
@@ -83,21 +89,17 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
               console.log('Audio notification failed:', error);
             }
           }
-          
-          return prev - 1;
+          return newTime;
         });
       }, 1000);
-    } else if (timeLeft === 0) {
-      if (!isTimerExpired) {
-        setIsTimerExpired(true);
-        toast.success("Mixing complete!", {
-          description: `${batchLabel} is ready to be moved to oven queue`,
-        });
-      }
+    } else if (timeLeft === 0 && !isTimerExpired) {
+      setIsTimerExpired(true);
+      toast.success("Mixing complete!", {
+        description: `${batchLabel} is ready to be moved to oven queue`,
+      });
       
       if (interval) {
         clearInterval(interval);
-        interval = null;
       }
       
       interval = setInterval(() => {

@@ -51,6 +51,7 @@ const QueuePage: React.FC = () => {
         producedQuantity: 4,
         requestedAt: generateRequestDate(),
         isPriority: true,
+        isNew: true,
         notes: 'Birthday cake for Sarah'
       },
       {
@@ -65,26 +66,92 @@ const QueuePage: React.FC = () => {
         isPriority: false
       },
       {
-        id: '6',
+        id: '3',
         flavor: 'vanilla',
-        shape: 'square',
+        shape: 'round',
         size: 18,
-        batchLabel: 'SQUARE VANILLA 18CM',
+        batchLabel: 'ROUND VANILLA 18CM',
         requestedQuantity: 3,
         producedQuantity: 3,
+        requestedAt: generateRequestDate(),
+        isPriority: true
+      },
+      {
+        id: '4',
+        flavor: 'chocolate',
+        shape: 'square',
+        size: 22,
+        batchLabel: 'SQUARE CHOCOLATE 22CM',
+        requestedQuantity: 5,
+        producedQuantity: 5,
+        requestedAt: generateRequestDate(),
+        isPriority: false
+      },
+      {
+        id: '5',
+        flavor: 'vanilla',
+        shape: 'round',
+        size: 20,
+        batchLabel: 'ROUND VANILLA 20CM',
+        requestedQuantity: 2,
+        producedQuantity: 2,
+        requestedAt: generateRequestDate(),
+        isPriority: true
+      },
+      {
+        id: '6',
+        flavor: 'chocolate',
+        shape: 'square',
+        size: 16,
+        batchLabel: 'SQUARE CHOCOLATE 16CM',
+        requestedQuantity: 4,
+        producedQuantity: 4,
         requestedAt: generateRequestDate(),
         isPriority: false
       },
       {
         id: '7',
-        flavor: 'chocolate',
+        flavor: 'vanilla',
         shape: 'round',
-        size: 20,
-        batchLabel: 'ROUND CHOCOLATE 20CM',
+        size: 22,
+        batchLabel: 'ROUND VANILLA 22CM',
+        requestedQuantity: 3,
+        producedQuantity: 3,
+        requestedAt: generateRequestDate(),
+        isPriority: true
+      },
+      {
+        id: '8',
+        flavor: 'chocolate',
+        shape: 'square',
+        size: 18,
+        batchLabel: 'SQUARE CHOCOLATE 18CM',
         requestedQuantity: 5,
         producedQuantity: 5,
         requestedAt: generateRequestDate(),
+        isPriority: false
+      },
+      {
+        id: '9',
+        flavor: 'vanilla',
+        shape: 'round',
+        size: 16,
+        batchLabel: 'ROUND VANILLA 16CM',
+        requestedQuantity: 2,
+        producedQuantity: 2,
+        requestedAt: generateRequestDate(),
         isPriority: true
+      },
+      {
+        id: '10',
+        flavor: 'chocolate',
+        shape: 'square',
+        size: 20,
+        batchLabel: 'SQUARE CHOCOLATE 20CM',
+        requestedQuantity: 4,
+        producedQuantity: 4,
+        requestedAt: generateRequestDate(),
+        isPriority: false
       }
     ],
     activeMixing: [
@@ -485,6 +552,7 @@ const QueuePage: React.FC = () => {
                           requestedQuantity={order.requestedQuantity}
                           requestedAt={order.requestedAt}
                           isPriority={order.isPriority}
+                          isNew={order.isNew}
                           notes={order.notes}
                           onStartMixing={() => handleStartMixing(order.id)}
                         />
