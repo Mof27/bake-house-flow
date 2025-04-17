@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { PlusCircle, MinusCircle, ChevronLeft } from 'lucide-react';
+import { PlusCircle, MinusCircle, ChevronLeft, Flag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -38,6 +37,7 @@ const NewOrder: React.FC = () => {
   const [quantity, setQuantity] = useState<number>(1);
   const [flavor, setFlavor] = useState<'vanilla' | 'chocolate'>('vanilla');
   const [notes, setNotes] = useState<string>('');
+  const [priority, setPriority] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   
   // Handle quantity change with constraints
@@ -59,6 +59,11 @@ const NewOrder: React.FC = () => {
   const handleSizeChange = (value: number[]) => {
     const closestSize = findClosestSize(value[0]);
     setSize(closestSize);
+  };
+  
+  // Toggle priority status
+  const togglePriority = () => {
+    setPriority(!priority);
   };
   
   // Handle form submission - mocked for visual purposes
@@ -86,7 +91,7 @@ const NewOrder: React.FC = () => {
         flavor,
         notes,
         batchLabel,
-        priority: false,
+        priority,
         status: 'queued' as 'queued' | 'mixing' | 'baking' | 'done',
       };
       
@@ -265,6 +270,20 @@ const NewOrder: React.FC = () => {
                     <PlusCircle className="h-5 w-5" />
                   </Button>
                 </div>
+              </div>
+              
+              {/* Priority Toggle */}
+              <div className="space-y-2">
+                <Label>Priority</Label>
+                <Button 
+                  type="button" 
+                  variant={priority ? "default" : "outline"}
+                  className={`w-full ${priority ? 'bg-red-500 hover:bg-red-600 text-white border-red-500' : 'border-red-300 text-red-600 hover:bg-red-50'}`}
+                  onClick={togglePriority}
+                >
+                  <Flag className={`h-5 w-5 mr-2 ${priority ? 'fill-white' : 'fill-red-200'}`} />
+                  {priority ? 'Priority Order' : 'Make Priority Order'}
+                </Button>
               </div>
               
               {/* Flavor */}
