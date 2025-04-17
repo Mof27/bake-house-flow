@@ -7,9 +7,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 interface LayoutProps {
   children: React.ReactNode;
   sidebar?: React.ReactNode;
+  title?: string; // Added title prop
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, sidebar }) => {
+const Layout: React.FC<LayoutProps> = ({ children, sidebar, title }) => {
+  // Title is now available as a prop but we're not using it in the rendering yet
+  // This is just to make TypeScript happy with the prop being passed
   return (
     <div className="min-h-screen bg-background flex flex-col w-full">
       {/* Main content with sidebar */}
