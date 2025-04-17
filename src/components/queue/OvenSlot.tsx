@@ -64,25 +64,25 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
     <Card 
       className={`
         ${borderClass} ${bgColorClass} ${warningClass}
-        transition-all h-[200px] mb-2
+        transition-all h-[200px] w-[160px] mb-2
       `}
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
       <CardHeader className="p-1 pb-0">
-        <CardTitle className="text-lg flex justify-between items-center">
+        <CardTitle className="text-sm flex justify-between items-center">
           <span>OVEN {ovenNumber}</span>
-          <Badge className={isActive ? (showWarning ? 'bg-red-500' : 'bg-green-500') : 'bg-gray-400'}>
+          <Badge className={`text-xs ${isActive ? (showWarning ? 'bg-red-500' : 'bg-green-500') : 'bg-gray-400'}`}>
             {isActive ? 'BAKING' : 'STANDBY'}
           </Badge>
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="p-1 pt-0 flex flex-col h-[calc(100%-32px)]">
+      <CardContent className="p-1 pt-0 flex flex-col h-[calc(100%-28px)]">
         {isActive && timeRemaining !== undefined ? (
           <div className="flex flex-col h-full">
             <div className="text-center py-1">
-              <div className="text-2xl font-bold">
+              <div className="text-lg font-bold">
                 {timeRemaining > 0 
                   ? formatTime(timeRemaining) 
                   : `+${formatTime(Math.abs(timeRemaining))}`
@@ -92,27 +92,27 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
               {timeRemaining > 0 && (
                 <Progress 
                   value={(timeRemaining / OVEN_TIME) * 100} 
-                  className="w-full h-2 my-1" 
+                  className="w-full h-1 my-1" 
                 />
               )}
               
               <Button
                 variant="default"
                 size="sm"
-                className="w-full my-1 text-sm"
+                className="w-full my-1 text-xs py-0 h-6"
                 onClick={onComplete}
               >
                 <CheckCircle2 className="mr-1 h-3 w-3" /> DONE
               </Button>
             </div>
             
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-hidden mt-1">
               {batches.length > 0 ? (
                 <div className="grid grid-cols-1 gap-0.5 h-full">
                   {batches.map((batch, index) => (
                     <div key={batch.id} style={{ 
                       height: `${100 / batches.length}%`,
-                      minHeight: '30px'
+                      minHeight: '28px'
                     }}>
                       <OvenItem 
                         batchLabel={batch.batchLabel}
@@ -128,7 +128,7 @@ const OvenSlot: React.FC<OvenSlotProps> = ({
             </div>
           </div>
         ) : (
-          <div className="text-center py-2 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md flex-1 flex items-center justify-center">
+          <div className="text-center py-2 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md flex-1 flex items-center justify-center text-xs">
             Drop batch here to start baking
           </div>
         )}
