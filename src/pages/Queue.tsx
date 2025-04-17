@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import Sidebar from '@/components/Sidebar';
@@ -12,6 +11,7 @@ import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useQueueState } from '@/hooks/useQueueState';
 import { useQueueOperations } from '@/hooks/useQueueOperations';
+import { toast } from 'sonner';
 
 import PendingOrdersTab from '@/components/queue/tabs/PendingOrdersTab';
 import InProgressTab from '@/components/queue/tabs/InProgressTab';
