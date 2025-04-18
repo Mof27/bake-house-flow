@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import { PendingOrder, CakeFlavor } from '@/types/queue';
@@ -24,6 +25,14 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
     });
   }, [pendingOrders, selectedFlavor, isPriorityOnly]);
 
+  const handleFlavorChange = (flavor: CakeFlavor | 'all') => {
+    setSelectedFlavor(flavor);
+  };
+
+  const handlePriorityChange = (isPriority: boolean) => {
+    setIsPriorityOnly(isPriority);
+  };
+
   return (
     <TabsContent value="pending" className="mt-0 h-full overflow-hidden">
       <div className="h-full py-4 px-2">
@@ -31,11 +40,11 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
           <ScrollableCardSection 
             title="Pending Orders"
             selectedFlavor={selectedFlavor}
-            onFlavorChange={setSelectedFlavor}
+            onFlavorChange={handleFlavorChange}
             showFilters={true}
             showPriorityFilter={true}
             isPriorityOnly={isPriorityOnly}
-            onPriorityChange={setIsPriorityOnly}
+            onPriorityChange={handlePriorityChange}
           >
             {filteredOrders.map(order => (
               <MixingCard 

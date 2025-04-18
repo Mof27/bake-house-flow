@@ -40,6 +40,12 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
     }
   };
   
+  const handlePriorityToggle = () => {
+    if (onPriorityChange) {
+      onPriorityChange(!isPriorityOnly);
+    }
+  };
+  
   return (
     <div className="mb-4 relative">
       <div className="flex justify-between items-center mb-2">
@@ -50,7 +56,9 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
               <ToggleGroup 
                 type="single" 
                 value={selectedFlavor}
-                onValueChange={(value) => onFlavorChange?.(value as CakeFlavor | 'all')}
+                onValueChange={(value) => {
+                  if (value) onFlavorChange?.(value as CakeFlavor | 'all');
+                }}
                 className="gap-1"
               >
                 <ToggleGroupItem value="all" aria-label="Show all flavors" className="gap-2">
@@ -65,18 +73,19 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
                   <Coffee className="h-4 w-4" />
                   <span>Chocolate</span>
                 </ToggleGroupItem>
-                {showPriorityFilter && (
-                  <ToggleGroupItem 
-                    value="priority" 
-                    aria-label="Show priority only" 
-                    className="gap-2"
-                    onClick={() => onPriorityChange?.(!isPriorityOnly)}
-                  >
-                    <Star className="h-4 w-4" />
-                    <span>Priority</span>
-                  </ToggleGroupItem>
-                )}
               </ToggleGroup>
+              
+              {showPriorityFilter && (
+                <Button 
+                  variant={isPriorityOnly ? "default" : "outline"} 
+                  size="sm" 
+                  onClick={handlePriorityToggle}
+                  className="gap-2"
+                >
+                  <Star className="h-4 w-4" />
+                  <span>Priority</span>
+                </Button>
+              )}
             </div>
           )}
         </div>
