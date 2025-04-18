@@ -28,7 +28,7 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
                   shape={order.shape}
                   size={order.size}
                   batchLabel={order.batchLabel}
-                  requestedQuantity={order.requestedQuantity}
+                  // Remove requestedQuantity as it's not in the ActiveMixingCardProps interface
                   requestedAt={order.requestedAt}
                   isPriority={order.isPriority}
                   isNew={order.isNew}

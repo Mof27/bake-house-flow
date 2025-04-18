@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import Sidebar from '@/components/Sidebar';
@@ -83,7 +84,8 @@ const QueuePage: React.FC = () => {
               onDragStart={handleDragStart}
               onOvenDragOver={handleDragOver}
               onOvenDrop={handleDrop}
-              onOvenComplete={(ovenNumber) => handleOvenComplete(ovenNumber, activeTab, setActiveTab)}
+              // Fix the argument count issue here - only pass the oven number
+              onOvenComplete={handleOvenComplete}
             />
             
             <CompletedTab

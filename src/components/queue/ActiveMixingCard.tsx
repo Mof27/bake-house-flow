@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Clock, XCircle, TimerOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -119,21 +120,21 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
       relative overflow-hidden transition-all
       ${bgColorClass} ${textColorClass} ${animationClass}
       ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
-      hover:shadow-md w-[240px] h-[240px] flex-shrink-0
+      hover:shadow-md w-[200px] h-[200px] flex-shrink-0
     `}>      
-      <CardContent className="p-3 h-full flex flex-col space-y-2">
+      <CardContent className="p-3 h-full flex flex-col space-y-1.5">
         {/* Shape */}
-        <div className="text-xl font-bold leading-tight">{parts[0] || ''}</div>
+        <div className="text-lg font-bold leading-tight">{parts[0] || ''}</div>
         
         {/* Flavor */}
-        <div className="text-xl font-bold leading-tight">{parts[1] || ''}</div>
+        <div className="text-lg font-bold leading-tight">{parts[1] || ''}</div>
         
         {/* Date */}
         <div className="text-xs opacity-70">
           {formatDateTime(requestedAt)}
         </div>
         
-        <div className="flex flex-col items-center mt-1 mb-1 flex-grow">
+        <div className="flex flex-col items-center mt-auto mb-auto">
           <div className="flex items-center">
             <Clock className="h-4 w-4 mr-1" />
             {!isTimerExpired ? (
@@ -151,11 +152,11 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
           )}
         </div>
         
-        <div className="flex space-x-2 mt-auto">
+        <div className="flex space-x-1 mt-auto">
           <Button 
             variant="cancel"
             size="sm"
-            className="flex-1 text-xs py-1 h-8" 
+            className="flex-1 text-xs py-1 h-7" 
             onClick={onCancel}
           >
             <XCircle className="mr-1 h-3 w-3" /> Cancel
@@ -163,7 +164,7 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
           <Button 
             variant="default"
             size="sm"
-            className="flex-1 text-xs py-1 h-8"
+            className="flex-1 text-xs py-1 h-7"
             onClick={onComplete}
           >
             <TimerOff className="mr-1 h-3 w-3" /> Finish

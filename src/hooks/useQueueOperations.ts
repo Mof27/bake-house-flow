@@ -90,6 +90,7 @@ export const useQueueOperations = (mockData: MockData, setMockData: React.Dispat
     toast.success("Mixing complete! Order ready for oven.");
   };
 
+  // Modify to accept only one parameter (ovenNumber)
   const handleOvenComplete = (ovenNumber: number) => {
     setMockData(prev => {
       const oven = prev.ovens.find(o => o.number === ovenNumber);
