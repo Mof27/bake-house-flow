@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -54,14 +55,14 @@ const MixingCard: React.FC<MixingCardProps> = ({
         </div>
 
         {/* Main Content */}
-        <div className="mt-1 space-y-0.5">
-          <div className="text-2xl font-bold leading-tight">
+        <div className="mt-1 space-y-0 leading-none"> {/* Changed space-y-0.5 to space-y-0 and added leading-none */}
+          <div className="text-2xl font-bold">
             {`${shape.toUpperCase()} ${size}CM`}
           </div>
-          <div className="text-base font-bold leading-tight">
+          <div className="text-base font-bold">
             {flavor.toUpperCase()}
           </div>
-          <div className="text-base leading-tight">
+          <div className="text-base">
             {`Qty: ${requestedQuantity}`}
           </div>
         </div>
