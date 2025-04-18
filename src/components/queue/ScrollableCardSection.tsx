@@ -1,3 +1,4 @@
+
 import React, { useRef } from 'react';
 import { ChevronLeft, ChevronRight, Layers, Disc, Coffee, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -122,7 +123,7 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
       
       <div 
         ref={scrollContainerRef}
-        className="flex gap-1 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
+        className="flex gap-0.5 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
         style={{ 
           scrollbarWidth: 'none', 
           msOverflowStyle: 'none',
