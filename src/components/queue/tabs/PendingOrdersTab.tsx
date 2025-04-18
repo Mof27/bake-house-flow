@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import { PendingOrder, CakeFlavor } from '@/types/queue';
@@ -7,7 +6,7 @@ import ScrollableCardSection from '@/components/queue/ScrollableCardSection';
 
 interface PendingOrdersTabProps {
   pendingOrders: PendingOrder[];
-  onStartMixing: (orderId: string) => void;
+  onStartMixing: (orderId: string, mixerId: number) => void;
 }
 
 const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
@@ -47,8 +46,8 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
                 batchLabel={order.batchLabel}
                 requestedAt={order.requestedAt}
                 isPriority={order.isPriority}
-                actionLabel="Start Mixing"
-                onAction={() => onStartMixing(order.id)}
+                notes={order.notes}
+                onAction={(mixerId) => onStartMixing(order.id, mixerId)}
               />
             ))}
           </ScrollableCardSection>
