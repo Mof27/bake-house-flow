@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { OrderProvider } from "@/contexts/OrderContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 import Queue from "./pages/Queue";
 import NotFound from "./pages/NotFound";
@@ -21,19 +22,21 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <ThemeProvider>
-            <OrderProvider>
-              <NotificationProvider>
-                <TooltipProvider>
-                  <Toaster />
-                  <Sonner />
-                  <Routes>
-                    <Route path="/" element={<Queue />} />
-                    <Route path="/queue" element={<Queue />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </TooltipProvider>
-              </NotificationProvider>
-            </OrderProvider>
+            <AuthProvider>
+              <OrderProvider>
+                <NotificationProvider>
+                  <TooltipProvider>
+                    <Toaster />
+                    <Sonner />
+                    <Routes>
+                      <Route path="/" element={<Queue />} />
+                      <Route path="/queue" element={<Queue />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </TooltipProvider>
+                </NotificationProvider>
+              </OrderProvider>
+            </AuthProvider>
           </ThemeProvider>
         </BrowserRouter>
       </QueryClientProvider>

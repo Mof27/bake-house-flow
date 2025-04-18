@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+
+import React, { createContext, useContext, useState } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth, User } from './AuthContext';
@@ -131,10 +132,6 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const baseTime = 20;
     const complexityFactor = complexity * 5;
     return baseTime + complexityFactor;
-    
-    // TODO: Future ML implementation would go here
-    // The model would be trained on the collected data of actual completion times
-    // stored in a TimeLog table with order details, complexity, and durations
   };
 
   // Function to get order by ID
@@ -148,10 +145,6 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    if (!user) {
-      throw new Error('User must be authenticated to create an order');
-    }
     
     const estimatedTime = estimateBakeTime(orderData.complexity);
     
@@ -238,14 +231,6 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     // This is where printer integration would happen
     console.log('Printing label for order:', id);
-    
-    /* TODO: Printer Integration
-       Options include:
-       1. ESC/POS USB printer using a Node.js backend
-       2. Network printer via IPP protocol
-       3. Cloud print service like PrintNode
-       4. Browser-based printing using window.print() for PDF outputs
-    */
     
     toast.success('Label printed successfully');
   };
@@ -365,10 +350,3 @@ export const useOrders = (): OrderContextType => {
   }
   return context;
 };
-
-// Comment: In production, this would connect to a database via API calls.
-// The database schema would include:
-// - Orders table (as modeled above)
-// - Users table (for authentication)
-// - TimeLogs table (for ML training data)
-// - PrintLogs table (for tracking print jobs)
