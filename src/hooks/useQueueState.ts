@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { MockData, PendingOrder } from '@/types/queue';
 import { toast } from "sonner";
@@ -30,7 +29,7 @@ export const useQueueState = () => {
         batchLabel: 'A001',
         requestedQuantity: 4,
         producedQuantity: 4,
-        requestedAt: generateRecentDate(), // New order (< 5 mins)
+        requestedAt: generateRecentDate(),
         isPriority: true,
         notes: 'Birthday cake for Sarah'
       },
@@ -42,19 +41,20 @@ export const useQueueState = () => {
         batchLabel: 'A002',
         requestedQuantity: 2,
         producedQuantity: 2,
-        requestedAt: generateRecentDate(), // New order (< 5 mins)
-        isPriority: false
+        requestedAt: generateRecentDate(),
+        isPriority: true,
+        notes: 'Urgent corporate order'
       },
       {
         id: '3',
-        flavor: 'vanilla',
+        flavor: 'chocolate',
         shape: 'round',
         size: 18,
         batchLabel: 'A003',
         requestedQuantity: 3,
         producedQuantity: 3,
-        requestedAt: generateOlderDate(),
-        isPriority: true
+        requestedAt: generateRecentDate(),
+        isPriority: false
       },
       {
         id: '4',
@@ -229,10 +229,7 @@ export const useQueueState = () => {
     ]
   });
 
-  // Add a function to refresh the data
   const fetchLatestData = () => {
-    // In a real app, this would fetch data from an API
-    // For now, we'll just show a toast notification to indicate refresh
     toast.success("Data refreshed successfully", {
       description: "Latest queue data has been loaded",
       position: "top-right",
@@ -240,8 +237,6 @@ export const useQueueState = () => {
     
     console.log("Refreshing data...");
     
-    // We could update some timestamps or add new mock data here
-    // to simulate a refresh
     const updatedData = {
       ...mockData,
       pendingOrders: mockData.pendingOrders.map(order => ({

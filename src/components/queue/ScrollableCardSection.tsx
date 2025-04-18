@@ -61,15 +61,27 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
                 }}
                 className="gap-1"
               >
-                <ToggleGroupItem value="all" aria-label="Show all flavors" className="gap-2">
+                <ToggleGroupItem 
+                  value="all" 
+                  aria-label="Show all flavors" 
+                  className="gap-2 data-[state=on]:bg-blue-500 data-[state=on]:text-white"
+                >
                   <Layers className="h-4 w-4" />
                   <span>All</span>
                 </ToggleGroupItem>
-                <ToggleGroupItem value="vanilla" aria-label="Show vanilla only" className="gap-2">
+                <ToggleGroupItem 
+                  value="vanilla" 
+                  aria-label="Show vanilla only" 
+                  className="gap-2 data-[state=on]:bg-amber-200 data-[state=on]:text-amber-950"
+                >
                   <Disc className="h-4 w-4" />
                   <span>Vanilla</span>
                 </ToggleGroupItem>
-                <ToggleGroupItem value="chocolate" aria-label="Show chocolate only" className="gap-2">
+                <ToggleGroupItem 
+                  value="chocolate" 
+                  aria-label="Show chocolate only" 
+                  className="gap-2 data-[state=on]:bg-amber-900 data-[state=on]:text-amber-50"
+                >
                   <Coffee className="h-4 w-4" />
                   <span>Chocolate</span>
                 </ToggleGroupItem>
@@ -80,7 +92,7 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
                   variant={isPriorityOnly ? "default" : "outline"} 
                   size="sm" 
                   onClick={handlePriorityToggle}
-                  className="gap-2"
+                  className="gap-2 data-[state=on]:bg-red-500 data-[state=on]:text-white"
                 >
                   <Star className="h-4 w-4" />
                   <span>Priority</span>
