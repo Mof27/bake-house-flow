@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { CakeFlavor, CakeShape } from '@/types/queue';
 import { formatDateTime } from '@/lib/date-utils';
 
@@ -12,8 +13,10 @@ interface MixingCardProps {
   batchLabel: string;
   requestedAt: Date;
   isPriority?: boolean;
+  isNew?: boolean;
   actionLabel: string;
   onAction: () => void;
+  notes?: string;
 }
 
 const MixingCard: React.FC<MixingCardProps> = ({
@@ -23,8 +26,10 @@ const MixingCard: React.FC<MixingCardProps> = ({
   batchLabel,
   requestedAt,
   isPriority = false,
+  isNew = false,
   actionLabel,
   onAction,
+  notes
 }) => {
   const bgColor = flavor === 'vanilla' ? 'bg-amber-50 text-amber-950' : 'bg-amber-900 text-amber-50';
   
@@ -38,26 +43,40 @@ const MixingCard: React.FC<MixingCardProps> = ({
       ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
       hover:shadow-md w-[200px] h-[200px] flex-shrink-0
     `}>      
-      <CardContent className="p-3 h-full flex flex-col space-y-1.5">
-        {/* Shape */}
-        <div className="text-lg font-bold leading-tight">{parts[0] || ''}</div>
+      <CardContent className="p-3 h-full flex flex-col space-y-2">
+        {/* Shape and Size in one line */}
+        <div className="text-lg font-bold leading-tight">
+          {`${shape.toUpperCase()} ${size} CM`}
+        </div>
         
         {/* Flavor */}
         <div className="text-lg font-bold leading-tight">{parts[1] || ''}</div>
-        
-        {/* Size */}
-        <div className="text-sm font-semibold">{parts[2] || ''}</div>
         
         {/* Date */}
         <div className="text-xs opacity-70">
           {formatDateTime(requestedAt)}
         </div>
         
-        <div className="flex flex-col items-center mt-auto mb-auto">
+        {/* Tags */}
+        <div className="flex gap-2">
           {isPriority && (
-            <span className="text-red-500 font-bold text-sm">PRIORITY</span>
+            <Badge variant="destructive" className="text-[10px] px-1 py-0">
+              PRIORITY
+            </Badge>
+          )}
+          {isNew && (
+            <Badge variant="secondary" className="text-[10px] px-1 py-0 bg-bakery-primary/10 text-bakery-primary">
+              NEW
+            </Badge>
           )}
         </div>
+        
+        {/* Notes */}
+        {notes && (
+          <div className="text-xs bg-black/10 p-2 rounded-sm line-clamp-2 overflow-hidden">
+            {notes}
+          </div>
+        )}
         
         <Button 
           variant="default"
