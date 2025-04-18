@@ -123,7 +123,7 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
       
       <div 
         ref={scrollContainerRef}
-        className="flex gap-0.5 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
+        className="flex gap-0 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
         style={{ 
           scrollbarWidth: 'none', 
           msOverflowStyle: 'none',
@@ -144,3 +144,4 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
 };
 
 export default ScrollableCardSection;
+
