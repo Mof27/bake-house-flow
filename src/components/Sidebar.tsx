@@ -4,10 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { 
-  PanelLeft, 
-  PanelLeftClose
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface SidebarProps {
   dailyCompleted: number;
@@ -41,7 +38,10 @@ const Sidebar: React.FC<SidebarProps> = ({ dailyCompleted, dailyTarget }) => {
           onClick={toggleCollapse}
           className="rounded-full z-50"
         >
-          {isCollapsed ? <PanelLeft size={20} /> : <PanelLeftClose size={20} />}
+          {isCollapsed ? 
+            <ChevronRight size={20} /> : 
+            <ChevronLeft size={20} />
+          }
         </Button>
       </div>
 
