@@ -36,6 +36,9 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
 
   const calculateInitialTimeLeft = () => {
     const now = new Date();
+    // Add null check for startTime
+    if (!startTime) return MIXING_TIME;
+    
     const elapsedSeconds = Math.floor((now.getTime() - startTime.getTime()) / 1000);
     return Math.max(0, MIXING_TIME - elapsedSeconds);
   };
