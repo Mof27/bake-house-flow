@@ -1,109 +1,75 @@
 
-import React, { useEffect, useState } from 'react';
-import { Clock, XCircle, TimerOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { CakeFlavor, CakeShape } from '@/types/queue';
-import { formatDateTime, formatTime } from '@/lib/date-utils';
+import { formatDateTime } from '@/lib/date-utils';
 
-interface ActiveMixingCardProps {
+interface MixingCardProps {
   flavor: CakeFlavor;
   shape: CakeShape;
   size: number;
   batchLabel: string;
   requestedAt: Date;
   isPriority?: boolean;
-  onCancel: () => void;
-  onComplete: () => void;
-  startTime: Date;
+  actionLabel: string;
+  onAction: () => void;
 }
 
-const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
+const MixingCard: React.FC<MixingCardProps> = ({
   flavor,
   shape,
   size,
   batchLabel,
   requestedAt,
   isPriority = false,
-  onCancel,
-  onComplete,
-  startTime
+  actionLabel,
+  onAction,
 }) => {
-  const MIXING_TIME = 120;
-  const WARNING_TIME = 30;
-
-  const [timeLeft, setTimeLeft] = useState<number>(() => {
-    const now = new Date();
-    const elapsedSeconds = Math.floor((now.getTime() - startTime.getTime()) / 1000);
-    return Math.max(0, MIXING_TIME - elapsedSeconds);
-  });
-  const [isTimerExpired, setIsTimerExpired] = useState<boolean>(() => timeLeft <= 0);
-  
   const bgColor = flavor === 'vanilla' ? 'bg-amber-50 text-amber-950' : 'bg-amber-900 text-amber-50';
-  const progressPercentage = (timeLeft / MIXING_TIME) * 100;
   
-  useEffect(() => {
-    if (timeLeft > 0) {
-      const interval = setInterval(() => {
-        setTimeLeft(prev => {
-          const newTime = prev - 1;
-          if (newTime === 0) {
-            setIsTimerExpired(true);
-          }
-          return newTime;
-        });
-      }, 1000);
-      
-      return () => clearInterval(interval);
-    }
-  }, [timeLeft]);
+  // Split batch label into parts (assuming format like "ROUND VANILLA 16CM")
+  const parts = batchLabel.split(' ');
   
   return (
     <Card className={`
-      relative w-[200px] h-[200px] flex-shrink-0
+      relative overflow-hidden transition-all
       ${bgColor}
       ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
-      ${isTimerExpired ? 'animate-pulse' : ''}
-    `}>
-      <CardContent className="p-2 h-full flex flex-col">
-        <div className="text-base font-bold leading-tight mb-1">{batchLabel}</div>
-        <div className="text-xs opacity-70 mb-2">{formatDateTime(requestedAt)}</div>
+      hover:shadow-md w-[200px] h-[200px] flex-shrink-0
+    `}>      
+      <CardContent className="p-3 h-full flex flex-col space-y-1.5">
+        {/* Shape */}
+        <div className="text-lg font-bold leading-tight">{parts[0] || ''}</div>
         
-        <div className="flex flex-col items-center justify-center flex-grow">
-          <div className="flex items-center justify-center text-lg font-bold">
-            <Clock className="h-4 w-4 mr-1" />
-            {formatTime(timeLeft)}
-          </div>
-          
-          <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
-            <div
-              className="bg-green-600 h-1.5 rounded-full transition-all"
-              style={{ width: `${progressPercentage}%` }}
-            />
-          </div>
+        {/* Flavor */}
+        <div className="text-lg font-bold leading-tight">{parts[1] || ''}</div>
+        
+        {/* Size */}
+        <div className="text-sm font-semibold">{parts[2] || ''}</div>
+        
+        {/* Date */}
+        <div className="text-xs opacity-70">
+          {formatDateTime(requestedAt)}
         </div>
-
-        <div className="flex space-x-1 mt-auto">
-          <Button 
-            variant="destructive"
-            size="sm"
-            className="flex-1 h-7 text-xs"
-            onClick={onCancel}
-          >
-            <XCircle className="h-3 w-3 mr-1" /> Cancel
-          </Button>
-          <Button 
-            variant="default"
-            size="sm"
-            className="flex-1 h-7 text-xs"
-            onClick={onComplete}
-          >
-            <TimerOff className="h-3 w-3 mr-1" /> Finish
-          </Button>
+        
+        <div className="flex flex-col items-center mt-auto mb-auto">
+          {isPriority && (
+            <span className="text-red-500 font-bold text-sm">PRIORITY</span>
+          )}
         </div>
+        
+        <Button 
+          variant="default"
+          size="sm"
+          className="mt-auto w-full text-xs"
+          onClick={onAction}
+        >
+          {actionLabel}
+        </Button>
       </CardContent>
     </Card>
   );
 };
 
-export default ActiveMixingCard;
+export default MixingCard;
