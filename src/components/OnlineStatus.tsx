@@ -2,9 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useQueueState } from '@/hooks/useQueueState';
 
 const OnlineStatus = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const { fetchLatestData } = useQueueState();
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -20,7 +22,7 @@ const OnlineStatus = () => {
   }, []);
 
   const handleRefresh = () => {
-    window.location.reload();
+    fetchLatestData();
   };
 
   return (
@@ -47,4 +49,3 @@ const OnlineStatus = () => {
 };
 
 export default OnlineStatus;
-
