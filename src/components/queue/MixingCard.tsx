@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CakeFlavor, CakeShape } from '@/types/queue';
 import { format } from 'date-fns';
+
 interface MixingCardProps {
   flavor: CakeFlavor;
   shape: CakeShape;
@@ -14,6 +16,7 @@ interface MixingCardProps {
   onAction: (mixerId: number) => void;
   notes?: string;
 }
+
 const MixingCard: React.FC<MixingCardProps> = ({
   flavor,
   shape,
@@ -26,13 +29,17 @@ const MixingCard: React.FC<MixingCardProps> = ({
 }) => {
   const [isNew, setIsNew] = useState(false);
   const bgColor = flavor === 'vanilla' ? 'bg-amber-50 text-amber-950' : 'bg-amber-900 text-amber-50';
+  
   useEffect(() => {
     const timeDiff = (new Date().getTime() - new Date(requestedAt).getTime()) / 1000 / 60;
     setIsNew(timeDiff <= 5);
   }, [requestedAt]);
+
   const orderNumber = batchLabel.match(/\d+/)?.[0] || '001';
   const uniqueCode = `#A${orderNumber.padStart(3, '0')}`;
-  return <Card className={`
+
+  return (
+    <Card className={`
       relative overflow-hidden transition-all
       ${bgColor}
       ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
@@ -47,7 +54,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
 
         {/* Main Content */}
         <div className="mt-1 space-y-0.5">
-          <div className="text-xl font-bold leading-tight">
+          <div className="text-2xl font-bold leading-tight">
             {`${shape.toUpperCase()} ${size}CM`}
           </div>
           <div className="text-base font-bold leading-tight">
@@ -80,6 +87,8 @@ const MixingCard: React.FC<MixingCardProps> = ({
           </Button>
         </div>
       </CardContent>
-    </Card>;
+    </Card>
+  );
 };
+
 export default MixingCard;
