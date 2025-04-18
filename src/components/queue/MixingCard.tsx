@@ -55,7 +55,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
         </div>
 
         {/* Main Content */}
-        <div className="mt-1 space-y-0 leading-none"> {/* Changed space-y-0.5 to space-y-0 and added leading-none */}
+        <div className="mt-1 space-y-0 leading-tight"> {/* Reduced line spacing here */}
           <div className="text-2xl font-bold">
             {`${shape.toUpperCase()} ${size}CM`}
           </div>

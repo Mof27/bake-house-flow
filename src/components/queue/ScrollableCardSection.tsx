@@ -132,7 +132,7 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
         }}
       >
         {React.Children.map(children, (child) => (
-          <div className="shrink-0 snap-start" style={{ minWidth: '220px' }}>
+          <div className="shrink-0 snap-start" style={{ minWidth: '200px' }}> {/* Reduced from 220px to 200px */}
             {child}
           </div>
         ))}
