@@ -1,8 +1,7 @@
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { TabsContent } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { PendingOrder } from '@/types/queue';
+import { PendingOrder, CakeFlavor } from '@/types/queue';
 import MixingCard from '@/components/queue/MixingCard';
 import ScrollableCardSection from '@/components/queue/ScrollableCardSection';
 
@@ -15,12 +14,24 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
   pendingOrders,
   onStartMixing,
 }) => {
+  const [selectedFlavor, setSelectedFlavor] = useState<CakeFlavor | 'all'>('all');
+
+  const filteredOrders = useMemo(() => {
+    if (selectedFlavor === 'all') return pendingOrders;
+    return pendingOrders.filter(order => order.flavor === selectedFlavor);
+  }, [pendingOrders, selectedFlavor]);
+
   return (
     <TabsContent value="pending" className="mt-0 h-full overflow-hidden">
       <div className="h-full py-4 px-2">
         {pendingOrders.length > 0 ? (
-          <ScrollableCardSection title="Pending Orders">
-            {pendingOrders.map(order => (
+          <ScrollableCardSection 
+            title="Pending Orders"
+            selectedFlavor={selectedFlavor}
+            onFlavorChange={setSelectedFlavor}
+            showFilters={true}
+          >
+            {filteredOrders.map(order => (
               <MixingCard 
                 key={order.id}
                 flavor={order.flavor}

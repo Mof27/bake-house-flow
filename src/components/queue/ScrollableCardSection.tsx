@@ -1,22 +1,25 @@
 
-import React, { useRef, useEffect } from 'react';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"
-import { ScrollArea } from '@/components/ui/scroll-area';
+import React, { useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { CakeFlavor } from '@/types/queue';
 
 interface ScrollableCardSectionProps {
   children: React.ReactNode;
   title: string;
+  selectedFlavor?: CakeFlavor | 'all';
+  onFlavorChange?: (flavor: CakeFlavor | 'all') => void;
+  showFilters?: boolean;
 }
 
-const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({ children, title }) => {
+const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({ 
+  children, 
+  title,
+  selectedFlavor = 'all',
+  onFlavorChange,
+  showFilters = false
+}) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const scrollLeft = () => {
@@ -34,7 +37,27 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({ children,
   return (
     <div className="mb-4 relative">
       <div className="flex justify-between items-center mb-2">
-        <h2 className="text-lg font-bold">{title}</h2>
+        <div className="flex flex-col gap-2">
+          <h2 className="text-lg font-bold">{title}</h2>
+          {showFilters && (
+            <ToggleGroup 
+              type="single" 
+              value={selectedFlavor}
+              onValueChange={(value) => onFlavorChange?.(value as CakeFlavor | 'all')}
+              className="gap-1"
+            >
+              <ToggleGroupItem value="all" aria-label="Show all flavors" className="text-xs">
+                All
+              </ToggleGroupItem>
+              <ToggleGroupItem value="vanilla" aria-label="Show vanilla only" className="text-xs">
+                Vanilla
+              </ToggleGroupItem>
+              <ToggleGroupItem value="chocolate" aria-label="Show chocolate only" className="text-xs">
+                Chocolate
+              </ToggleGroupItem>
+            </ToggleGroup>
+          )}
+        </div>
         <div className="flex gap-2">
           <Button 
             size="icon" 
@@ -57,7 +80,7 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({ children,
       
       <div 
         ref={scrollContainerRef}
-        className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
+        className="flex gap-1 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
         style={{ 
           scrollbarWidth: 'none', 
           msOverflowStyle: 'none',
