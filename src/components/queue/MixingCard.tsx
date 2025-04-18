@@ -47,14 +47,14 @@ const MixingCard: React.FC<MixingCardProps> = ({
     `}>      
       <CardContent className="p-3 h-full flex flex-col">
         {/* Header */}
-        <div className="flex justify-between items-start text-[10px] opacity-70 mb-2">
+        <div className="flex justify-between items-start text-[10px] opacity-70">
           <div>{format(new Date(requestedAt), 'dd MMM at HH:mm')}</div>
           <div className="font-mono">{uniqueCode}</div>
         </div>
 
         {/* Main Content */}
-        <div className="space-y-1">
-          <div className="text-base font-bold leading-tight">
+        <div className="mt-1 space-y-0.5">
+          <div className="text-xl font-bold leading-tight">
             {`${shape.toUpperCase()} ${size}CM`}
           </div>
           <div className="text-base font-bold leading-tight">
