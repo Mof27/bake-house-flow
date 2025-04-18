@@ -56,6 +56,7 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
                 requestedAt={order.requestedAt}
                 isPriority={order.isPriority}
                 notes={order.notes}
+                requestedQuantity={order.requestedQuantity}
                 onAction={(mixerId) => onStartMixing(order.id, mixerId)}
               />
             ))}
