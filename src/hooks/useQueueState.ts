@@ -132,6 +132,18 @@ export const useQueueState = () => {
         producedQuantity: 4,
         requestedAt: generateOlderDate(),
         isPriority: false
+      },
+      {
+        id: '11',
+        flavor: 'chocolate',
+        shape: 'round',
+        size: 16,
+        batchLabel: 'A011',
+        requestedQuantity: 1,
+        producedQuantity: 0,
+        requestedAt: new Date(2024, 3, 18, 0, 3),
+        isPriority: true,
+        notes: 'Early morning priority order'
       }
     ],
     activeMixing: [
