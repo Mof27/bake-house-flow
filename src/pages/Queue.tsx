@@ -84,7 +84,6 @@ const QueuePage: React.FC = () => {
               onDragStart={handleDragStart}
               onOvenDragOver={handleDragOver}
               onOvenDrop={handleDrop}
-              // Fix the argument count issue here - only pass the oven number
               onOvenComplete={handleOvenComplete}
             />
             

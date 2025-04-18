@@ -1,16 +1,14 @@
 
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
   
   useEffect(() => {
-    // If authenticated, go to dashboard, otherwise go to login
-    navigate(isAuthenticated ? '/' : '/login');
-  }, [isAuthenticated, navigate]);
+    // Direct straight to queue since we removed authentication
+    navigate('/queue');
+  }, [navigate]);
   
   // Show loading spinner while redirecting
   return (
