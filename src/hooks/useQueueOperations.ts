@@ -1,3 +1,4 @@
+
 import { toast } from 'sonner';
 import { MockData } from '@/types/queue';
 
@@ -14,46 +15,50 @@ export const useQueueOperations = (mockData: MockData, setMockData: React.Dispat
   };
 
   const handleStartMixing = (orderId: string) => {
-    const orderToMove = mockData.pendingOrders.find(order => order.id === orderId);
-    if (!orderToMove) return;
-    
-    setMockData(prev => ({
-      ...prev,
-      pendingOrders: prev.pendingOrders.filter(order => order.id !== orderId),
-      activeMixing: [...prev.activeMixing, { 
-        id: orderToMove.id,
-        flavor: orderToMove.flavor,
-        shape: orderToMove.shape,
-        size: orderToMove.size,
-        batchLabel: orderToMove.batchLabel,
-        requestedAt: orderToMove.requestedAt,
-        isPriority: orderToMove.isPriority,
-        startTime: new Date()
-      }]
-    }));
+    setMockData(prev => {
+      const orderToMove = prev.pendingOrders.find(order => order.id === orderId);
+      if (!orderToMove) return prev;
+      
+      return {
+        ...prev,
+        pendingOrders: prev.pendingOrders.filter(order => order.id !== orderId),
+        activeMixing: [...prev.activeMixing, { 
+          id: orderToMove.id,
+          flavor: orderToMove.flavor,
+          shape: orderToMove.shape,
+          size: orderToMove.size,
+          batchLabel: orderToMove.batchLabel,
+          requestedAt: orderToMove.requestedAt,
+          isPriority: orderToMove.isPriority,
+          startTime: new Date()
+        }]
+      };
+    });
     
     toast.success("Started mixing process");
   };
 
   const handleCancelTimer = (orderId: string) => {
-    const orderToMove = mockData.activeMixing.find(order => order.id === orderId);
-    if (!orderToMove) return;
-    
-    setMockData(prev => ({
-      ...prev,
-      activeMixing: prev.activeMixing.filter(order => order.id !== orderId),
-      pendingOrders: [...prev.pendingOrders, { 
-        id: orderToMove.id,
-        flavor: orderToMove.flavor,
-        shape: orderToMove.shape,
-        size: orderToMove.size,
-        batchLabel: orderToMove.batchLabel,
-        requestedAt: orderToMove.requestedAt,
-        isPriority: orderToMove.isPriority,
-        requestedQuantity: 5,
-        producedQuantity: 5
-      }]
-    }));
+    setMockData(prev => {
+      const orderToMove = prev.activeMixing.find(order => order.id === orderId);
+      if (!orderToMove) return prev;
+      
+      return {
+        ...prev,
+        activeMixing: prev.activeMixing.filter(order => order.id !== orderId),
+        pendingOrders: [...prev.pendingOrders, { 
+          id: orderToMove.id,
+          flavor: orderToMove.flavor,
+          shape: orderToMove.shape,
+          size: orderToMove.size,
+          batchLabel: orderToMove.batchLabel,
+          requestedAt: orderToMove.requestedAt,
+          isPriority: orderToMove.isPriority,
+          requestedQuantity: 5,
+          producedQuantity: 5
+        }]
+      };
+    });
     
     toast("Mixing cancelled", { 
       description: "Order returned to pending queue" 
@@ -61,29 +66,31 @@ export const useQueueOperations = (mockData: MockData, setMockData: React.Dispat
   };
 
   const handleMixingComplete = (orderId: string) => {
-    const orderToMove = mockData.activeMixing.find(order => order.id === orderId);
-    if (!orderToMove) return;
-    
-    setMockData(prev => ({
-      ...prev,
-      activeMixing: prev.activeMixing.filter(order => order.id !== orderId),
-      ovenReady: [...prev.ovenReady, { 
-        id: orderToMove.id,
-        flavor: orderToMove.flavor,
-        shape: orderToMove.shape,
-        size: orderToMove.size,
-        batchLabel: orderToMove.batchLabel,
-        requestedAt: orderToMove.requestedAt,
-        isPriority: orderToMove.isPriority,
-        requestedQuantity: 5,
-        producedQuantity: 5
-      }]
-    }));
+    setMockData(prev => {
+      const orderToMove = prev.activeMixing.find(order => order.id === orderId);
+      if (!orderToMove) return prev;
+      
+      return {
+        ...prev,
+        activeMixing: prev.activeMixing.filter(order => order.id !== orderId),
+        ovenReady: [...prev.ovenReady, { 
+          id: orderToMove.id,
+          flavor: orderToMove.flavor,
+          shape: orderToMove.shape,
+          size: orderToMove.size,
+          batchLabel: orderToMove.batchLabel,
+          requestedAt: orderToMove.requestedAt,
+          isPriority: orderToMove.isPriority,
+          requestedQuantity: 5,
+          producedQuantity: 5
+        }]
+      };
+    });
     
     toast.success("Mixing complete! Order ready for oven.");
   };
 
-  const handleOvenComplete = (ovenNumber: number, activeTab: string, setActiveTab: (tab: string) => void) => {
+  const handleOvenComplete = (ovenNumber: number) => {
     setMockData(prev => {
       const oven = prev.ovens.find(o => o.number === ovenNumber);
       if (!oven) return prev;
@@ -93,45 +100,32 @@ export const useQueueOperations = (mockData: MockData, setMockData: React.Dispat
         prev.dailyTarget
       );
       
-      toast.success(`Oven ${ovenNumber} complete!`, {
-        description: `${oven.batches.length} batches successfully baked.`
-      });
-      
       const completedBatches = oven.batches.map(batch => ({
         ...batch,
         completedAt: new Date()
       }));
       
-      const updatedOvens = prev.ovens.map(o => {
-        if (o.number === ovenNumber) {
-          return {
-            ...o,
-            isActive: false,
-            timeRemaining: undefined,
-            currentBatch: undefined,
-            batches: []
-          };
-        }
-        return o;
+      toast.success(`Oven ${ovenNumber} complete!`, {
+        description: `${oven.batches.length} batches successfully baked.`
       });
       
       return {
         ...prev,
         dailyCompleted: newDailyCompleted,
-        ovens: updatedOvens,
+        ovens: prev.ovens.map(o => 
+          o.number === ovenNumber 
+            ? {
+                ...o,
+                isActive: false,
+                timeRemaining: undefined,
+                currentBatch: undefined,
+                batches: []
+              }
+            : o
+        ),
         completedBatches: [...prev.completedBatches, ...completedBatches]
       };
     });
-    
-    if (activeTab === 'in-progress') {
-      const noActiveMixing = mockData.activeMixing.length === 0;
-      const noOvenReady = mockData.ovenReady.length === 0;
-      const noActiveOvens = mockData.ovens.every(oven => !oven.isActive);
-      
-      if (noActiveMixing && noOvenReady && noActiveOvens) {
-        setActiveTab('done');
-      }
-    }
   };
 
   return {

@@ -1,108 +1,109 @@
+
 import React, { useEffect, useState } from 'react';
-import { PlayCircle } from 'lucide-react';
+import { Clock, XCircle, TimerOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { CakeFlavor, CakeShape } from '@/types/queue';
-import { formatDateTime } from '@/lib/date-utils';
+import { formatDateTime, formatTime } from '@/lib/date-utils';
 
-interface MixingCardProps {
+interface ActiveMixingCardProps {
   flavor: CakeFlavor;
   shape: CakeShape;
   size: number;
   batchLabel: string;
-  requestedQuantity: number;
   requestedAt: Date;
   isPriority?: boolean;
-  isNew?: boolean;
-  notes?: string;
-  onStartMixing: () => void;
+  onCancel: () => void;
+  onComplete: () => void;
+  startTime: Date;
 }
 
-const MixingCard: React.FC<MixingCardProps> = ({
+const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
   flavor,
   shape,
   size,
   batchLabel,
-  requestedQuantity,
   requestedAt,
   isPriority = false,
-  isNew = false,
-  notes,
-  onStartMixing
+  onCancel,
+  onComplete,
+  startTime
 }) => {
-  const [shouldShowNew, setShouldShowNew] = useState(isNew);
+  const MIXING_TIME = 120;
+  const WARNING_TIME = 30;
+
+  const [timeLeft, setTimeLeft] = useState<number>(() => {
+    const now = new Date();
+    const elapsedSeconds = Math.floor((now.getTime() - startTime.getTime()) / 1000);
+    return Math.max(0, MIXING_TIME - elapsedSeconds);
+  });
+  const [isTimerExpired, setIsTimerExpired] = useState<boolean>(() => timeLeft <= 0);
+  
   const bgColor = flavor === 'vanilla' ? 'bg-amber-50 text-amber-950' : 'bg-amber-900 text-amber-50';
-
-  // Check if order is within 5 minutes
+  const progressPercentage = (timeLeft / MIXING_TIME) * 100;
+  
   useEffect(() => {
-    if (isNew) {
-      const timer = setTimeout(() => {
-        setShouldShowNew(false);
-      }, 5 * 60 * 1000); // 5 minutes
-      return () => clearTimeout(timer);
+    if (timeLeft > 0) {
+      const interval = setInterval(() => {
+        setTimeLeft(prev => {
+          const newTime = prev - 1;
+          if (newTime === 0) {
+            setIsTimerExpired(true);
+          }
+          return newTime;
+        });
+      }, 1000);
+      
+      return () => clearInterval(interval);
     }
-  }, [isNew]);
-
-  // Format the shape and size for display
-  const formattedShapeSize = `${shape.charAt(0).toUpperCase() + shape.slice(1)} ${size}CM`;
+  }, [timeLeft]);
   
   return (
     <Card className={`
-      relative overflow-hidden transition-all
+      relative w-[200px] h-[200px] flex-shrink-0
       ${bgColor}
-      hover:shadow-md w-[200px] h-[200px] flex-shrink-0
+      ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
+      ${isTimerExpired ? 'animate-pulse' : ''}
     `}>
-      <CardContent className="p-2 h-full flex flex-col rounded-2xl bg-inherit">
-        {/* Shape and size */}
-        <div className="text-lg font-bold leading-tight mb-1 italic">{formattedShapeSize}</div>
+      <CardContent className="p-2 h-full flex flex-col">
+        <div className="text-base font-bold leading-tight mb-1">{batchLabel}</div>
+        <div className="text-xs opacity-70 mb-2">{formatDateTime(requestedAt)}</div>
         
-        {/* Flavor */}
-        <div className="text-xl font-bold leading-tight mb-1">
-          {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
-        </div>
-        
-        {/* Date */}
-        <div className="text-xs opacity-70 mb-1">
-          {formatDateTime(requestedAt)}
-        </div>
-        
-        <div className="text-sm font-medium mb-1">Asked Qty: {requestedQuantity}</div>
-        
-        {/* Notes and Tags section */}
-        <div className="space-y-1 mt-auto">
-          {notes && (
-            <div className="text-xs bg-muted/50 p-1 rounded">
-              {notes}
-            </div>
-          )}
+        <div className="flex flex-col items-center justify-center flex-grow">
+          <div className="flex items-center justify-center text-lg font-bold">
+            <Clock className="h-4 w-4 mr-1" />
+            {formatTime(timeLeft)}
+          </div>
           
-          <div className="flex flex-wrap gap-1">
-            {isPriority && (
-              <Badge variant="destructive" className="text-xs animate-flash-priority">
-                Priority
-              </Badge>
-            )}
-            {shouldShowNew && (
-              <Badge 
-                variant="secondary" 
-                className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 animate-pulse"
-              >
-                New
-              </Badge>
-            )}
+          <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+            <div
+              className="bg-green-600 h-1.5 rounded-full transition-all"
+              style={{ width: `${progressPercentage}%` }}
+            />
           </div>
         </div>
-        
-        <Button 
-          onClick={onStartMixing} 
-          className="w-full py-0.5 h-8 mt-1 text-zinc-50 bg-bakery-primary text-xs"
-        >
-          <PlayCircle className="mr-1 h-3 w-3" /> Start Mixing
-        </Button>
+
+        <div className="flex space-x-1 mt-auto">
+          <Button 
+            variant="destructive"
+            size="sm"
+            className="flex-1 h-7 text-xs"
+            onClick={onCancel}
+          >
+            <XCircle className="h-3 w-3 mr-1" /> Cancel
+          </Button>
+          <Button 
+            variant="default"
+            size="sm"
+            className="flex-1 h-7 text-xs"
+            onClick={onComplete}
+          >
+            <TimerOff className="h-3 w-3 mr-1" /> Finish
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
 };
 
-export default MixingCard;
+export default ActiveMixingCard;

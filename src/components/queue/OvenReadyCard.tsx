@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { MoveHorizontal, PlusCircle, MinusCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -35,76 +36,61 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
   onDragStart,
   onQuantityChange
 }) => {
-  const bgColor = flavor === 'vanilla' 
-    ? 'bg-amber-50 text-amber-950' 
-    : 'bg-amber-900 text-amber-50';
-    
-  const formattedShapeSize = `${shape.charAt(0).toUpperCase() + shape.slice(1)} ${size}CM`;
+  const bgColor = flavor === 'vanilla' ? 'bg-amber-50 text-amber-950' : 'bg-amber-900 text-amber-50';
   
   return (
     <Card 
       className={`
-        relative overflow-hidden transition-all
+        relative w-[200px] h-[200px] flex-shrink-0
         ${bgColor} 
         ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
-        hover:shadow-md cursor-move w-[200px] h-[200px] flex-shrink-0
+        hover:shadow-md cursor-move
       `}
       draggable="true"
       onDragStart={(e) => onDragStart(e, id)}
     >
       <CardContent className="p-2 h-full flex flex-col">
-        <div className="text-lg font-bold leading-tight italic">{formattedShapeSize}</div>
+        <div className="text-base font-bold leading-tight mb-1">{batchLabel}</div>
+        <div className="text-xs opacity-70 mb-1">{formatDateTime(requestedAt)}</div>
         
-        <div className="text-xl font-bold leading-tight mb-1">
-          {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
+        <div className="space-y-1 mb-2">
+          {isPriority && (
+            <Badge variant="destructive" className="text-xs">Priority</Badge>
+          )}
+          {isNew && (
+            <Badge variant="secondary" className="text-xs">New</Badge>
+          )}
         </div>
         
-        <div className="text-xs opacity-70 mb-1">
-          {formatDateTime(requestedAt)}
-        </div>
-        
-        <div className="space-y-1 mb-1">
-          <div className="flex space-x-1">
-            {isPriority && (
-              <Badge variant="destructive" className="text-xs">
-                Priority
-              </Badge>
-            )}
-            {isNew && (
-              <Badge variant="secondary" className="text-xs bg-bakery-primary/10 text-bakery-primary">
-                New
-              </Badge>
-            )}
+        <div className="flex flex-col mt-auto space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm">Asked: {requestedQuantity}</span>
+            <div className="flex space-x-1">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="h-6 w-6 rounded-full"
+                onClick={() => onQuantityChange(-1)}
+                disabled={producedQuantity <= 1}
+              >
+                <MinusCircle className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="h-6 w-6 rounded-full"
+                onClick={() => onQuantityChange(1)}
+              >
+                <PlusCircle className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        </div>
-        
-        <div className="flex items-center justify-between mt-auto">
-          <span className="text-sm font-medium">Asked Qty: {requestedQuantity}</span>
-          <div className="flex space-x-1">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="h-6 w-6 rounded-full"
-              onClick={() => onQuantityChange(-1)}
-              disabled={producedQuantity <= 1}
-            >
-              <MinusCircle className="h-4 w-4" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="h-6 w-6 rounded-full"
-              onClick={() => onQuantityChange(1)}
-            >
-              <PlusCircle className="h-4 w-4" />
-            </Button>
+          
+          <div className="text-sm">Actual: {producedQuantity}</div>
+          
+          <div className="flex items-center justify-center text-xs text-muted-foreground">
+            <MoveHorizontal className="h-3 w-3 mr-1" /> Drag to oven
           </div>
-        </div>
-        
-        <span className="text-sm font-medium">Actual Qty: {producedQuantity}</span>
-        
-        <div className="flex justify-center items-center mt-1 text-xs text-gray-500 dark:text-gray-400">
-          <MoveHorizontal className="h-3 w-3 mr-1" /> Drag to an oven slot
         </div>
       </CardContent>
     </Card>
