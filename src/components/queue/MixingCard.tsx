@@ -48,7 +48,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
       <CardContent className="p-3 h-full flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-start text-[10px] opacity-70">
-          <div>{format(new Date(requestedAt), 'dd MMM at HH:mm')}</div>
+          <div>{format(new Date(requestedAt), 'dd MMM HH:mm')}</div>
           <div className="font-mono">{uniqueCode}</div>
         </div>
 
