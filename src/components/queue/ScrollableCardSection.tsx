@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import { ChevronLeft, ChevronRight, Layers, Disc, Coffee, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -132,7 +131,7 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
         }}
       >
         {React.Children.map(children, (child) => (
-          <div className="shrink-0 snap-start" style={{ minWidth: '200px' }}> {/* Reduced from 220px to 200px */}
+          <div className="shrink-0 snap-start" style={{ minWidth: '220px' }}>
             {child}
           </div>
         ))}

@@ -45,7 +45,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
       relative overflow-hidden transition-all
       ${bgColor}
       ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
-      hover:shadow-md w-[200px] h-[200px] flex-shrink-0
+      hover:shadow-md w-[200px] h-[220px] flex-shrink-0  // Changed height from 200px to 220px
     `}>      
       <CardContent className="p-3 h-full flex flex-col">
         {/* Header */}
