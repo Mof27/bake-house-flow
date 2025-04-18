@@ -38,14 +38,14 @@ const QueuePage: React.FC = () => {
 
   return (
     <Layout sidebar={sidebar}>
-      <div className="p-4 h-[calc(100vh-0px)]">
+      <div className="flex flex-col h-screen">
         <Tabs 
           defaultValue="pending" 
-          className="w-full h-full" 
+          className="w-full h-full flex flex-col" 
           value={activeTab} 
           onValueChange={setActiveTab}
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between p-4 border-b">
             <TabsList className="w-fit">
               <TabsTrigger value="pending" className="font-bold">PENDING</TabsTrigger>
               <TabsTrigger value="in-progress" className="font-bold">IN PROGRESS</TabsTrigger>
@@ -57,7 +57,7 @@ const QueuePage: React.FC = () => {
             </Button>
           </div>
 
-          <div className="h-[calc(100vh-60px)] overflow-hidden">
+          <div className="flex-1 overflow-hidden">
             <PendingOrdersTab
               pendingOrders={mockData.pendingOrders}
               onStartMixing={handleStartMixing}
