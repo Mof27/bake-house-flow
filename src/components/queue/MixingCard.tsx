@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,6 +14,7 @@ interface MixingCardProps {
   isPriority?: boolean;
   onAction: (mixerId: number) => void;
   notes?: string;
+  requestedQuantity: number;
 }
 
 const MixingCard: React.FC<MixingCardProps> = ({
@@ -25,7 +25,8 @@ const MixingCard: React.FC<MixingCardProps> = ({
   requestedAt,
   isPriority = false,
   onAction,
-  notes
+  notes,
+  requestedQuantity
 }) => {
   const [isNew, setIsNew] = useState(false);
   const bgColor = flavor === 'vanilla' ? 'bg-amber-50 text-amber-950' : 'bg-amber-900 text-amber-50';
@@ -59,6 +60,9 @@ const MixingCard: React.FC<MixingCardProps> = ({
           </div>
           <div className="text-base font-bold leading-tight">
             {flavor.toUpperCase()}
+          </div>
+          <div className="text-base leading-tight">
+            {`Qty: ${requestedQuantity}`}
           </div>
         </div>
         
