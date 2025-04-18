@@ -13,7 +13,6 @@ interface MixingCardProps {
   batchLabel: string;
   requestedAt: Date;
   isPriority?: boolean;
-  actionLabel?: string;
   onAction: (mixerId: number) => void;
   notes?: string;
 }
@@ -31,13 +30,11 @@ const MixingCard: React.FC<MixingCardProps> = ({
   const [isNew, setIsNew] = useState(false);
   const bgColor = flavor === 'vanilla' ? 'bg-amber-50 text-amber-950' : 'bg-amber-900 text-amber-50';
   
-  // Check if order is new (less than 5 minutes old)
   useEffect(() => {
-    const timeDiff = (new Date().getTime() - new Date(requestedAt).getTime()) / 1000 / 60; // in minutes
+    const timeDiff = (new Date().getTime() - new Date(requestedAt).getTime()) / 1000 / 60;
     setIsNew(timeDiff <= 5);
   }, [requestedAt]);
-
-  // Generate unique code (A001-A999)
+  
   const orderNumber = batchLabel.match(/\d+/)?.[0] || '001';
   const uniqueCode = `#A${orderNumber.padStart(3, '0')}`;
   
@@ -49,35 +46,31 @@ const MixingCard: React.FC<MixingCardProps> = ({
       hover:shadow-md w-[200px] h-[200px] flex-shrink-0
     `}>      
       <CardContent className="p-3 h-full flex flex-col">
-        {/* Header with timestamp and unique code */}
-        <div className="flex justify-between items-start mb-4">
-          <div className="text-[10px] opacity-70">
-            {format(new Date(requestedAt), 'dd MMM at HH:mm')}
-          </div>
-          <div className="text-[10px] font-mono">
-            {uniqueCode}
-          </div>
+        {/* Header */}
+        <div className="flex justify-between items-start text-[10px] opacity-70 mb-2">
+          <div>{format(new Date(requestedAt), 'dd MMM at HH:mm')}</div>
+          <div className="font-mono">{uniqueCode}</div>
         </div>
 
-        {/* Shape and Size */}
-        <div className="text-lg font-bold leading-tight mb-1">
-          {`${shape.toUpperCase()} ${size}CM`}
-        </div>
-        
-        {/* Flavor */}
-        <div className="text-lg font-bold leading-tight mb-2">
-          {flavor.toUpperCase()}
+        {/* Main Content */}
+        <div className="space-y-1">
+          <div className="text-base font-bold leading-tight">
+            {`${shape.toUpperCase()} ${size}CM`}
+          </div>
+          <div className="text-base font-bold leading-tight">
+            {flavor.toUpperCase()}
+          </div>
         </div>
         
         {/* Notes if any */}
         {notes && (
-          <div className="text-xs bg-black/10 p-2 rounded-sm mb-2 line-clamp-2">
+          <div className="text-xs bg-black/10 p-1 rounded-sm mt-1 line-clamp-2">
             {notes}
           </div>
         )}
         
         {/* Tags */}
-        <div className="flex gap-1 mb-2">
+        <div className="flex gap-1 mt-1">
           {isPriority && (
             <Badge 
               variant="destructive" 
@@ -96,7 +89,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
           )}
         </div>
         
-        {/* Mixer Buttons */}
+        {/* Mixer Buttons - Always at bottom */}
         <div className="mt-auto flex gap-1">
           <Button 
             variant="default"

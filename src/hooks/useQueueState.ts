@@ -2,9 +2,16 @@ import { useState } from 'react';
 import { MockData, PendingOrder } from '@/types/queue';
 
 export const useQueueState = () => {
-  const generateRequestDate = () => {
+  const generateRecentDate = () => {
     const now = new Date();
-    const hoursAgo = Math.random() * 5;
+    const minutesAgo = Math.random() * 4; // Random time between 0-4 minutes ago
+    now.setMinutes(now.getMinutes() - minutesAgo);
+    return now;
+  };
+
+  const generateOlderDate = () => {
+    const now = new Date();
+    const hoursAgo = Math.random() * 5; // Random time between 0-5 hours ago
     now.setHours(now.getHours() - hoursAgo);
     return now;
   };
@@ -18,12 +25,11 @@ export const useQueueState = () => {
         flavor: 'vanilla',
         shape: 'round',
         size: 16,
-        batchLabel: 'ROUND VANILLA 16CM',
+        batchLabel: 'A001',
         requestedQuantity: 4,
         producedQuantity: 4,
-        requestedAt: generateRequestDate(),
+        requestedAt: generateRecentDate(), // New order (< 5 mins)
         isPriority: true,
-        isNew: true,
         notes: 'Birthday cake for Sarah'
       },
       {
@@ -31,10 +37,10 @@ export const useQueueState = () => {
         flavor: 'chocolate',
         shape: 'square',
         size: 20,
-        batchLabel: 'SQUARE CHOCOLATE 20CM',
+        batchLabel: 'A002',
         requestedQuantity: 2,
         producedQuantity: 2,
-        requestedAt: generateRequestDate(),
+        requestedAt: generateRecentDate(), // New order (< 5 mins)
         isPriority: false
       },
       {
@@ -42,10 +48,10 @@ export const useQueueState = () => {
         flavor: 'vanilla',
         shape: 'round',
         size: 18,
-        batchLabel: 'ROUND VANILLA 18CM',
+        batchLabel: 'A003',
         requestedQuantity: 3,
         producedQuantity: 3,
-        requestedAt: generateRequestDate(),
+        requestedAt: generateOlderDate(),
         isPriority: true
       },
       {
@@ -53,10 +59,10 @@ export const useQueueState = () => {
         flavor: 'chocolate',
         shape: 'square',
         size: 22,
-        batchLabel: 'SQUARE CHOCOLATE 22CM',
+        batchLabel: 'A004',
         requestedQuantity: 5,
         producedQuantity: 5,
-        requestedAt: generateRequestDate(),
+        requestedAt: generateOlderDate(),
         isPriority: false
       },
       {
@@ -64,10 +70,10 @@ export const useQueueState = () => {
         flavor: 'vanilla',
         shape: 'round',
         size: 20,
-        batchLabel: 'ROUND VANILLA 20CM',
+        batchLabel: 'A005',
         requestedQuantity: 2,
         producedQuantity: 2,
-        requestedAt: generateRequestDate(),
+        requestedAt: generateOlderDate(),
         isPriority: true
       },
       {
@@ -75,10 +81,10 @@ export const useQueueState = () => {
         flavor: 'chocolate',
         shape: 'square',
         size: 16,
-        batchLabel: 'SQUARE CHOCOLATE 16CM',
+        batchLabel: 'A006',
         requestedQuantity: 4,
         producedQuantity: 4,
-        requestedAt: generateRequestDate(),
+        requestedAt: generateOlderDate(),
         isPriority: false
       },
       {
@@ -86,10 +92,10 @@ export const useQueueState = () => {
         flavor: 'vanilla',
         shape: 'round',
         size: 22,
-        batchLabel: 'ROUND VANILLA 22CM',
+        batchLabel: 'A007',
         requestedQuantity: 3,
         producedQuantity: 3,
-        requestedAt: generateRequestDate(),
+        requestedAt: generateOlderDate(),
         isPriority: true
       },
       {
@@ -97,10 +103,10 @@ export const useQueueState = () => {
         flavor: 'chocolate',
         shape: 'square',
         size: 18,
-        batchLabel: 'SQUARE CHOCOLATE 18CM',
+        batchLabel: 'A008',
         requestedQuantity: 5,
         producedQuantity: 5,
-        requestedAt: generateRequestDate(),
+        requestedAt: generateOlderDate(),
         isPriority: false
       },
       {
@@ -108,10 +114,10 @@ export const useQueueState = () => {
         flavor: 'vanilla',
         shape: 'round',
         size: 16,
-        batchLabel: 'ROUND VANILLA 16CM',
+        batchLabel: 'A009',
         requestedQuantity: 2,
         producedQuantity: 2,
-        requestedAt: generateRequestDate(),
+        requestedAt: generateOlderDate(),
         isPriority: true
       },
       {
@@ -119,10 +125,10 @@ export const useQueueState = () => {
         flavor: 'chocolate',
         shape: 'square',
         size: 20,
-        batchLabel: 'SQUARE CHOCOLATE 20CM',
+        batchLabel: 'A010',
         requestedQuantity: 4,
         producedQuantity: 4,
-        requestedAt: generateRequestDate(),
+        requestedAt: generateOlderDate(),
         isPriority: false
       }
     ],
@@ -132,8 +138,8 @@ export const useQueueState = () => {
         flavor: 'vanilla',
         shape: 'round',
         size: 18,
-        batchLabel: 'ROUND VANILLA 18CM',
-        requestedAt: generateRequestDate(),
+        batchLabel: 'A003',
+        requestedAt: generateOlderDate(),
         isPriority: false,
         startTime: new Date()
       }
@@ -144,10 +150,10 @@ export const useQueueState = () => {
         flavor: 'chocolate',
         shape: 'round',
         size: 22,
-        batchLabel: 'ROUND CHOCOLATE 22CM',
+        batchLabel: 'A004',
         requestedQuantity: 5,
         producedQuantity: 5,
-        requestedAt: generateRequestDate(),
+        requestedAt: generateOlderDate(),
         isPriority: true
       },
       {
@@ -155,10 +161,10 @@ export const useQueueState = () => {
         flavor: 'vanilla',
         shape: 'square',
         size: 16,
-        batchLabel: 'SQUARE VANILLA 16CM',
+        batchLabel: 'A008',
         requestedQuantity: 2,
         producedQuantity: 2,
-        requestedAt: generateRequestDate(),
+        requestedAt: generateOlderDate(),
         isPriority: false
       }
     ],
@@ -169,14 +175,14 @@ export const useQueueState = () => {
         timeRemaining: 1250,
         currentBatch: {
           id: '5',
-          batchLabel: 'ROUND VANILLA 18CM',
+          batchLabel: 'A003',
           flavor: 'vanilla',
           producedQuantity: 3
         },
         batches: [
           {
             id: '5',
-            batchLabel: 'ROUND VANILLA 18CM',
+            batchLabel: 'A003',
             flavor: 'vanilla',
             shape: 'round',
             size: 18,
@@ -193,37 +199,36 @@ export const useQueueState = () => {
     completedBatches: [
       {
         id: '10',
-        batchLabel: 'SQUARE VANILLA 20CM',
+        batchLabel: 'A010',
         flavor: 'vanilla',
         shape: 'square',
         size: 20,
         producedQuantity: 4,
-        completedAt: generateRequestDate()
+        completedAt: generateOlderDate()
       },
       {
         id: '11',
-        batchLabel: 'ROUND CHOCOLATE 18CM',
+        batchLabel: 'A002',
         flavor: 'chocolate',
         shape: 'round',
         size: 18,
         producedQuantity: 3,
-        completedAt: generateRequestDate()
+        completedAt: generateOlderDate()
       },
       {
         id: '12',
-        batchLabel: 'SQUARE CHOCOLATE 22CM',
+        batchLabel: 'A004',
         flavor: 'chocolate',
         shape: 'square',
         size: 22,
         producedQuantity: 6,
-        completedAt: generateRequestDate()
+        completedAt: generateOlderDate()
       }
     ]
   });
 
   return {
     mockData,
-    setMockData,
-    generateRequestDate
+    setMockData
   };
 };
