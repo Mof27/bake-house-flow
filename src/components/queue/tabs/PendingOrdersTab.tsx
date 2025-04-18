@@ -28,10 +28,8 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
                   shape={order.shape}
                   size={order.size}
                   batchLabel={order.batchLabel}
-                  // Removed properties that aren't in the MixingCard props interface
                   requestedAt={order.requestedAt}
                   isPriority={order.isPriority}
-                  notes={order.notes}
                   onStartMixing={() => onStartMixing(order.id)}
                 />
               ))}
