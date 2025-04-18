@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import Sidebar from '@/components/Sidebar';
@@ -38,7 +37,6 @@ const QueuePage: React.FC = () => {
     handleDrop
   } = useQueueDragDrop(mockData, setMockData);
   
-  // Initialize the timer effect
   useQueueTimer(setMockData);
 
   const sidebar = (
@@ -72,7 +70,7 @@ const QueuePage: React.FC = () => {
           <div className="h-[calc(100vh-60px)] overflow-hidden">
             <PendingOrdersTab
               pendingOrders={mockData.pendingOrders}
-              onStartMixing={(id) => handleStartMixing(id, setActiveTab)}
+              onStartMixing={handleStartMixing}
             />
             
             <InProgressTab

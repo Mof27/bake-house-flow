@@ -1,4 +1,3 @@
-
 import { toast } from 'sonner';
 import { MockData } from '@/types/queue';
 
@@ -14,7 +13,7 @@ export const useQueueOperations = (mockData: MockData, setMockData: React.Dispat
     }));
   };
 
-  const handleStartMixing = (orderId: string, setActiveTab: (tab: string) => void) => {
+  const handleStartMixing = (orderId: string) => {
     const orderToMove = mockData.pendingOrders.find(order => order.id === orderId);
     if (!orderToMove) return;
     
@@ -34,7 +33,6 @@ export const useQueueOperations = (mockData: MockData, setMockData: React.Dispat
     }));
     
     toast.success("Started mixing process");
-    setActiveTab('in-progress');
   };
 
   const handleCancelTimer = (orderId: string) => {
