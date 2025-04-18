@@ -15,11 +15,15 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
   onStartMixing,
 }) => {
   const [selectedFlavor, setSelectedFlavor] = useState<CakeFlavor | 'all'>('all');
+  const [isPriorityOnly, setIsPriorityOnly] = useState(false);
 
   const filteredOrders = useMemo(() => {
-    if (selectedFlavor === 'all') return pendingOrders;
-    return pendingOrders.filter(order => order.flavor === selectedFlavor);
-  }, [pendingOrders, selectedFlavor]);
+    return pendingOrders.filter(order => {
+      const flavorMatch = selectedFlavor === 'all' || order.flavor === selectedFlavor;
+      const priorityMatch = !isPriorityOnly || order.isPriority;
+      return flavorMatch && priorityMatch;
+    });
+  }, [pendingOrders, selectedFlavor, isPriorityOnly]);
 
   return (
     <TabsContent value="pending" className="mt-0 h-full overflow-hidden">
@@ -30,6 +34,9 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
             selectedFlavor={selectedFlavor}
             onFlavorChange={setSelectedFlavor}
             showFilters={true}
+            showPriorityFilter={true}
+            isPriorityOnly={isPriorityOnly}
+            onPriorityChange={setIsPriorityOnly}
           >
             {filteredOrders.map(order => (
               <MixingCard 

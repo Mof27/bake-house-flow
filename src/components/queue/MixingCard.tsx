@@ -33,9 +33,6 @@ const MixingCard: React.FC<MixingCardProps> = ({
 }) => {
   const bgColor = flavor === 'vanilla' ? 'bg-amber-50 text-amber-950' : 'bg-amber-900 text-amber-50';
   
-  // Split batch label into parts (assuming format like "ROUND VANILLA 16CM")
-  const parts = batchLabel.split(' ');
-  
   return (
     <Card className={`
       relative overflow-hidden transition-all
@@ -43,22 +40,35 @@ const MixingCard: React.FC<MixingCardProps> = ({
       ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
       hover:shadow-md w-[200px] h-[200px] flex-shrink-0
     `}>      
-      <CardContent className="p-3 h-full flex flex-col space-y-2">
-        {/* Shape and Size in one line */}
-        <div className="text-lg font-bold leading-tight">
-          {`${shape.toUpperCase()} ${size} CM`}
+      <CardContent className="p-3 h-full flex flex-col">
+        <div className="flex justify-between items-start mb-2">
+          <div className="text-[10px] opacity-70">
+            {formatDateTime(requestedAt)}
+          </div>
+          <div className="text-[10px] font-mono">
+            #{batchLabel.replace(/[^0-9]/g, '')}
+          </div>
+        </div>
+
+        {/* Shape and Size */}
+        <div className="text-lg font-bold leading-tight mb-1">
+          {`${shape.toUpperCase()} ${size}CM`}
         </div>
         
         {/* Flavor */}
-        <div className="text-lg font-bold leading-tight">{parts[1] || ''}</div>
-        
-        {/* Date */}
-        <div className="text-xs opacity-70">
-          {formatDateTime(requestedAt)}
+        <div className="text-lg font-bold leading-tight mb-2">
+          {flavor.toUpperCase()}
         </div>
         
+        {/* Notes if any */}
+        {notes && (
+          <div className="text-xs bg-black/10 p-2 rounded-sm mb-2 line-clamp-2">
+            {notes}
+          </div>
+        )}
+        
         {/* Tags */}
-        <div className="flex gap-2">
+        <div className="flex gap-1 mb-2">
           {isPriority && (
             <Badge variant="destructive" className="text-[10px] px-1 py-0">
               PRIORITY
@@ -70,13 +80,6 @@ const MixingCard: React.FC<MixingCardProps> = ({
             </Badge>
           )}
         </div>
-        
-        {/* Notes */}
-        {notes && (
-          <div className="text-xs bg-black/10 p-2 rounded-sm line-clamp-2 overflow-hidden">
-            {notes}
-          </div>
-        )}
         
         <Button 
           variant="default"

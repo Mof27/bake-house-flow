@@ -11,6 +11,9 @@ interface ScrollableCardSectionProps {
   selectedFlavor?: CakeFlavor | 'all';
   onFlavorChange?: (flavor: CakeFlavor | 'all') => void;
   showFilters?: boolean;
+  showPriorityFilter?: boolean;
+  isPriorityOnly?: boolean;
+  onPriorityChange?: (isPriority: boolean) => void;
 }
 
 const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({ 
@@ -18,7 +21,10 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
   title,
   selectedFlavor = 'all',
   onFlavorChange,
-  showFilters = false
+  showFilters = false,
+  showPriorityFilter = false,
+  isPriorityOnly = false,
+  onPriorityChange,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
@@ -39,24 +45,42 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
       <div className="flex justify-between items-center mb-2">
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-bold">{title}</h2>
-          {showFilters && (
-            <ToggleGroup 
-              type="single" 
-              value={selectedFlavor}
-              onValueChange={(value) => onFlavorChange?.(value as CakeFlavor | 'all')}
-              className="gap-1"
-            >
-              <ToggleGroupItem value="all" aria-label="Show all flavors" className="text-xs">
-                All
-              </ToggleGroupItem>
-              <ToggleGroupItem value="vanilla" aria-label="Show vanilla only" className="text-xs">
-                Vanilla
-              </ToggleGroupItem>
-              <ToggleGroupItem value="chocolate" aria-label="Show chocolate only" className="text-xs">
-                Chocolate
-              </ToggleGroupItem>
-            </ToggleGroup>
-          )}
+          <div className="flex flex-wrap gap-2">
+            {showFilters && (
+              <ToggleGroup 
+                type="single" 
+                value={selectedFlavor}
+                onValueChange={(value) => onFlavorChange?.(value as CakeFlavor | 'all')}
+                className="gap-1"
+              >
+                <ToggleGroupItem value="all" aria-label="Show all flavors" className="text-xs">
+                  All
+                </ToggleGroupItem>
+                <ToggleGroupItem value="vanilla" aria-label="Show vanilla only" className="text-xs">
+                  Vanilla
+                </ToggleGroupItem>
+                <ToggleGroupItem value="chocolate" aria-label="Show chocolate only" className="text-xs">
+                  Chocolate
+                </ToggleGroupItem>
+              </ToggleGroup>
+            )}
+            
+            {showPriorityFilter && (
+              <ToggleGroup 
+                type="single" 
+                value={isPriorityOnly ? 'priority' : 'all'}
+                onValueChange={(value) => onPriorityChange?.(value === 'priority')}
+                className="gap-1"
+              >
+                <ToggleGroupItem value="all" aria-label="Show all orders" className="text-xs">
+                  All Orders
+                </ToggleGroupItem>
+                <ToggleGroupItem value="priority" aria-label="Show priority only" className="text-xs">
+                  Priority Only
+                </ToggleGroupItem>
+              </ToggleGroup>
+            )}
+          </div>
         </div>
         <div className="flex gap-2">
           <Button 
@@ -94,7 +118,6 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
           </div>
         ))}
         
-        {/* Add a small dummy element to ensure the last card can be fully scrolled into view */}
         <div className="shrink-0 w-4"></div>
       </div>
     </div>
