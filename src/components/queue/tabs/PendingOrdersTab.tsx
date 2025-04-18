@@ -30,7 +30,8 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
                   batchLabel={order.batchLabel}
                   requestedAt={order.requestedAt}
                   isPriority={order.isPriority}
-                  onStartMixing={() => onStartMixing(order.id)}
+                  actionLabel="Start Mixing"
+                  onAction={() => onStartMixing(order.id)}
                 />
               ))}
             </ScrollableCardSection>
