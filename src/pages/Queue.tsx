@@ -12,8 +12,6 @@ import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useQueueState } from '@/hooks/useQueueState';
 import { useQueueOperations } from '@/hooks/useQueueOperations';
-import { useQueueDragDrop } from '@/hooks/useQueueDragDrop';
-import { useQueueTimer } from '@/hooks/useQueueTimer';
 
 import PendingOrdersTab from '@/components/queue/tabs/PendingOrdersTab';
 import InProgressTab from '@/components/queue/tabs/InProgressTab';
@@ -29,16 +27,7 @@ const QueuePage: React.FC = () => {
     handleStartMixing,
     handleCancelTimer,
     handleMixingComplete,
-    handleOvenComplete
   } = useQueueOperations(mockData, setMockData);
-  
-  const {
-    handleDragStart,
-    handleDragOver,
-    handleDrop
-  } = useQueueDragDrop(mockData, setMockData);
-  
-  useQueueTimer(setMockData);
 
   const sidebar = (
     <Sidebar 
@@ -77,14 +66,9 @@ const QueuePage: React.FC = () => {
             <InProgressTab
               activeMixing={mockData.activeMixing}
               ovenReady={mockData.ovenReady}
-              ovens={mockData.ovens}
               onCancelTimer={handleCancelTimer}
               onMixingComplete={handleMixingComplete}
               onQuantityChange={handleQuantityChange}
-              onDragStart={handleDragStart}
-              onOvenDragOver={handleDragOver}
-              onOvenDrop={handleDrop}
-              onOvenComplete={handleOvenComplete}
             />
             
             <CompletedTab

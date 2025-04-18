@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { MoveHorizontal, PlusCircle, MinusCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { PlusCircle, MinusCircle } from 'lucide-react';
 import { CakeFlavor, CakeShape } from '@/types/queue';
 import { formatDateTime } from '@/lib/date-utils';
 
@@ -17,13 +17,11 @@ interface OvenReadyCardProps {
   producedQuantity: number;
   isPriority?: boolean;
   isNew?: boolean;
-  onDragStart: (e: React.DragEvent, id: string) => void;
   onQuantityChange: (delta: number) => void;
   id: string;
 }
 
 const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
-  id,
   flavor,
   shape,
   size,
@@ -33,7 +31,6 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
   producedQuantity,
   isPriority = false,
   isNew = false,
-  onDragStart,
   onQuantityChange
 }) => {
   const bgColor = flavor === 'vanilla' ? 'bg-amber-50 text-amber-950' : 'bg-amber-900 text-amber-50';
@@ -44,10 +41,8 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
         relative w-[200px] h-[200px] flex-shrink-0
         ${bgColor} 
         ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
-        hover:shadow-md cursor-move
+        hover:shadow-md
       `}
-      draggable="true"
-      onDragStart={(e) => onDragStart(e, id)}
     >
       <CardContent className="p-2 h-full flex flex-col">
         <div className="text-base font-bold leading-tight mb-1">{batchLabel}</div>
@@ -87,10 +82,6 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
           </div>
           
           <div className="text-sm">Actual: {producedQuantity}</div>
-          
-          <div className="flex items-center justify-center text-xs text-muted-foreground">
-            <MoveHorizontal className="h-3 w-3 mr-1" /> Drag to oven
-          </div>
         </div>
       </CardContent>
     </Card>
