@@ -62,10 +62,10 @@ const MixingCard: React.FC<MixingCardProps> = ({
         
         {/* Tags */}
         <div className="flex gap-1 mt-1">
-          {isPriority && <Badge variant="destructive" className="text-[10px] px-1 py-0 animate-flash-priority">
+          {isPriority && <Badge variant="destructive" className="text-[8px] px-1 py-0 animate-flash-priority">
               PRIORITY
             </Badge>}
-          {isNew && <Badge variant="secondary" className="text-[10px] px-1 py-1 text-bakery-primary animate-flash-priority bg-blue-700">
+          {isNew && <Badge variant="secondary" className="text-[8px] px-1 py-0 text-bakery-primary animate-flash-priority bg-blue-700">
               NEW
             </Badge>}
         </div>
