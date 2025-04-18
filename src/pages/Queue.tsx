@@ -7,18 +7,13 @@ import {
   TabsList, 
   TabsTrigger 
 } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Moon, Sun } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useQueueState } from '@/hooks/useQueueState';
-import { useQueueOperations } from '@/hooks/useQueueOperations';
-
 import PendingOrdersTab from '@/components/queue/tabs/PendingOrdersTab';
 import InProgressTab from '@/components/queue/tabs/InProgressTab';
 import CompletedTab from '@/components/queue/tabs/CompletedTab';
+import { useQueueState } from '@/hooks/useQueueState';
+import { useQueueOperations } from '@/hooks/useQueueOperations';
 
 const QueuePage: React.FC = () => {
-  const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<string>('pending');
   const { mockData, setMockData } = useQueueState();
   
@@ -51,10 +46,6 @@ const QueuePage: React.FC = () => {
               <TabsTrigger value="in-progress" className="font-bold">IN PROGRESS</TabsTrigger>
               <TabsTrigger value="done" className="font-bold">DONE</TabsTrigger>
             </TabsList>
-            
-            <Button size="icon" variant="ghost" className="rounded-full" onClick={toggleTheme}>
-              {theme === 'dark' ? <Sun /> : <Moon />}
-            </Button>
           </div>
 
           <div className="flex-1 overflow-hidden">

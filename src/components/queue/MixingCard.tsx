@@ -72,12 +72,12 @@ const MixingCard: React.FC<MixingCardProps> = ({
           {isPriority && <Badge variant="destructive" className="text-[8px] px-1 py-0 animate-flash-priority">
               PRIORITY
             </Badge>}
-          {isNew && <Badge variant="secondary" className="text-[8px] px-1 py-0 text-bakery-primary animate-flash-priority bg-blue-700">
+          {isNew && <Badge variant="secondary" className="text-[8px] px-1 py-0 text-white animate-flash-priority bg-blue-700">
               NEW
             </Badge>}
         </div>
         
-        {/* Mixer Buttons - Always at bottom */}
+        {/* Mixer Buttons */}
         <div className="mt-auto flex gap-1">
           <Button variant="default" size="sm" className="flex-1 text-xs" onClick={() => onAction(1)}>
             Mixer #1
