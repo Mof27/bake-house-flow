@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Circle, Square, UtensilsCrossed, PenTool, ChevronLeft, Flag, Minus, Plus } from 'lucide-react';
+import { Circle, Square, PenTool, ChevronLeft, Flag, Minus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,16 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import Layout from '@/components/Layout';
+import { useOrders } from '@/contexts/OrderContext';
+
+// Custom bowl icon component
+const BowlIcon = ({ className }: { className?: string }) => (
+  <img 
+    src="/lovable-uploads/6dc45a33-f429-4a07-838d-5da53e335451.png" 
+    alt="Bowl" 
+    className={className || "w-8 h-8"} 
+  />
+);
 
 const STANDARD_SIZES = [12, 16, 18, 22, 25, 35];
 
@@ -34,6 +45,7 @@ const generateBatchLabel = (size: string, flavor: string) => {
 
 const NewCakeOrder = () => {
   const navigate = useNavigate();
+  const { createOrder } = useOrders();
   
   const [shape, setShape] = useState<'round' | 'square' | 'bowl' | 'custom'>('round');
   const [size, setSize] = useState<number>(18);
@@ -109,7 +121,18 @@ const NewCakeOrder = () => {
       
       console.log('New order created:', orderData);
       
+      // Add to the global queue
       await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Here we're integrating with the queue system
+      const orderInput = {
+        designName: `${shape.charAt(0).toUpperCase() + shape.slice(1)} Cake ${dimensions} cm`,
+        complexity: 3, // Default complexity
+        isPriority: priority,
+        notes: `${flavor.charAt(0).toUpperCase() + flavor.slice(1)} flavor. Quantity: ${quantity}. ${notes}`
+      };
+      
+      await createOrder(orderInput);
       
       setShowSuccessDialog(true);
       setIsSubmitting(false);
@@ -175,7 +198,7 @@ const NewCakeOrder = () => {
                       htmlFor="bowl" 
                       className={`flex flex-col items-center justify-center rounded-md border-2 border-muted p-4 hover:bg-accent hover:text-accent-foreground ${shape === 'bowl' ? 'border-primary bg-primary/10' : ''}`}
                     >
-                      <UtensilsCrossed className="w-8 h-8 mb-2" />
+                      <BowlIcon className="w-8 h-8 mb-2" />
                       <span className="mt-2">Bowl</span>
                     </Label>
                   </div>
