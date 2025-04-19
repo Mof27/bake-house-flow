@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Layers, Disc, Coffee, Star, ArrowDownAZ, ArrowUpAZ } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Layers, Disc, Coffee, Star, ArrowUpAZ, ArrowDownAZ } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { CakeFlavor } from '@/types/queue';
@@ -132,28 +132,35 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
                 </Button>
               )}
 
-              <Button
-                variant={sortOrder === 'asc' ? 'outline' : 'default'}
-                size="sm"
-                onClick={handleSortOrderToggle}
-                className={`gap-2 transition-all duration-200 ${
-                  sortOrder === 'desc' 
-                    ? 'bg-[#9b87f5] hover:bg-[#7E69AB] text-white' 
-                    : 'hover:bg-accent hover:text-accent-foreground'
-                }`}
-              >
-                {sortOrder === 'asc' ? (
-                  <>
-                    <ArrowUpAZ className="h-4 w-4" />
-                    <span>Oldest First</span>
-                  </>
-                ) : (
-                  <>
-                    <ArrowDownAZ className="h-4 w-4" />
-                    <span>Newest First</span>
-                  </>
-                )}
-              </Button>
+              <div className="flex items-center gap-1 border rounded-md p-0.5">
+                <Button 
+                  variant={sortOrder === 'asc' ? 'default' : 'outline'} 
+                  size="sm" 
+                  onClick={handleSortOrderToggle}
+                  className={`gap-2 transition-all duration-200 ${
+                    sortOrder === 'asc' 
+                      ? 'bg-[#9b87f5] hover:bg-[#7E69AB] text-white' 
+                      : 'hover:bg-accent hover:text-accent-foreground'
+                  }`}
+                >
+                  <ArrowUpAZ className="h-4 w-4" />
+                  <span>Oldest First</span>
+                </Button>
+                
+                <Button 
+                  variant={sortOrder === 'desc' ? 'default' : 'outline'} 
+                  size="sm" 
+                  onClick={handleSortOrderToggle}
+                  className={`gap-2 transition-all duration-200 ${
+                    sortOrder === 'desc' 
+                      ? 'bg-[#9b87f5] hover:bg-[#7E69AB] text-white' 
+                      : 'hover:bg-accent hover:text-accent-foreground'
+                  }`}
+                >
+                  <ArrowDownAZ className="h-4 w-4" />
+                  <span>Newest First</span>
+                </Button>
+              </div>
             </div>
           )}
         </div>
