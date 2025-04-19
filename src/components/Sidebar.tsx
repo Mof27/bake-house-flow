@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, File } from 'lucide-react';
 
 interface SidebarProps {
   dailyCompleted: number;
@@ -15,9 +15,14 @@ const Sidebar: React.FC<SidebarProps> = ({ dailyCompleted, dailyTarget }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const dailyProgressPercentage = (dailyCompleted / dailyTarget) * 100;
   const location = useLocation();
+  const navigate = useNavigate();
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
+  };
+
+  const handleNewOrder = () => {
+    navigate('/new-order');
   };
 
   return (
@@ -45,8 +50,16 @@ const Sidebar: React.FC<SidebarProps> = ({ dailyCompleted, dailyTarget }) => {
         </Button>
       </div>
 
-      {/* Empty space - removed user, notifications and create order buttons */}
-      <div className="flex-1"></div>
+      {/* New Order Button */}
+      <div className="p-4 border-b">
+        <Button 
+          onClick={handleNewOrder} 
+          className={cn("w-full", isCollapsed ? "p-2" : "")}
+        >
+          <File className={cn("mr-2", isCollapsed ? "m-0" : "")} />
+          {!isCollapsed && "New Order"}
+        </Button>
+      </div>
       
       {/* Daily progress section */}
       <div className={cn("p-4 border-t", isCollapsed ? "px-2" : "")}>
