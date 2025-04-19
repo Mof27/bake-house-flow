@@ -44,9 +44,9 @@ const OrderSuccessDialog: React.FC<OrderSuccessDialogProps> = ({
           <Button 
             variant="outline" 
             className="sm:flex-1" 
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/queue')} // Changed to navigate to queue page
           >
-            Done
+            View Queue
           </Button>
           <Button 
             className="sm:flex-1" 

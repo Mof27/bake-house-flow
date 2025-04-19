@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
@@ -8,6 +9,7 @@ import { User } from '@/contexts/AuthContext';
 export const useOrderOperations = (user: User) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [nextBatchNumber, setNextBatchNumber] = useState(1); // Add counter for batch numbers
 
   const getOrderById = (id: string): Order | undefined => {
     return orders.find(order => order.id === id);
@@ -21,6 +23,10 @@ export const useOrderOperations = (user: User) => {
       
       const estimatedTime = estimateBakeTime();
       
+      // Generate a unique batch label with incrementing number
+      const batchNumber = nextBatchNumber.toString().padStart(3, '0');
+      const batchLabel = `A${batchNumber}`;
+      
       const newOrder: Order = {
         id: uuidv4(),
         isPriority: orderData.isPriority,
@@ -28,7 +34,7 @@ export const useOrderOperations = (user: User) => {
         flavor: orderData.flavor,
         shape: orderData.shape,
         size: orderData.size,
-        batchLabel: `${orderData.size}cm | ${orderData.flavor === 'vanilla' ? 'VC' : 'DC'} | ${new Date().toLocaleString()}`,
+        batchLabel,
         requestedQuantity: orderData.requestedQuantity,
         producedQuantity: 0,
         estimatedTime,
@@ -48,6 +54,9 @@ export const useOrderOperations = (user: User) => {
         console.log('Updated orders array:', updatedOrders);
         return updatedOrders;
       });
+      
+      // Increment the batch number for next order
+      setNextBatchNumber(prevNumber => prevNumber + 1);
       
       console.log('Printing label for new order:', newOrder.id);
       toast.success(`Order created successfully`);

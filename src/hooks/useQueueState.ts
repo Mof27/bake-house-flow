@@ -261,14 +261,19 @@ export const useQueueState = () => {
           producedQuantity: order.producedQuantity,
           requestedAt: order.createdAt,
           isPriority: order.isPriority,
-          notes: order.notes
+          notes: order.notes,
+          isNew: true // Mark as new to highlight in UI if needed
         }));
 
       // Update the mockData with the new pending orders
       if (newPendingOrders.length > 0) {
+        // Put new orders at the beginning to ensure visibility
         setMockData(prevMockData => ({
           ...prevMockData,
-          pendingOrders: [...newPendingOrders, ...prevMockData.pendingOrders]
+          pendingOrders: [...newPendingOrders, ...prevMockData.pendingOrders.filter(
+            // Filter out any existing orders with the same IDs to avoid duplicates
+            existingOrder => !newPendingOrders.some(newOrder => newOrder.id === existingOrder.id)
+          )]
         }));
 
         // Show toast notification for confirmation
