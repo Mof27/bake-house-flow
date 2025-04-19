@@ -12,6 +12,7 @@ import OnlineStatus from "@/components/OnlineStatus";
 
 import Queue from "./pages/Queue";
 import NotFound from "./pages/NotFound";
+import NewCakeOrder from "./pages/NewCakeOrder";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => {
                   <Routes>
                     <Route path="/" element={<Queue />} />
                     <Route path="/queue" element={<Queue />} />
+                    <Route path="/new-order" element={<NewCakeOrder />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </TooltipProvider>
