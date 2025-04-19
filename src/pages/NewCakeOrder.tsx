@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -19,7 +18,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import Layout from '@/components/Layout';
-import { useOrders } from '@/contexts/OrderContext';
+import { useOrders, ComplexityLevel } from '@/contexts/OrderContext';
 
 // Custom bowl icon component
 const BowlIcon = ({ className }: { className?: string }) => (
@@ -124,10 +123,10 @@ const NewCakeOrder = () => {
       // Add to the global queue
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      // Here we're integrating with the queue system
+      // Here we're integrating with the queue system - now with the correct type for complexity
       const orderInput = {
         designName: `${shape.charAt(0).toUpperCase() + shape.slice(1)} Cake ${dimensions} cm`,
-        complexity: 3, // Default complexity
+        complexity: 3 as ComplexityLevel,
         isPriority: priority,
         notes: `${flavor.charAt(0).toUpperCase() + flavor.slice(1)} flavor. Quantity: ${quantity}. ${notes}`
       };
