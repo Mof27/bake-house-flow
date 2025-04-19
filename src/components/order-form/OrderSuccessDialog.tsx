@@ -44,7 +44,7 @@ const OrderSuccessDialog: React.FC<OrderSuccessDialogProps> = ({
           <Button 
             variant="outline" 
             className="sm:flex-1" 
-            onClick={() => navigate('/queue')} // Changed to navigate to queue page
+            onClick={() => navigate('/queue?showNewest=true')} // Add query parameter to trigger scroll to beginning
           >
             View Queue
           </Button>

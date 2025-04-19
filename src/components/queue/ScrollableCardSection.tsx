@@ -1,5 +1,6 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Layers, Disc, Coffee, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -27,6 +28,16 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
   onPriorityChange,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+  
+  // Check for the showNewest query parameter
+  useEffect(() => {
+    const showNewest = new URLSearchParams(location.search).get('showNewest');
+    if (showNewest === 'true' && scrollContainerRef.current) {
+      // Scroll to the beginning (left) of the container
+      scrollContainerRef.current.scrollLeft = 0;
+    }
+  }, [location.search]);
   
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -144,4 +155,3 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
 };
 
 export default ScrollableCardSection;
-

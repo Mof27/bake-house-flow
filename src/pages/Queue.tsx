@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import Sidebar from '@/components/Sidebar';
 import { 
@@ -14,8 +15,17 @@ import { useQueueState } from '@/hooks/useQueueState';
 import { useQueueOperations } from '@/hooks/useQueueOperations';
 
 const QueuePage: React.FC = () => {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<string>('pending');
   const { mockData, setMockData } = useQueueState();
+  
+  // Set the active tab to 'pending' when showNewest is in the query parameters
+  useEffect(() => {
+    const showNewest = new URLSearchParams(location.search).get('showNewest');
+    if (showNewest === 'true') {
+      setActiveTab('pending');
+    }
+  }, [location.search]);
   
   const {
     handleQuantityChange,
