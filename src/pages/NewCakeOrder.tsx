@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { PlusCircle, MinusCircle, ChevronLeft, Flag } from 'lucide-react';
+import { Circle, Square, UtensilsCrossed, PenTool, ChevronLeft, Flag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -20,10 +19,8 @@ import {
 } from '@/components/ui/dialog';
 import Layout from '@/components/Layout';
 
-// Predefined sizes for different shapes
 const STANDARD_SIZES = [12, 16, 18, 22, 25, 35];
 
-// Function to generate a batch label: {size} cm | {VC/DC} | {DDMMM-HH:MM}
 const generateBatchLabel = (size: string, flavor: string) => {
   const now = new Date();
   const day = now.getDate().toString().padStart(2, '0');
@@ -38,9 +35,8 @@ const generateBatchLabel = (size: string, flavor: string) => {
 const NewCakeOrder = () => {
   const navigate = useNavigate();
   
-  // State for form fields
   const [shape, setShape] = useState<'round' | 'square' | 'bowl' | 'custom'>('round');
-  const [size, setSize] = useState<number>(18); // Default to 18cm
+  const [size, setSize] = useState<number>(18);
   const [width, setWidth] = useState<number>(20);
   const [length, setLength] = useState<number>(30);
   const [quantity, setQuantity] = useState<number>(1);
@@ -50,7 +46,6 @@ const NewCakeOrder = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState<boolean>(false);
   
-  // Handle quantity change with constraints
   const handleQuantityChange = (delta: number) => {
     const newQuantity = quantity + delta;
     if (newQuantity >= 1 && newQuantity <= 100) {
@@ -58,25 +53,21 @@ const NewCakeOrder = () => {
     }
   };
   
-  // Find the closest standard size
   const findClosestSize = (value: number) => {
     return STANDARD_SIZES.reduce((prev, curr) => 
       Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev
     );
   };
   
-  // Handle size slider change
   const handleSizeChange = (value: number[]) => {
     const closestSize = findClosestSize(value[0]);
     setSize(closestSize);
   };
   
-  // Toggle priority status
   const togglePriority = () => {
     setPriority(!priority);
   };
 
-  // Reset form to create a new order
   const resetForm = () => {
     setShape('round');
     setSize(18);
@@ -89,13 +80,11 @@ const NewCakeOrder = () => {
     setShowSuccessDialog(false);
   };
   
-  // Handle form submission
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsSubmitting(true);
     
     try {
-      // Determine dimensions based on shape
       let dimensions: string;
       if (shape === 'custom') {
         dimensions = `${width}×${length}`;
@@ -103,10 +92,8 @@ const NewCakeOrder = () => {
         dimensions = `${size}`;
       }
       
-      // Generate batch label
       const batchLabel = generateBatchLabel(dimensions, flavor);
       
-      // Create order data
       const orderData = {
         id: crypto.randomUUID(),
         shape: shape === 'custom' ? 'rectangle' : shape,
@@ -122,10 +109,8 @@ const NewCakeOrder = () => {
       
       console.log('New order created:', orderData);
       
-      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      // Show success dialog instead of auto-redirecting
       setShowSuccessDialog(true);
       setIsSubmitting(false);
       
@@ -137,7 +122,7 @@ const NewCakeOrder = () => {
   };
   
   return (
-    <Layout title="New Cake Order">
+    <Layout title="Create Cake Order">
       <div className="max-w-2xl mx-auto">
         <Button 
           variant="ghost" 
@@ -155,7 +140,6 @@ const NewCakeOrder = () => {
           
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Shape Selection */}
               <div className="space-y-2">
                 <Label>Shape</Label>
                 <RadioGroup 
@@ -169,7 +153,7 @@ const NewCakeOrder = () => {
                       htmlFor="round" 
                       className={`flex flex-col items-center justify-center rounded-md border-2 border-muted p-4 hover:bg-accent hover:text-accent-foreground ${shape === 'round' ? 'border-primary bg-primary/10' : ''}`}
                     >
-                      <span className="text-3xl">⚪</span>
+                      <Circle className="w-8 h-8 mb-2" />
                       <span className="mt-2">Round</span>
                     </Label>
                   </div>
@@ -180,7 +164,7 @@ const NewCakeOrder = () => {
                       htmlFor="square"
                       className={`flex flex-col items-center justify-center rounded-md border-2 border-muted p-4 hover:bg-accent hover:text-accent-foreground ${shape === 'square' ? 'border-primary bg-primary/10' : ''}`}
                     >
-                      <span className="text-3xl">⬛</span>
+                      <Square className="w-8 h-8 mb-2" />
                       <span className="mt-2">Square</span>
                     </Label>
                   </div>
@@ -191,7 +175,7 @@ const NewCakeOrder = () => {
                       htmlFor="bowl" 
                       className={`flex flex-col items-center justify-center rounded-md border-2 border-muted p-4 hover:bg-accent hover:text-accent-foreground ${shape === 'bowl' ? 'border-primary bg-primary/10' : ''}`}
                     >
-                      <span className="text-3xl">🥣</span>
+                      <UtensilsCrossed className="w-8 h-8 mb-2" />
                       <span className="mt-2">Bowl</span>
                     </Label>
                   </div>
@@ -202,14 +186,13 @@ const NewCakeOrder = () => {
                       htmlFor="custom" 
                       className={`flex flex-col items-center justify-center rounded-md border-2 border-muted p-4 hover:bg-accent hover:text-accent-foreground ${shape === 'custom' ? 'border-primary bg-primary/10' : ''}`}
                     >
-                      <span className="text-3xl">▭</span>
+                      <PenTool className="w-8 h-8 mb-2" />
                       <span className="mt-2">Custom</span>
                     </Label>
                   </div>
                 </RadioGroup>
               </div>
               
-              {/* Size Selection */}
               {shape !== 'custom' ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -268,7 +251,6 @@ const NewCakeOrder = () => {
                 </div>
               )}
               
-              {/* Quantity */}
               <div className="space-y-2">
                 <Label>Quantity</Label>
                 <div className="flex items-center space-x-4">
@@ -296,7 +278,6 @@ const NewCakeOrder = () => {
                 </div>
               </div>
               
-              {/* Priority Toggle */}
               <div className="space-y-2">
                 <Label>Priority</Label>
                 <Button 
@@ -310,7 +291,6 @@ const NewCakeOrder = () => {
                 </Button>
               </div>
               
-              {/* Flavor */}
               <div className="space-y-2">
                 <Label>Flavor</Label>
                 <div className="grid grid-cols-2 gap-4">
@@ -334,7 +314,6 @@ const NewCakeOrder = () => {
                 </div>
               </div>
               
-              {/* Notes */}
               <div className="space-y-2">
                 <Label htmlFor="notes">Notes / Instructions</Label>
                 <Textarea
@@ -366,7 +345,6 @@ const NewCakeOrder = () => {
         </Card>
       </div>
 
-      {/* Success Dialog */}
       <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -403,7 +381,6 @@ const NewCakeOrder = () => {
   );
 };
 
-// Simple check icon component for success dialog
 const CheckIcon = ({ className }: { className?: string }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 

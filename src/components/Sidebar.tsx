@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { ChevronLeft, ChevronRight, File } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FilePlus } from 'lucide-react';
 
 interface SidebarProps {
   dailyCompleted: number;
@@ -50,14 +49,14 @@ const Sidebar: React.FC<SidebarProps> = ({ dailyCompleted, dailyTarget }) => {
         </Button>
       </div>
 
-      {/* New Order Button */}
+      {/* Create Order Button */}
       <div className="p-4 border-b">
         <Button 
           onClick={handleNewOrder} 
           className={cn("w-full", isCollapsed ? "p-2" : "")}
         >
-          <File className={cn("mr-2", isCollapsed ? "m-0" : "")} />
-          {!isCollapsed && "New Order"}
+          <FilePlus className={cn("mr-2", isCollapsed ? "m-0" : "")} />
+          {!isCollapsed && "Create Order"}
         </Button>
       </div>
       
