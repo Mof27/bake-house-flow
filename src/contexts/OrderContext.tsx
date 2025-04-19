@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -7,14 +6,9 @@ import { useAuth, User } from './AuthContext';
 // Define order status types
 export type OrderStatus = 'queued' | 'baking' | 'done' | 'mixing';
 
-// Define complexity level (1-5)
-export type ComplexityLevel = 1 | 2 | 3 | 4 | 5;
-
 // Order interface
 export interface Order {
   id: string;
-  designName: string;
-  complexity: ComplexityLevel;
   isPriority: boolean;
   status: OrderStatus;
   estimatedTime: number; // in minutes
@@ -29,8 +23,6 @@ export interface Order {
 
 // Interface for creating a new order
 export interface NewOrderInput {
-  designName: string;
-  complexity: ComplexityLevel;
   isPriority: boolean;
   notes: string;
 }
@@ -59,8 +51,6 @@ const generateMockOrders = (): Order[] => {
   return [
     {
       id: uuidv4(),
-      designName: 'Birthday Cake',
-      complexity: 3,
       isPriority: true,
       status: 'baking',
       estimatedTime: 45,
@@ -74,8 +64,6 @@ const generateMockOrders = (): Order[] => {
     },
     {
       id: uuidv4(),
-      designName: 'Sourdough Bread',
-      complexity: 2,
       isPriority: false,
       status: 'queued',
       estimatedTime: 30,
@@ -89,8 +77,6 @@ const generateMockOrders = (): Order[] => {
     },
     {
       id: uuidv4(),
-      designName: 'Wedding Cupcakes',
-      complexity: 4,
       isPriority: true,
       status: 'queued',
       estimatedTime: 60,
@@ -104,8 +90,6 @@ const generateMockOrders = (): Order[] => {
     },
     {
       id: uuidv4(),
-      designName: 'Chocolate Croissants',
-      complexity: 3,
       isPriority: false,
       status: 'done',
       estimatedTime: 40,
@@ -126,11 +110,11 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const { user } = useAuth();
 
   // AI time estimator function
-  const estimateBakeTime = (complexity: ComplexityLevel): number => {
+  const estimateBakeTime = (): number => {
     // Base time (in minutes) + complexity factor
     // This is a simple rule-based estimator that could be replaced with ML model
     const baseTime = 20;
-    const complexityFactor = complexity * 5;
+    const complexityFactor = 3 * 5;
     return baseTime + complexityFactor;
   };
 
@@ -146,12 +130,10 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    const estimatedTime = estimateBakeTime(orderData.complexity);
+    const estimatedTime = estimateBakeTime();
     
     const newOrder: Order = {
       id: uuidv4(),
-      designName: orderData.designName,
-      complexity: orderData.complexity,
       isPriority: orderData.isPriority,
       status: 'queued',
       estimatedTime,
@@ -170,7 +152,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Simulate printing label on creation
     console.log('Printing label for new order:', newOrder.id);
     
-    toast.success(`Order created: ${orderData.designName}`);
+    toast.success(`Order created`);
     return newOrder;
   };
 
