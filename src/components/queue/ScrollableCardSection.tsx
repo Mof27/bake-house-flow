@@ -133,17 +133,26 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
               )}
 
               <Button
-                variant="outline"
+                variant={sortOrder === 'asc' ? 'outline' : 'default'}
                 size="sm"
                 onClick={handleSortOrderToggle}
-                className="gap-2"
+                className={`gap-2 transition-all duration-200 ${
+                  sortOrder === 'desc' 
+                    ? 'bg-[#9b87f5] hover:bg-[#7E69AB] text-white' 
+                    : 'hover:bg-accent hover:text-accent-foreground'
+                }`}
               >
                 {sortOrder === 'asc' ? (
-                  <ArrowDownAZ className="h-4 w-4" />
+                  <>
+                    <ArrowUpAZ className="h-4 w-4" />
+                    <span>Oldest First</span>
+                  </>
                 ) : (
-                  <ArrowUpAZ className="h-4 w-4" />
+                  <>
+                    <ArrowDownAZ className="h-4 w-4" />
+                    <span>Newest First</span>
+                  </>
                 )}
-                <span>{sortOrder === 'asc' ? 'Oldest First' : 'Newest First'}</span>
               </Button>
             </div>
           )}
