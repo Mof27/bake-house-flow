@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Circle, Square, UtensilsCrossed, PenTool, ChevronLeft, Flag } from 'lucide-react';
+import { Circle, Square, UtensilsCrossed, PenTool, ChevronLeft, Flag, Minus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -261,7 +261,7 @@ const NewCakeOrder = () => {
                     onClick={() => handleQuantityChange(-1)}
                     disabled={quantity <= 1}
                   >
-                    <MinusCircle className="h-5 w-5" />
+                    <Minus className="h-5 w-5" />
                   </Button>
                   
                   <span className="text-3xl font-bold w-12 text-center">{quantity}</span>
@@ -273,7 +273,7 @@ const NewCakeOrder = () => {
                     onClick={() => handleQuantityChange(1)}
                     disabled={quantity >= 100}
                   >
-                    <PlusCircle className="h-5 w-5" />
+                    <Plus className="h-5 w-5" />
                   </Button>
                 </div>
               </div>
