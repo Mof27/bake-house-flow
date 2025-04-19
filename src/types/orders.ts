@@ -1,12 +1,21 @@
-
 // Order status types
 export type OrderStatus = 'queued' | 'baking' | 'done' | 'mixing';
+
+// Cake specifications
+export type CakeFlavor = 'vanilla' | 'chocolate';
+export type CakeShape = 'round' | 'square' | 'custom';
 
 // Order interface
 export interface Order {
   id: string;
   isPriority: boolean;
   status: OrderStatus;
+  flavor: CakeFlavor;
+  shape: CakeShape;
+  size: number;
+  batchLabel: string;
+  requestedQuantity: number;
+  producedQuantity: number;
   estimatedTime: number;
   assignedTo: string | null;
   createdBy: string;
@@ -20,6 +29,10 @@ export interface Order {
 // Interface for creating a new order
 export interface NewOrderInput {
   isPriority: boolean;
+  flavor: CakeFlavor;
+  shape: CakeShape;
+  size: number;
+  requestedQuantity: number;
   notes: string;
 }
 
