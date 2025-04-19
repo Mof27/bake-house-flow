@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({ dailyCompleted, dailyTarget }) => {
   };
 
   const handleNewOrder = () => {
-    navigate('/new-order');
+    navigate('/create-order');
   };
 
   return (

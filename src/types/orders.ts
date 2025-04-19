@@ -1,9 +1,10 @@
+
 // Order status types
 export type OrderStatus = 'queued' | 'baking' | 'done' | 'mixing';
 
 // Cake specifications
 export type CakeFlavor = 'vanilla' | 'chocolate';
-export type CakeShape = 'round' | 'square' | 'custom';
+export type CakeShape = 'round' | 'square' | 'custom' | 'bowl';
 
 // Order interface
 export interface Order {
