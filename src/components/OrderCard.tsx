@@ -80,14 +80,24 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, displayActions = true }) =
     done: <Badge className="status-badge status-done">Done</Badge>
   };
   
+  // Extract details from notes
+  const extractOrderDetails = (notes: string) => {
+    const flavorMatch = notes.match(/^([^,]+) flavor/i);
+    const flavor = flavorMatch ? flavorMatch[1] : 'Custom';
+    return flavor;
+  };
+  
+  // Get the order title from notes
+  const orderTitle = extractOrderDetails(order.notes);
+  
   return (
     <Card className={cardClasses}>
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-3">
           <div>
-            <h3 className="font-bold text-lg">{order.designName}</h3>
+            <h3 className="font-bold text-lg">{orderTitle}</h3>
             <div className="flex items-center text-sm text-muted-foreground gap-2">
-              <span>Complexity: {Array(order.complexity).fill('★').join('')}</span>
+              <span>{order.notes}</span>
               {order.isPriority && (
                 <Flag className="h-4 w-4 text-bakery-danger" />
               )}
@@ -112,12 +122,6 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, displayActions = true }) =
             <span className="text-muted-foreground">Est. {order.estimatedTime} min</span>
           </div>
         </div>
-        
-        {order.notes && (
-          <div className="mb-3 text-sm bg-muted/50 p-2 rounded">
-            {order.notes}
-          </div>
-        )}
         
         {displayActions && (
           <div className="flex justify-between items-center mt-4">

@@ -168,6 +168,12 @@ const OrderDetails: React.FC = () => {
     </div>
   );
   
+  // Extract order title from notes
+  const extractOrderTitle = (notes: string) => {
+    const flavorMatch = notes.match(/^([^,]+) flavor/i);
+    return flavorMatch ? `${flavorMatch[1]} Order` : 'Custom Order';
+  };
+  
   return (
     <Layout title="Order Details">
       <div className="max-w-2xl mx-auto">
@@ -184,18 +190,13 @@ const OrderDetails: React.FC = () => {
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h2 className="text-2xl font-bold">{order.designName}</h2>
-                <div className="flex items-center mt-1">
-                  <span className="text-sm text-muted-foreground mr-2">
-                    Complexity: {Array(order.complexity).fill('★').join('')}
-                  </span>
-                  {order.isPriority && (
-                    <Badge variant="outline" className="text-bakery-danger border-bakery-danger">
-                      <Flag className="h-3.5 w-3.5 mr-1" />
-                      Rush Order
-                    </Badge>
-                  )}
-                </div>
+                <h2 className="text-2xl font-bold">{extractOrderTitle(order.notes)}</h2>
+                {order.isPriority && (
+                  <Badge variant="outline" className="text-bakery-danger border-bakery-danger mt-1">
+                    <Flag className="h-3.5 w-3.5 mr-1" />
+                    Rush Order
+                  </Badge>
+                )}
               </div>
               <div>
                 {statusBadges[order.status]}
