@@ -1,9 +1,11 @@
-import React, { useState, useMemo, useEffect } from 'react';
+
+import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TabsContent } from '@/components/ui/tabs';
-import { PendingOrder, CakeFlavor } from '@/types/queue';
+import { PendingOrder } from '@/types/queue';
 import PendingCard from '@/components/queue/PendingCard';
 import ScrollableCardSection from '@/components/queue/ScrollableCardSection';
+import { usePendingOrdersFilter } from '@/hooks/usePendingOrdersFilter';
 
 interface PendingOrdersTabProps {
   pendingOrders: PendingOrder[];
@@ -15,10 +17,14 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
   onStartMixing,
 }) => {
   const location = useLocation();
-  const [selectedFlavor, setSelectedFlavor] = useState<CakeFlavor | 'all'>('all');
-  const [isPriorityOnly, setIsPriorityOnly] = useState(false);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [forceRender, setForceRender] = useState(0);
+  const [forceRender, setForceRender] = React.useState(0);
+  const { 
+    filters, 
+    filteredOrders, 
+    handleFlavorChange, 
+    handlePriorityChange, 
+    handleSortOrderChange 
+  } = usePendingOrdersFilter(pendingOrders);
 
   // When the query parameter is present, enforce a re-render to help with scrolling
   useEffect(() => {
@@ -29,42 +35,20 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
     }
   }, [location.search, pendingOrders.length]);
 
-  const filteredOrders = useMemo(() => {
-    return pendingOrders
-      .filter(order => {
-        const flavorMatch = selectedFlavor === 'all' || order.flavor === selectedFlavor;
-        const priorityMatch = !isPriorityOnly || order.isPriority;
-        return flavorMatch && priorityMatch;
-      })
-      .sort((a, b) => {
-        const timeA = new Date(a.requestedAt).getTime();
-        const timeB = new Date(b.requestedAt).getTime();
-        return sortOrder === 'asc' ? timeA - timeB : timeB - timeA;
-      });
-  }, [pendingOrders, selectedFlavor, isPriorityOnly, sortOrder]);
-
-  const handleFlavorChange = (flavor: CakeFlavor | 'all') => {
-    setSelectedFlavor(flavor);
-  };
-
-  const handlePriorityChange = (isPriority: boolean) => {
-    setIsPriorityOnly(isPriority);
-  };
-
   return (
     <TabsContent value="pending" className="mt-0 h-full overflow-hidden">
       <div className="h-full py-4 px-2" key={forceRender}>
         {pendingOrders.length > 0 ? (
           <ScrollableCardSection 
             title="Pending Orders"
-            selectedFlavor={selectedFlavor}
+            selectedFlavor={filters.selectedFlavor}
             onFlavorChange={handleFlavorChange}
             showFilters={true}
             showPriorityFilter={true}
-            isPriorityOnly={isPriorityOnly}
+            isPriorityOnly={filters.isPriorityOnly}
             onPriorityChange={handlePriorityChange}
-            sortOrder={sortOrder}
-            onSortOrderChange={setSortOrder}
+            sortOrder={filters.sortOrder}
+            onSortOrderChange={handleSortOrderChange}
           >
             {filteredOrders.map(order => (
               <PendingCard 
