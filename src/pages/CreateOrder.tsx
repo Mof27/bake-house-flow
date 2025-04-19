@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
 import Layout from '@/components/Layout';
@@ -33,6 +33,7 @@ const CreateOrder: React.FC = () => {
   
   const onSubmit = async (data: NewOrderInput) => {
     try {
+      console.log('Submitting order data:', data);
       await createOrder(data);
       toast.success('Order created successfully');
       navigate('/queue'); // Navigate to queue page after creating order
@@ -46,6 +47,9 @@ const CreateOrder: React.FC = () => {
     <Layout title="Create New Order">
       <div className="max-w-2xl mx-auto">
         <Card>
+          <CardHeader>
+            <CardTitle>Create New Order</CardTitle>
+          </CardHeader>
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="flex items-center space-x-2">
@@ -106,7 +110,7 @@ const CreateOrder: React.FC = () => {
                   type="number"
                   min={10}
                   max={50}
-                  {...register('size', { valueAsNumber: true })}
+                  {...register('size', { valueAsNumber: true, required: true })}
                 />
               </div>
               
@@ -117,7 +121,7 @@ const CreateOrder: React.FC = () => {
                   type="number"
                   min={1}
                   max={100}
-                  {...register('requestedQuantity', { valueAsNumber: true })}
+                  {...register('requestedQuantity', { valueAsNumber: true, required: true })}
                 />
               </div>
               

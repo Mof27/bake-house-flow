@@ -41,6 +41,8 @@ export const useOrderOperations = (user: User) => {
       notes: orderData.notes
     };
     
+    console.log('Creating new order with data:', newOrder);
+    
     setOrders(prevOrders => [newOrder, ...prevOrders]);
     setIsLoading(false);
     

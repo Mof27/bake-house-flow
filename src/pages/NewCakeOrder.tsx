@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import Layout from '@/components/Layout';
-import { useOrders, CakeFlavor, CakeShape } from '@/contexts/OrderContext';
+import { useOrders, CakeFlavor, CakeShape, NewOrderInput } from '@/contexts/OrderContext';
 
 const BowlIcon = ({ className }: { className?: string }) => (
   <img 
@@ -45,12 +45,12 @@ const NewCakeOrder = () => {
   const navigate = useNavigate();
   const { createOrder } = useOrders();
   
-  const [shape, setShape] = useState<'round' | 'square' | 'bowl' | 'custom'>('round');
+  const [shape, setShape] = useState<CakeShape>('round');
   const [size, setSize] = useState<number>(18);
   const [width, setWidth] = useState<number>(20);
   const [length, setLength] = useState<number>(30);
   const [quantity, setQuantity] = useState<number>(1);
-  const [flavor, setFlavor] = useState<'vanilla' | 'chocolate'>('vanilla');
+  const [flavor, setFlavor] = useState<CakeFlavor>('vanilla');
   const [notes, setNotes] = useState<string>('');
   const [priority, setPriority] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -95,48 +95,23 @@ const NewCakeOrder = () => {
     setIsSubmitting(true);
     
     try {
-      let dimensions: string;
-      let orderShape: CakeShape = 'round';
-      let orderSize = size;
+      let finalShape: CakeShape = shape as CakeShape;
+      let finalSize = size;
       
       if (shape === 'custom') {
-        dimensions = `${width}×${length}`;
-        orderShape = 'custom';
-        orderSize = Math.max(width, length);
-      } else {
-        dimensions = `${size}`;
-        orderShape = shape === 'square' ? 'square' : 'round';
+        finalSize = Math.max(width, length);
       }
       
-      const batchLabel = generateBatchLabel(dimensions, flavor);
-      
-      const orderData = {
-        id: crypto.randomUUID(),
-        shape: orderShape,
-        flavor: flavor as CakeFlavor,
-        size: orderSize,
-        requestedQuantity: quantity,
-        producedQuantity: 0,
-        batchLabel,
-        requestedAt: new Date(),
+      const orderInput: NewOrderInput = {
         isPriority: priority,
-        notes,
+        flavor: flavor,
+        shape: finalShape,
+        size: finalSize,
+        requestedQuantity: quantity,
+        notes: notes
       };
       
-      console.log('New order created:', orderData);
-      
-      // Add to the global queue
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Here we're integrating with the queue system
-      const orderInput = {
-        isPriority: priority,
-        flavor: flavor as CakeFlavor,
-        shape: orderShape,
-        size: orderSize,
-        requestedQuantity: quantity,
-        notes: `${flavor.charAt(0).toUpperCase() + flavor.slice(1)} flavor, Shape: ${shape}, Size: ${dimensions}cm. ${notes}`
-      };
+      console.log('Submitting order with data:', orderInput);
       
       await createOrder(orderInput);
       
@@ -174,7 +149,7 @@ const NewCakeOrder = () => {
                 <RadioGroup 
                   className="grid grid-cols-2 gap-4 md:grid-cols-4" 
                   value={shape}
-                  onValueChange={(value) => setShape(value as any)}
+                  onValueChange={(value) => setShape(value as CakeShape)}
                 >
                   <div>
                     <RadioGroupItem value="round" id="round" className="sr-only" />
