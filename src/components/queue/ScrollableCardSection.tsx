@@ -1,9 +1,10 @@
+
 import React, { useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Layers, Disc, Coffee, Star, ArrowUpAZ, ArrowDownAZ } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { CakeFlavor } from '@/types/queue';
+import FilterControls from './filters/FilterControls';
 
 interface ScrollableCardSectionProps {
   children: React.ReactNode;
@@ -67,103 +68,25 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
     }
   };
   
-  const handlePriorityToggle = () => {
-    if (onPriorityChange) {
-      onPriorityChange(!isPriorityOnly);
-    }
-  };
-  
-  const handleSortOrderToggle = () => {
-    if (onSortOrderChange) {
-      onSortOrderChange(sortOrder === 'asc' ? 'desc' : 'asc');
-    }
-  };
-  
   return (
     <div className="mb-4 relative">
       <div className="flex justify-between items-center mb-2">
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-bold">{title}</h2>
-          {showFilters && (
-            <div className="flex items-center gap-2">
-              <ToggleGroup 
-                type="single" 
-                value={selectedFlavor}
-                onValueChange={(value) => {
-                  if (value) onFlavorChange?.(value as CakeFlavor | 'all');
-                }}
-                className="gap-1"
-              >
-                <ToggleGroupItem 
-                  value="all" 
-                  aria-label="Show all flavors" 
-                  className="gap-2 data-[state=on]:bg-blue-500 data-[state=on]:text-white"
-                >
-                  <Layers className="h-4 w-4" />
-                  <span>All</span>
-                </ToggleGroupItem>
-                <ToggleGroupItem 
-                  value="vanilla" 
-                  aria-label="Show vanilla only" 
-                  className="gap-2 data-[state=on]:bg-amber-200 data-[state=on]:text-amber-950"
-                >
-                  <Disc className="h-4 w-4" />
-                  <span>Vanilla</span>
-                </ToggleGroupItem>
-                <ToggleGroupItem 
-                  value="chocolate" 
-                  aria-label="Show chocolate only" 
-                  className="gap-2 data-[state=on]:bg-amber-900 data-[state=on]:text-amber-50"
-                >
-                  <Coffee className="h-4 w-4" />
-                  <span>Chocolate</span>
-                </ToggleGroupItem>
-              </ToggleGroup>
-              
-              {showPriorityFilter && (
-                <Button 
-                  variant={isPriorityOnly ? "default" : "outline"} 
-                  size="sm" 
-                  onClick={() => onPriorityChange?.(!isPriorityOnly)}
-                  className="gap-2"
-                >
-                  <Star className="h-4 w-4" />
-                  <span>Priority</span>
-                </Button>
-              )}
-
-              <div className="flex items-center gap-1 border rounded-md p-0.5">
-                <Button 
-                  variant={sortOrder === 'asc' ? 'default' : 'outline'} 
-                  size="sm" 
-                  onClick={handleSortOrderToggle}
-                  className={`gap-2 transition-all duration-200 ${
-                    sortOrder === 'asc' 
-                      ? 'bg-[#9b87f5] hover:bg-[#7E69AB] text-white' 
-                      : 'hover:bg-accent hover:text-accent-foreground'
-                  }`}
-                >
-                  <ArrowUpAZ className="h-4 w-4" />
-                  <span>Oldest First</span>
-                </Button>
-                
-                <Button 
-                  variant={sortOrder === 'desc' ? 'default' : 'outline'} 
-                  size="sm" 
-                  onClick={handleSortOrderToggle}
-                  className={`gap-2 transition-all duration-200 ${
-                    sortOrder === 'desc' 
-                      ? 'bg-[#9b87f5] hover:bg-[#7E69AB] text-white' 
-                      : 'hover:bg-accent hover:text-accent-foreground'
-                  }`}
-                >
-                  <ArrowDownAZ className="h-4 w-4" />
-                  <span>Newest First</span>
-                </Button>
-              </div>
-            </div>
+          
+          {showFilters && onFlavorChange && onPriorityChange && onSortOrderChange && (
+            <FilterControls
+              selectedFlavor={selectedFlavor}
+              onFlavorChange={onFlavorChange}
+              showPriorityFilter={showPriorityFilter}
+              isPriorityOnly={isPriorityOnly}
+              onPriorityChange={onPriorityChange}
+              sortOrder={sortOrder}
+              onSortOrderChange={onSortOrderChange}
+            />
           )}
         </div>
+        
         <div className="flex gap-2">
           <Button 
             size="icon" 
