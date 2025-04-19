@@ -15,8 +15,8 @@ const PriorityToggle: React.FC<PriorityToggleProps> = ({ priority, onPriorityCha
       <Label>Priority</Label>
       <Button 
         type="button" 
-        variant={priority ? "priority" : "outline"}
-        className={`w-full ${!priority ? 'border-red-300 text-red-600 hover:bg-red-50' : ''}`}
+        variant={priority ? "default" : "outline"}
+        className={`w-full ${priority ? 'bg-red-600 hover:bg-red-700' : 'border-red-300 text-red-600 hover:bg-red-50'}`}
         onClick={() => onPriorityChange(!priority)}
       >
         <Flag className={`h-5 w-5 mr-2 ${priority ? 'fill-white' : 'fill-red-200'}`} />

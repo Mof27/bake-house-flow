@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
@@ -17,38 +16,49 @@ export const useOrderOperations = (user: User) => {
   const createOrder = async (orderData: NewOrderInput): Promise<Order> => {
     setIsLoading(true);
     
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const estimatedTime = estimateBakeTime();
-    
-    const newOrder: Order = {
-      id: uuidv4(),
-      isPriority: orderData.isPriority,
-      status: 'queued',
-      flavor: orderData.flavor,
-      shape: orderData.shape,
-      size: orderData.size,
-      batchLabel: `${orderData.size}cm | ${orderData.flavor === 'vanilla' ? 'VC' : 'DC'} | ${new Date().toLocaleString()}`,
-      requestedQuantity: orderData.requestedQuantity,
-      producedQuantity: 0,
-      estimatedTime,
-      assignedTo: null,
-      createdBy: user.id,
-      createdAt: new Date(),
-      startedAt: null,
-      completedAt: null,
-      printCount: 1,
-      notes: orderData.notes
-    };
-    
-    console.log('Creating new order with data:', newOrder);
-    
-    setOrders(prevOrders => [newOrder, ...prevOrders]);
-    setIsLoading(false);
-    
-    console.log('Printing label for new order:', newOrder.id);
-    toast.success(`Order created`);
-    return newOrder;
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const estimatedTime = estimateBakeTime();
+      
+      const newOrder: Order = {
+        id: uuidv4(),
+        isPriority: orderData.isPriority,
+        status: 'queued',
+        flavor: orderData.flavor,
+        shape: orderData.shape,
+        size: orderData.size,
+        batchLabel: `${orderData.size}cm | ${orderData.flavor === 'vanilla' ? 'VC' : 'DC'} | ${new Date().toLocaleString()}`,
+        requestedQuantity: orderData.requestedQuantity,
+        producedQuantity: 0,
+        estimatedTime,
+        assignedTo: null,
+        createdBy: user.id,
+        createdAt: new Date(),
+        startedAt: null,
+        completedAt: null,
+        printCount: 1,
+        notes: orderData.notes
+      };
+      
+      console.log('Creating new order with data:', newOrder);
+      
+      setOrders(prevOrders => {
+        const updatedOrders = [newOrder, ...prevOrders];
+        console.log('Updated orders array:', updatedOrders);
+        return updatedOrders;
+      });
+      
+      console.log('Printing label for new order:', newOrder.id);
+      toast.success(`Order created successfully`);
+      return newOrder;
+    } catch (error) {
+      console.error('Error creating order:', error);
+      toast.error('Failed to create order');
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const updateOrderStatus = async (id: string, status: OrderStatus): Promise<void> => {
