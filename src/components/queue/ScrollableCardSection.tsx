@@ -1,7 +1,6 @@
-
 import React, { useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Layers, Disc, Coffee, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Layers, Disc, Coffee, Star, ArrowDownAZ, ArrowUpAZ } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { CakeFlavor } from '@/types/queue';
@@ -15,6 +14,8 @@ interface ScrollableCardSectionProps {
   showPriorityFilter?: boolean;
   isPriorityOnly?: boolean;
   onPriorityChange?: (isPriority: boolean) => void;
+  sortOrder?: 'asc' | 'desc';
+  onSortOrderChange?: (order: 'asc' | 'desc') => void;
 }
 
 const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({ 
@@ -26,19 +27,18 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
   showPriorityFilter = false,
   isPriorityOnly = false,
   onPriorityChange,
+  sortOrder = 'asc',
+  onSortOrderChange,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   
-  // More aggressive scroll to beginning when showNewest is true
   useEffect(() => {
     const showNewest = new URLSearchParams(location.search).get('showNewest');
     
     if (showNewest === 'true' && scrollContainerRef.current) {
-      // Initial scroll
       scrollContainerRef.current.scrollLeft = 0;
       
-      // Delayed scroll in case the first attempt doesn't work
       setTimeout(() => {
         if (scrollContainerRef.current) {
           scrollContainerRef.current.scrollLeft = 0;
@@ -46,7 +46,6 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
         }
       }, 100);
       
-      // Another delayed scroll for when components might be still rendering
       setTimeout(() => {
         if (scrollContainerRef.current) {
           scrollContainerRef.current.scrollLeft = 0;
@@ -54,7 +53,7 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
         }
       }, 500);
     }
-  }, [location.search, children]); // Also listen for children changes
+  }, [location.search, children]);
   
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -71,6 +70,12 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
   const handlePriorityToggle = () => {
     if (onPriorityChange) {
       onPriorityChange(!isPriorityOnly);
+    }
+  };
+  
+  const handleSortOrderToggle = () => {
+    if (onSortOrderChange) {
+      onSortOrderChange(sortOrder === 'asc' ? 'desc' : 'asc');
     }
   };
   
@@ -119,13 +124,27 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
                 <Button 
                   variant={isPriorityOnly ? "default" : "outline"} 
                   size="sm" 
-                  onClick={handlePriorityToggle}
-                  className="gap-2 data-[state=on]:bg-red-500 data-[state=on]:text-white"
+                  onClick={() => onPriorityChange?.(!isPriorityOnly)}
+                  className="gap-2"
                 >
                   <Star className="h-4 w-4" />
                   <span>Priority</span>
                 </Button>
               )}
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSortOrderToggle}
+                className="gap-2"
+              >
+                {sortOrder === 'asc' ? (
+                  <ArrowDownAZ className="h-4 w-4" />
+                ) : (
+                  <ArrowUpAZ className="h-4 w-4" />
+                )}
+                <span>{sortOrder === 'asc' ? 'Oldest First' : 'Newest First'}</span>
+              </Button>
             </div>
           )}
         </div>

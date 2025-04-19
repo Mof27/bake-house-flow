@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TabsContent } from '@/components/ui/tabs';
@@ -18,8 +17,9 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
   const location = useLocation();
   const [selectedFlavor, setSelectedFlavor] = useState<CakeFlavor | 'all'>('all');
   const [isPriorityOnly, setIsPriorityOnly] = useState(false);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [forceRender, setForceRender] = useState(0);
-  
+
   // When the query parameter is present, enforce a re-render to help with scrolling
   useEffect(() => {
     const showNewest = new URLSearchParams(location.search).get('showNewest');
@@ -30,12 +30,18 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
   }, [location.search, pendingOrders.length]);
 
   const filteredOrders = useMemo(() => {
-    return pendingOrders.filter(order => {
-      const flavorMatch = selectedFlavor === 'all' || order.flavor === selectedFlavor;
-      const priorityMatch = !isPriorityOnly || order.isPriority;
-      return flavorMatch && priorityMatch;
-    });
-  }, [pendingOrders, selectedFlavor, isPriorityOnly]);
+    return pendingOrders
+      .filter(order => {
+        const flavorMatch = selectedFlavor === 'all' || order.flavor === selectedFlavor;
+        const priorityMatch = !isPriorityOnly || order.isPriority;
+        return flavorMatch && priorityMatch;
+      })
+      .sort((a, b) => {
+        const timeA = new Date(a.requestedAt).getTime();
+        const timeB = new Date(b.requestedAt).getTime();
+        return sortOrder === 'asc' ? timeA - timeB : timeB - timeA;
+      });
+  }, [pendingOrders, selectedFlavor, isPriorityOnly, sortOrder]);
 
   const handleFlavorChange = (flavor: CakeFlavor | 'all') => {
     setSelectedFlavor(flavor);
@@ -57,6 +63,8 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
             showPriorityFilter={true}
             isPriorityOnly={isPriorityOnly}
             onPriorityChange={handlePriorityChange}
+            sortOrder={sortOrder}
+            onSortOrderChange={setSortOrder}
           >
             {filteredOrders.map(order => (
               <PendingCard 
