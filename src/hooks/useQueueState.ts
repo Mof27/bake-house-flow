@@ -1,8 +1,12 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { MockData, PendingOrder } from '@/types/queue';
 import { toast } from "sonner";
+import { useOrders } from '@/contexts/OrderContext';
 
 export const useQueueState = () => {
+  const { orders } = useOrders();
+  
   const generateRecentDate = () => {
     const now = new Date();
     const minutesAgo = Math.random() * 4; // Random time between 0-4 minutes ago
@@ -240,6 +244,40 @@ export const useQueueState = () => {
       }
     ]
   });
+
+  // This effect will run whenever the orders array changes
+  useEffect(() => {
+    if (orders.length > 0) {
+      // Map orders to pendingOrders format
+      const newPendingOrders = orders
+        .filter(order => order.status === 'queued')
+        .map(order => ({
+          id: order.id,
+          flavor: order.flavor,
+          shape: order.shape,
+          size: order.size,
+          batchLabel: order.batchLabel,
+          requestedQuantity: order.requestedQuantity,
+          producedQuantity: order.producedQuantity,
+          requestedAt: order.createdAt,
+          isPriority: order.isPriority,
+          notes: order.notes
+        }));
+
+      // Update the mockData with the new pending orders
+      setMockData(prevMockData => ({
+        ...prevMockData,
+        pendingOrders: [...newPendingOrders, ...prevMockData.pendingOrders]
+      }));
+
+      // Show toast notification for confirmation
+      if (newPendingOrders.length > 0) {
+        toast.success("Queue updated with new orders", {
+          description: `${newPendingOrders.length} new orders added to the queue`,
+        });
+      }
+    }
+  }, [orders]);
 
   const fetchLatestData = () => {
     toast.success("Data refreshed successfully", {
