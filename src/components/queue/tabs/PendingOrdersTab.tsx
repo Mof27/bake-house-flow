@@ -1,5 +1,6 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { TabsContent } from '@/components/ui/tabs';
 import { PendingOrder, CakeFlavor } from '@/types/queue';
 import PendingCard from '@/components/queue/PendingCard';
@@ -14,8 +15,19 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
   pendingOrders,
   onStartMixing,
 }) => {
+  const location = useLocation();
   const [selectedFlavor, setSelectedFlavor] = useState<CakeFlavor | 'all'>('all');
   const [isPriorityOnly, setIsPriorityOnly] = useState(false);
+  const [forceRender, setForceRender] = useState(0);
+  
+  // When the query parameter is present, enforce a re-render to help with scrolling
+  useEffect(() => {
+    const showNewest = new URLSearchParams(location.search).get('showNewest');
+    if (showNewest === 'true') {
+      // Force a re-render to help with scroll position
+      setForceRender(prev => prev + 1);
+    }
+  }, [location.search, pendingOrders.length]);
 
   const filteredOrders = useMemo(() => {
     return pendingOrders.filter(order => {
@@ -35,7 +47,7 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
 
   return (
     <TabsContent value="pending" className="mt-0 h-full overflow-hidden">
-      <div className="h-full py-4 px-2">
+      <div className="h-full py-4 px-2" key={forceRender}>
         {pendingOrders.length > 0 ? (
           <ScrollableCardSection 
             title="Pending Orders"

@@ -24,6 +24,11 @@ const OrderSuccessDialog: React.FC<OrderSuccessDialogProps> = ({
 }) => {
   const navigate = useNavigate();
 
+  const handleViewQueue = () => {
+    // Clear any existing query params first
+    navigate('/queue?showNewest=true&timestamp=' + Date.now());
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -44,7 +49,7 @@ const OrderSuccessDialog: React.FC<OrderSuccessDialogProps> = ({
           <Button 
             variant="outline" 
             className="sm:flex-1" 
-            onClick={() => navigate('/queue?showNewest=true')} // Add query parameter to trigger scroll to beginning
+            onClick={handleViewQueue}
           >
             View Queue
           </Button>

@@ -30,14 +30,31 @@ const ScrollableCardSection: React.FC<ScrollableCardSectionProps> = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   
-  // Check for the showNewest query parameter
+  // More aggressive scroll to beginning when showNewest is true
   useEffect(() => {
     const showNewest = new URLSearchParams(location.search).get('showNewest');
+    
     if (showNewest === 'true' && scrollContainerRef.current) {
-      // Scroll to the beginning (left) of the container
+      // Initial scroll
       scrollContainerRef.current.scrollLeft = 0;
+      
+      // Delayed scroll in case the first attempt doesn't work
+      setTimeout(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollLeft = 0;
+          console.log('Scrolled to beginning (delayed)');
+        }
+      }, 100);
+      
+      // Another delayed scroll for when components might be still rendering
+      setTimeout(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollLeft = 0;
+          console.log('Scrolled to beginning (final attempt)');
+        }
+      }, 500);
     }
-  }, [location.search]);
+  }, [location.search, children]); // Also listen for children changes
   
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
