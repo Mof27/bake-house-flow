@@ -1,14 +1,12 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Circle, Square, PenTool, ChevronLeft, Flag, Minus, Plus } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Slider } from '@/components/ui/slider';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { 
   Dialog,
   DialogContent,
@@ -19,27 +17,11 @@ import {
 } from '@/components/ui/dialog';
 import Layout from '@/components/Layout';
 import { useOrders, CakeFlavor, CakeShape, NewOrderInput } from '@/contexts/OrderContext';
-
-const BowlIcon = ({ className }: { className?: string }) => (
-  <img 
-    src="/lovable-uploads/6dc45a33-f429-4a07-838d-5da53e335451.png" 
-    alt="Bowl" 
-    className={className || "w-8 h-8"} 
-  />
-);
-
-const STANDARD_SIZES = [12, 16, 18, 22, 25, 35];
-
-const generateBatchLabel = (size: string, flavor: string) => {
-  const now = new Date();
-  const day = now.getDate().toString().padStart(2, '0');
-  const month = now.toLocaleString('en-US', { month: 'short' }).toUpperCase().substring(0, 3);
-  const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-  
-  const flavorCode = flavor === 'vanilla' ? 'VC' : 'DC';
-  
-  return `${size} cm | ${flavorCode} | ${day}${month}-${time}`;
-};
+import ShapeSelector from '@/components/order-form/ShapeSelector';
+import SizeSelector from '@/components/order-form/SizeSelector';
+import QuantitySelector from '@/components/order-form/QuantitySelector';
+import FlavorSelector from '@/components/order-form/FlavorSelector';
+import PriorityToggle from '@/components/order-form/PriorityToggle';
 
 const CreateOrder = () => {
   const navigate = useNavigate();
@@ -62,21 +44,6 @@ const CreateOrder = () => {
       setQuantity(newQuantity);
     }
   };
-  
-  const findClosestSize = (value: number) => {
-    return STANDARD_SIZES.reduce((prev, curr) => 
-      Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev
-    );
-  };
-  
-  const handleSizeChange = (value: number[]) => {
-    const closestSize = findClosestSize(value[0]);
-    setSize(closestSize);
-  };
-  
-  const togglePriority = () => {
-    setPriority(!priority);
-  };
 
   const resetForm = () => {
     setShape('round');
@@ -95,7 +62,7 @@ const CreateOrder = () => {
     setIsSubmitting(true);
     
     try {
-      let finalShape: CakeShape = shape as CakeShape;
+      let finalShape: CakeShape = shape;
       let finalSize = size;
       
       if (shape === 'custom') {
@@ -144,179 +111,32 @@ const CreateOrder = () => {
           
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label>Shape</Label>
-                <RadioGroup 
-                  className="grid grid-cols-2 gap-4 md:grid-cols-4" 
-                  value={shape}
-                  onValueChange={(value) => setShape(value as CakeShape)}
-                >
-                  <div>
-                    <RadioGroupItem value="round" id="round" className="sr-only" />
-                    <Label 
-                      htmlFor="round" 
-                      className={`flex flex-col items-center justify-center rounded-md border-2 border-muted p-4 hover:bg-accent hover:text-accent-foreground ${shape === 'round' ? 'border-primary bg-primary/10' : ''}`}
-                    >
-                      <Circle className="w-8 h-8 mb-2" />
-                      <span className="mt-2">Round</span>
-                    </Label>
-                  </div>
-                  
-                  <div>
-                    <RadioGroupItem value="square" id="square" className="sr-only" />
-                    <Label 
-                      htmlFor="square"
-                      className={`flex flex-col items-center justify-center rounded-md border-2 border-muted p-4 hover:bg-accent hover:text-accent-foreground ${shape === 'square' ? 'border-primary bg-primary/10' : ''}`}
-                    >
-                      <Square className="w-8 h-8 mb-2" />
-                      <span className="mt-2">Square</span>
-                    </Label>
-                  </div>
-                  
-                  <div>
-                    <RadioGroupItem value="bowl" id="bowl" className="sr-only" />
-                    <Label 
-                      htmlFor="bowl" 
-                      className={`flex flex-col items-center justify-center rounded-md border-2 border-muted p-4 hover:bg-accent hover:text-accent-foreground ${shape === 'bowl' ? 'border-primary bg-primary/10' : ''}`}
-                    >
-                      <BowlIcon className="w-8 h-8 mb-2" />
-                      <span className="mt-2">Bowl</span>
-                    </Label>
-                  </div>
-                  
-                  <div>
-                    <RadioGroupItem value="custom" id="custom" className="sr-only" />
-                    <Label 
-                      htmlFor="custom" 
-                      className={`flex flex-col items-center justify-center rounded-md border-2 border-muted p-4 hover:bg-accent hover:text-accent-foreground ${shape === 'custom' ? 'border-primary bg-primary/10' : ''}`}
-                    >
-                      <PenTool className="w-8 h-8 mb-2" />
-                      <span className="mt-2">Custom</span>
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
+              <ShapeSelector shape={shape} onShapeChange={setShape} />
               
-              {shape !== 'custom' ? (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label>Size</Label>
-                    <span className="font-bold text-xl">{size} cm</span>
-                  </div>
-                  
-                  <div className="px-4">
-                    <Slider
-                      value={[size]}
-                      min={10}
-                      max={37}
-                      step={1}
-                      onValueChange={handleSizeChange}
-                      className="py-4"
-                    />
-                  </div>
-                  
-                  <div className="flex justify-between text-sm px-4">
-                    {STANDARD_SIZES.map((s) => (
-                      <div 
-                        key={s} 
-                        className={`cursor-pointer ${size === s ? 'font-bold text-primary' : 'text-muted-foreground'}`}
-                        onClick={() => setSize(s)}
-                      >
-                        {s}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="width">Width (cm)</Label>
-                    <Input
-                      id="width"
-                      type="number"
-                      min={10}
-                      max={100}
-                      value={width}
-                      onChange={(e) => setWidth(parseInt(e.target.value) || 20)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="length">Length (cm)</Label>
-                    <Input
-                      id="length"
-                      type="number"
-                      min={10}
-                      max={100}
-                      value={length}
-                      onChange={(e) => setLength(parseInt(e.target.value) || 30)}
-                    />
-                  </div>
-                </div>
-              )}
+              <SizeSelector
+                shape={shape}
+                size={size}
+                width={width}
+                length={length}
+                onSizeChange={setSize}
+                onWidthChange={setWidth}
+                onLengthChange={setLength}
+              />
               
-              <div className="space-y-2">
-                <Label>Quantity</Label>
-                <div className="flex items-center space-x-4">
-                  <Button 
-                    type="button"
-                    variant="outline" 
-                    size="icon"
-                    onClick={() => handleQuantityChange(-1)}
-                    disabled={quantity <= 1}
-                  >
-                    <Minus className="h-5 w-5" />
-                  </Button>
-                  
-                  <span className="text-3xl font-bold w-12 text-center">{quantity}</span>
-                  
-                  <Button 
-                    type="button"
-                    variant="outline" 
-                    size="icon"
-                    onClick={() => handleQuantityChange(1)}
-                    disabled={quantity >= 100}
-                  >
-                    <Plus className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
+              <QuantitySelector
+                quantity={quantity}
+                onQuantityChange={handleQuantityChange}
+              />
               
-              <div className="space-y-2">
-                <Label>Priority</Label>
-                <Button 
-                  type="button" 
-                  variant={priority ? "priority" : "outline"}
-                  className={`w-full ${!priority ? 'border-red-300 text-red-600 hover:bg-red-50' : ''}`}
-                  onClick={togglePriority}
-                >
-                  <Flag className={`h-5 w-5 mr-2 ${priority ? 'fill-white' : 'fill-red-200'}`} />
-                  {priority ? 'Priority Order' : 'Make Priority Order'}
-                </Button>
-              </div>
+              <PriorityToggle
+                priority={priority}
+                onPriorityChange={setPriority}
+              />
               
-              <div className="space-y-2">
-                <Label>Flavor</Label>
-                <div className="grid grid-cols-2 gap-4">
-                  <Button 
-                    type="button"
-                    variant={flavor === 'vanilla' ? 'default' : 'outline'}
-                    className={`h-16 ${flavor === 'vanilla' ? 'bg-amber-50 text-amber-900 border-amber-200' : ''}`}
-                    onClick={() => setFlavor('vanilla')}
-                  >
-                    <span className="text-xl">Vanilla</span>
-                  </Button>
-                  
-                  <Button 
-                    type="button"
-                    variant={flavor === 'chocolate' ? 'default' : 'outline'}
-                    className={`h-16 ${flavor === 'chocolate' ? 'bg-amber-900 text-amber-50 border-amber-700' : ''}`}
-                    onClick={() => setFlavor('chocolate')}
-                  >
-                    <span className="text-xl">Chocolate</span>
-                  </Button>
-                </div>
-              </div>
+              <FlavorSelector
+                flavor={flavor}
+                onFlavorChange={setFlavor}
+              />
               
               <div className="space-y-2">
                 <Label htmlFor="notes">Notes / Instructions</Label>
