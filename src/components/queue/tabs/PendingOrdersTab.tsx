@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import { PendingOrder, CakeFlavor } from '@/types/queue';
-import MixingCard from '@/components/queue/MixingCard';
+import PendingCard from '@/components/queue/PendingCard';
 import ScrollableCardSection from '@/components/queue/ScrollableCardSection';
 
 interface PendingOrdersTabProps {
@@ -47,7 +47,7 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
             onPriorityChange={handlePriorityChange}
           >
             {filteredOrders.map(order => (
-              <MixingCard 
+              <PendingCard 
                 key={order.id}
                 flavor={order.flavor}
                 shape={order.shape}

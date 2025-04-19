@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { CakeFlavor, CakeShape } from '@/types/queue';
 import { format } from 'date-fns';
 
-interface MixingCardProps {
+interface PendingCardProps {
   flavor: CakeFlavor;
   shape: CakeShape;
   size: number;
@@ -18,7 +17,7 @@ interface MixingCardProps {
   requestedQuantity: number;
 }
 
-const MixingCard: React.FC<MixingCardProps> = ({
+const PendingCard: React.FC<PendingCardProps> = ({
   flavor,
   shape,
   size,
@@ -45,7 +44,7 @@ const MixingCard: React.FC<MixingCardProps> = ({
       relative overflow-hidden transition-all
       ${bgColor}
       ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
-      hover:shadow-md w-[200px] h-[220px] flex-shrink-0  // Changed height from 200px to 220px
+      hover:shadow-md w-[200px] h-[220px] flex-shrink-0
     `}>      
       <CardContent className="p-3 h-full flex flex-col">
         {/* Header */}
@@ -96,4 +95,4 @@ const MixingCard: React.FC<MixingCardProps> = ({
   );
 };
 
-export default MixingCard;
+export default PendingCard;
