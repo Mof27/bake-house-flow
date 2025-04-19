@@ -25,6 +25,12 @@ export const useOrderOperations = (user: User) => {
       id: uuidv4(),
       isPriority: orderData.isPriority,
       status: 'queued',
+      flavor: orderData.flavor,
+      shape: orderData.shape,
+      size: orderData.size,
+      batchLabel: `${orderData.size}cm | ${orderData.flavor === 'vanilla' ? 'VC' : 'DC'} | ${new Date().toLocaleString()}`,
+      requestedQuantity: orderData.requestedQuantity,
+      producedQuantity: 0,
       estimatedTime,
       assignedTo: null,
       createdBy: user.id,
@@ -119,13 +125,11 @@ export const useOrderOperations = (user: User) => {
     
     setOrders(prevOrders => 
       updateOrdersArray(prevOrders, id, order => {
-        const quantityMatch = order.notes.match(/Quantity: (\d+)/i);
-        let quantity = quantityMatch ? parseInt(quantityMatch[1]) : 1;
-        quantity = Math.max(1, quantity + delta);
+        const updatedProducedQuantity = Math.max(0, order.producedQuantity + delta);
         
         return {
           ...order,
-          notes: order.notes.replace(/Quantity: \d+/i, `Quantity: ${quantity}`)
+          producedQuantity: updatedProducedQuantity
         };
       })
     );

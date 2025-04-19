@@ -18,9 +18,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import Layout from '@/components/Layout';
-import { useOrders } from '@/contexts/OrderContext';
+import { useOrders, CakeFlavor, CakeShape } from '@/contexts/OrderContext';
 
-// Custom bowl icon component
 const BowlIcon = ({ className }: { className?: string }) => (
   <img 
     src="/lovable-uploads/6dc45a33-f429-4a07-838d-5da53e335451.png" 
@@ -97,19 +96,25 @@ const NewCakeOrder = () => {
     
     try {
       let dimensions: string;
+      let orderShape: CakeShape = 'round';
+      let orderSize = size;
+      
       if (shape === 'custom') {
         dimensions = `${width}×${length}`;
+        orderShape = 'custom';
+        orderSize = Math.max(width, length);
       } else {
         dimensions = `${size}`;
+        orderShape = shape === 'square' ? 'square' : 'round';
       }
       
       const batchLabel = generateBatchLabel(dimensions, flavor);
       
       const orderData = {
         id: crypto.randomUUID(),
-        shape: shape === 'custom' ? 'rectangle' : shape,
-        flavor,
-        size: shape === 'custom' ? Math.max(width, length) : size,
+        shape: orderShape,
+        flavor: flavor as CakeFlavor,
+        size: orderSize,
         requestedQuantity: quantity,
         producedQuantity: 0,
         batchLabel,
@@ -126,7 +131,11 @@ const NewCakeOrder = () => {
       // Here we're integrating with the queue system
       const orderInput = {
         isPriority: priority,
-        notes: `${flavor.charAt(0).toUpperCase() + flavor.slice(1)} flavor, Shape: ${shape}, Size: ${dimensions}cm. Quantity: ${quantity}. ${notes}`
+        flavor: flavor as CakeFlavor,
+        shape: orderShape,
+        size: orderSize,
+        requestedQuantity: quantity,
+        notes: `${flavor.charAt(0).toUpperCase() + flavor.slice(1)} flavor, Shape: ${shape}, Size: ${dimensions}cm. ${notes}`
       };
       
       await createOrder(orderInput);

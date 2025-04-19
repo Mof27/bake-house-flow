@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -7,8 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Input } from '@/components/ui/input';
 import Layout from '@/components/Layout';
-import { useOrders, NewOrderInput } from '@/contexts/OrderContext';
+import { useOrders, NewOrderInput, CakeFlavor, CakeShape } from '@/contexts/OrderContext';
 
 const CreateOrder: React.FC = () => {
   const { createOrder } = useOrders();
@@ -16,11 +19,17 @@ const CreateOrder: React.FC = () => {
   const { register, handleSubmit, formState: { errors, isSubmitting }, setValue, watch } = useForm<NewOrderInput>({
     defaultValues: {
       isPriority: false,
+      flavor: 'vanilla',
+      shape: 'round',
+      size: 20,
+      requestedQuantity: 1,
       notes: '',
     }
   });
   
   const isPriority = watch('isPriority');
+  const flavor = watch('flavor');
+  const shape = watch('shape');
   
   const onSubmit = async (data: NewOrderInput) => {
     try {
@@ -48,6 +57,68 @@ const CreateOrder: React.FC = () => {
                 <Label htmlFor="isPriority" className="text-base font-medium">
                   Rush Order (High Priority)
                 </Label>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Cake Flavor</Label>
+                <RadioGroup 
+                  value={flavor} 
+                  onValueChange={(value) => setValue('flavor', value as CakeFlavor)}
+                  className="grid grid-cols-2 gap-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="vanilla" id="vanilla" />
+                    <Label htmlFor="vanilla">Vanilla</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="chocolate" id="chocolate" />
+                    <Label htmlFor="chocolate">Chocolate</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Cake Shape</Label>
+                <RadioGroup 
+                  value={shape} 
+                  onValueChange={(value) => setValue('shape', value as CakeShape)}
+                  className="grid grid-cols-2 gap-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="round" id="round-shape" />
+                    <Label htmlFor="round-shape">Round</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="square" id="square-shape" />
+                    <Label htmlFor="square-shape">Square</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="custom" id="custom-shape" />
+                    <Label htmlFor="custom-shape">Custom</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="size">Size (cm)</Label>
+                <Input
+                  id="size"
+                  type="number"
+                  min={10}
+                  max={50}
+                  {...register('size', { valueAsNumber: true })}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="requestedQuantity">Quantity</Label>
+                <Input
+                  id="requestedQuantity"
+                  type="number"
+                  min={1}
+                  max={100}
+                  {...register('requestedQuantity', { valueAsNumber: true })}
+                />
               </div>
               
               <div className="space-y-2">
