@@ -249,7 +249,7 @@ export const useQueueState = () => {
   useEffect(() => {
     if (orders.length > 0) {
       // Map orders to pendingOrders format
-      const newPendingOrders = orders
+      const newPendingOrders: PendingOrder[] = orders
         .filter(order => order.status === 'queued')
         .map(order => ({
           id: order.id,
@@ -265,13 +265,13 @@ export const useQueueState = () => {
         }));
 
       // Update the mockData with the new pending orders
-      setMockData(prevMockData => ({
-        ...prevMockData,
-        pendingOrders: [...newPendingOrders, ...prevMockData.pendingOrders]
-      }));
-
-      // Show toast notification for confirmation
       if (newPendingOrders.length > 0) {
+        setMockData(prevMockData => ({
+          ...prevMockData,
+          pendingOrders: [...newPendingOrders, ...prevMockData.pendingOrders]
+        }));
+
+        // Show toast notification for confirmation
         toast.success("Queue updated with new orders", {
           description: `${newPendingOrders.length} new orders added to the queue`,
         });

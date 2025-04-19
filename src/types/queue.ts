@@ -1,6 +1,6 @@
 
 export type CakeFlavor = 'vanilla' | 'chocolate';
-export type CakeShape = 'round' | 'square';
+export type CakeShape = 'round' | 'square' | 'custom' | 'bowl';
 
 export interface MockData {
   dailyCompleted: number;
