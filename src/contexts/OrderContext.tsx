@@ -42,70 +42,8 @@ interface OrderContextType {
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
-// Mock orders for demo
-const generateMockOrders = (): Order[] => {
-  const now = new Date();
-  const hourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-  const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-  
-  return [
-    {
-      id: uuidv4(),
-      isPriority: true,
-      status: 'baking',
-      estimatedTime: 45,
-      assignedTo: '2',
-      createdBy: '1',
-      createdAt: twoHoursAgo,
-      startedAt: hourAgo,
-      completedAt: null,
-      printCount: 2,
-      notes: 'Custom birthday message: "Happy 30th, Sarah!"'
-    },
-    {
-      id: uuidv4(),
-      isPriority: false,
-      status: 'queued',
-      estimatedTime: 30,
-      assignedTo: '3',
-      createdBy: '1',
-      createdAt: hourAgo,
-      startedAt: null,
-      completedAt: null,
-      printCount: 1,
-      notes: 'Extra crispy crust'
-    },
-    {
-      id: uuidv4(),
-      isPriority: true,
-      status: 'queued',
-      estimatedTime: 60,
-      assignedTo: null,
-      createdBy: '1',
-      createdAt: now,
-      startedAt: null,
-      completedAt: null,
-      printCount: 1,
-      notes: 'Vanilla and chocolate mix, 24 units'
-    },
-    {
-      id: uuidv4(),
-      isPriority: false,
-      status: 'done',
-      estimatedTime: 40,
-      assignedTo: '2',
-      createdBy: '1',
-      createdAt: twoHoursAgo,
-      startedAt: twoHoursAgo,
-      completedAt: hourAgo,
-      printCount: 3,
-      notes: 'Use premium chocolate'
-    }
-  ];
-};
-
 export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [orders, setOrders] = useState<Order[]>(generateMockOrders());
+  const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
 

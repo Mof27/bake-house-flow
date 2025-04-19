@@ -1,10 +1,8 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
@@ -22,21 +20,19 @@ const CreateOrder: React.FC = () => {
     }
   });
   
-  // Watch isPriority field
   const isPriority = watch('isPriority');
   
-  // Handle form submission
   const onSubmit = async (data: NewOrderInput) => {
     try {
-      const order = await createOrder(data);
-      toast.success(`Order created`);
-      navigate('/'); // Redirect to dashboard
+      await createOrder(data);
+      toast.success('Order created successfully');
+      navigate('/queue'); // Navigate to queue page after creating order
     } catch (error) {
       toast.error('Failed to create order');
       console.error(error);
     }
   };
-  
+
   return (
     <Layout title="Create New Order">
       <div className="max-w-2xl mx-auto">
