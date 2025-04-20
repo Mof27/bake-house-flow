@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { TabsContent } from '@/components/ui/tabs';
-import { ActiveMixing, PendingOrder } from '@/types/queue';
-import { toast } from 'sonner';
+import { ActiveMixing } from '@/types/queue';
 import { Card, CardContent } from '@/components/ui/card';
+import ActiveMixingCard from '@/components/queue/ActiveMixingCard';
 
 interface MixingTabProps {
   activeMixing: ActiveMixing[];
@@ -11,82 +11,41 @@ interface MixingTabProps {
   onMixingComplete: (orderId: string) => void;
 }
 
-interface MixerChipProps {
-  flavor: 'vanilla' | 'chocolate';
-  shape: string;
-  size: number;
-  quantity: number;
-  id: string;
-  onCancel: () => void;
-  onComplete: () => void;
-}
-
-const MAX_CHIPS_PER_MIXER = 5;
-
-const MixerChip: React.FC<MixerChipProps> = ({ 
-  flavor, 
-  shape, 
-  size, 
-  quantity, 
-  id, 
-  onCancel, 
-  onComplete 
-}) => {
-  const flavorCode = flavor === 'vanilla' ? 'VC' : 'DC';
-  const bgColor = flavor === 'vanilla' ? 'bg-amber-50 text-amber-950' : 'bg-amber-900 text-amber-50';
-  
-  return (
-    <div className={`${bgColor} p-2 rounded-md flex justify-between items-center mb-2`}>
-      <span className="font-bold">{flavorCode} | {shape.toUpperCase()}{size} x {quantity}</span>
-      <div className="flex gap-1">
-        <button 
-          onClick={onCancel} 
-          className="px-2 py-1 bg-gray-500 text-white text-xs rounded"
-        >
-          Cancel
-        </button>
-        <button 
-          onClick={onComplete} 
-          className="px-2 py-1 bg-green-500 text-white text-xs rounded"
-        >
-          Done
-        </button>
-      </div>
-    </div>
-  );
-};
-
 const MixerSection: React.FC<{
   mixerNumber: number;
-  chips: ActiveMixing[];
+  items: ActiveMixing[];
   onCancelTimer: (orderId: string) => void;
   onMixingComplete: (orderId: string) => void;
-}> = ({ mixerNumber, chips, onCancelTimer, onMixingComplete }) => {
-  const emptySlots = MAX_CHIPS_PER_MIXER - chips.length;
+}> = ({ mixerNumber, items, onCancelTimer, onMixingComplete }) => {
+  const emptySlots = 5 - items.length;
   
   return (
-    <Card className="flex-1">
-      <CardContent className="p-4">
+    <Card className="flex-1 h-full overflow-hidden">
+      <CardContent className="p-4 h-full">
         <h2 className="text-xl font-bold mb-4">Mixer #{mixerNumber}</h2>
         
-        {chips.map(chip => (
-          <MixerChip
-            key={chip.id}
-            id={chip.id}
-            flavor={chip.flavor}
-            shape={chip.shape}
-            size={chip.size}
-            quantity={5} // Default quantity
-            onCancel={() => onCancelTimer(chip.id)}
-            onComplete={() => onMixingComplete(chip.id)}
-          />
-        ))}
-        
-        {emptySlots > 0 && (
-          <div className="text-sm text-gray-500">
-            {emptySlots} empty {emptySlots === 1 ? 'slot' : 'slots'} available
-          </div>
-        )}
+        <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-200px)]">
+          {items.map(item => (
+            <ActiveMixingCard
+              key={item.id}
+              flavor={item.flavor}
+              shape={item.shape}
+              size={item.size}
+              batchLabel={item.batchLabel}
+              requestedAt={item.requestedAt}
+              isPriority={item.isPriority}
+              startTime={item.startTime}
+              onCancel={() => onCancelTimer(item.id)}
+              onComplete={() => onMixingComplete(item.id)}
+            />
+          ))}
+          
+          {emptySlots > 0 && (
+            <div className="text-sm text-gray-500 mt-2">
+              {emptySlots} empty {emptySlots === 1 ? 'slot' : 'slots'} available
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
@@ -97,9 +56,8 @@ const MixingTab: React.FC<MixingTabProps> = ({
   onCancelTimer,
   onMixingComplete,
 }) => {
-  // Filter chips for each mixer (assuming mixer number is stored in the batch label or a property)
-  const mixer1Chips = activeMixing.filter(item => item.batchLabel.includes('Mixer #1'));
-  const mixer2Chips = activeMixing.filter(item => item.batchLabel.includes('Mixer #2'));
+  const mixer1Items = activeMixing.filter(item => item.batchLabel.includes('Mixer #1'));
+  const mixer2Items = activeMixing.filter(item => item.batchLabel.includes('Mixer #2'));
   
   return (
     <TabsContent value="mixing" className="mt-0 h-full overflow-hidden">
@@ -107,13 +65,13 @@ const MixingTab: React.FC<MixingTabProps> = ({
         <div className="flex gap-4 h-full">
           <MixerSection 
             mixerNumber={1} 
-            chips={mixer1Chips} 
+            items={mixer1Items} 
             onCancelTimer={onCancelTimer} 
             onMixingComplete={onMixingComplete}
           />
           <MixerSection 
             mixerNumber={2} 
-            chips={mixer2Chips} 
+            items={mixer2Items} 
             onCancelTimer={onCancelTimer} 
             onMixingComplete={onMixingComplete}
           />
