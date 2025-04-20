@@ -34,9 +34,7 @@ const MixerSection: React.FC<{
               batchLabel={item.batchLabel}
               requestedAt={item.requestedAt}
               isPriority={item.isPriority}
-              startTime={item.startTime}
-              onCancel={() => onCancelTimer(item.id)}
-              onComplete={() => onMixingComplete(item.id)}
+              requestedQuantity={5}
             />
           ))}
           

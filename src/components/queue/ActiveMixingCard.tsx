@@ -37,9 +37,18 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
     `}>      
       <CardContent className="p-3 h-full flex flex-col">
         {/* Header */}
-        <div className="flex justify-between items-start text-[10px] opacity-70">
+        <div className="flex justify-between items-center text-[10px] opacity-70">
           <div>{format(new Date(requestedAt), 'dd MMM HH:mm')}</div>
           <div className="font-mono">{uniqueCode}</div>
+          
+          {/* Tags moved inline with timestamp */}
+          <div className="flex gap-1">
+            {isPriority && (
+              <Badge variant="destructive" className="text-[8px] px-1 py-0">
+                PRIORITY
+              </Badge>
+            )}
+          </div>
         </div>
 
         {/* Main Content */}
@@ -53,15 +62,6 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
           <div className="text-base">
             {`Qty: ${requestedQuantity}`}
           </div>
-        </div>
-        
-        {/* Tags */}
-        <div className="flex gap-1 mt-1">
-          {isPriority && (
-            <Badge variant="destructive" className="text-[8px] px-1 py-0">
-              PRIORITY
-            </Badge>
-          )}
         </div>
       </CardContent>
     </Card>
