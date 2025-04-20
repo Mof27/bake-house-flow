@@ -74,9 +74,7 @@ const MixerSection: React.FC<{
               isPriority={item.isPriority}
               requestedQuantity={5}
               onQuantityChange={(delta) => onQuantityChange?.(item.id, delta)}
-              onMoveToOven={() => onMoveToOven?.(item.id)}
               onPutBack={() => onMixingComplete(item.id)}
-              onCancel={() => onCancelTimer(item.id)}
             />
           ))}
           
