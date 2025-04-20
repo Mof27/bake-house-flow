@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle, MinusCircle, Undo } from 'lucide-react';
 import { CakeFlavor, CakeShape } from '@/types/queue';
 import { format } from 'date-fns';
-
 interface ActiveMixingCardProps {
   flavor: CakeFlavor;
   shape: CakeShape;
@@ -19,7 +17,6 @@ interface ActiveMixingCardProps {
   onQuantityChange?: (delta: number) => void;
   onPutBack?: () => void;
 }
-
 const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
   flavor,
   shape,
@@ -35,9 +32,7 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
   const bgColor = flavor === 'vanilla' ? 'bg-amber-50 text-amber-950' : 'bg-amber-900 text-amber-50';
   const orderNumber = batchLabel.match(/\d+/)?.[0] || '001';
   const uniqueCode = `#A${orderNumber.padStart(3, '0')}`;
-
-  return (
-    <Card className={`
+  return <Card className={`
       relative overflow-hidden transition-all
       ${bgColor}
       ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
@@ -51,19 +46,12 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
             <div className="text-[10px] opacity-70">
               {format(new Date(requestedAt), 'dd MMM HH:mm')}
             </div>
-            {isPriority && (
-              <Badge variant="destructive" className="text-[8px] px-1 py-0">
+            {isPriority && <Badge variant="destructive" className="text-[8px] px-1 py-0">
                 PRIORITY
-              </Badge>
-            )}
+              </Badge>}
           </div>
           
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8"
-            onClick={onPutBack}
-          >
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onPutBack}>
             <Undo className="h-5 w-5" />
           </Button>
         </div>
@@ -81,28 +69,15 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
           </div>
           
           <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="icon"
-              className="h-10 w-10"
-              onClick={() => onQuantityChange?.(-1)}
-              disabled={actualQuantity <= 1}
-            >
+            <Button variant="outline" size="icon" onClick={() => onQuantityChange?.(-1)} disabled={actualQuantity <= 1} className="h-10 w-10 bg-inherit">
               <MinusCircle className="h-6 w-6" />
             </Button>
-            <Button 
-              variant="outline" 
-              size="icon"
-              className="h-10 w-10"
-              onClick={() => onQuantityChange?.(1)}
-            >
+            <Button variant="outline" size="icon" onClick={() => onQuantityChange?.(1)} className="h-10 w-10 bg-inherit">
               <PlusCircle className="h-6 w-6" />
             </Button>
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default ActiveMixingCard;
