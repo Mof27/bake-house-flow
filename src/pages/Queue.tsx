@@ -9,7 +9,7 @@ import {
   TabsTrigger 
 } from '@/components/ui/tabs';
 import PendingOrdersTab from '@/components/queue/tabs/PendingOrdersTab';
-import InProgressTab from '@/components/queue/tabs/InProgressTab';
+import MixingTab from '@/components/queue/tabs/MixingTab';
 import CompletedTab from '@/components/queue/tabs/CompletedTab';
 import { useQueueState } from '@/hooks/useQueueState';
 import { useQueueOperations } from '@/hooks/useQueueOperations';
@@ -53,7 +53,7 @@ const QueuePage: React.FC = () => {
           <div className="flex items-center justify-between p-4 border-b">
             <TabsList className="w-fit">
               <TabsTrigger value="pending" className="font-bold">PENDING</TabsTrigger>
-              <TabsTrigger value="in-progress" className="font-bold">IN PROGRESS</TabsTrigger>
+              <TabsTrigger value="mixing" className="font-bold">MIXING</TabsTrigger>
               <TabsTrigger value="done" className="font-bold">DONE</TabsTrigger>
             </TabsList>
           </div>
@@ -64,12 +64,10 @@ const QueuePage: React.FC = () => {
               onStartMixing={handleStartMixing}
             />
             
-            <InProgressTab
+            <MixingTab
               activeMixing={mockData.activeMixing}
-              ovenReady={mockData.ovenReady}
               onCancelTimer={handleCancelTimer}
               onMixingComplete={handleMixingComplete}
-              onQuantityChange={handleQuantityChange}
             />
             
             <CompletedTab
