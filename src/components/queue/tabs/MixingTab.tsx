@@ -9,6 +9,8 @@ interface MixingTabProps {
   activeMixing: ActiveMixing[];
   onCancelTimer: (orderId: string) => void;
   onMixingComplete: (orderId: string) => void;
+  onQuantityChange?: (orderId: string, delta: number) => void;
+  onMoveToOven?: (orderId: string) => void;
 }
 
 const MixerSection: React.FC<{
@@ -16,7 +18,9 @@ const MixerSection: React.FC<{
   items: ActiveMixing[];
   onCancelTimer: (orderId: string) => void;
   onMixingComplete: (orderId: string) => void;
-}> = ({ mixerNumber, items, onCancelTimer, onMixingComplete }) => {
+  onQuantityChange?: (orderId: string, delta: number) => void;
+  onMoveToOven?: (orderId: string) => void;
+}> = ({ mixerNumber, items, onQuantityChange, onMoveToOven }) => {
   const emptySlots = 5 - items.length;
   
   return (
@@ -35,6 +39,8 @@ const MixerSection: React.FC<{
               requestedAt={item.requestedAt}
               isPriority={item.isPriority}
               requestedQuantity={5}
+              onQuantityChange={(delta) => onQuantityChange?.(item.id, delta)}
+              onMoveToOven={() => onMoveToOven?.(item.id)}
             />
           ))}
           
@@ -53,6 +59,8 @@ const MixingTab: React.FC<MixingTabProps> = ({
   activeMixing,
   onCancelTimer,
   onMixingComplete,
+  onQuantityChange,
+  onMoveToOven,
 }) => {
   const mixer1Items = activeMixing.filter(item => item.batchLabel.includes('Mixer #1'));
   const mixer2Items = activeMixing.filter(item => item.batchLabel.includes('Mixer #2'));
@@ -66,12 +74,16 @@ const MixingTab: React.FC<MixingTabProps> = ({
             items={mixer1Items} 
             onCancelTimer={onCancelTimer} 
             onMixingComplete={onMixingComplete}
+            onQuantityChange={onQuantityChange}
+            onMoveToOven={onMoveToOven}
           />
           <MixerSection 
             mixerNumber={2} 
             items={mixer2Items} 
             onCancelTimer={onCancelTimer} 
             onMixingComplete={onMixingComplete}
+            onQuantityChange={onQuantityChange}
+            onMoveToOven={onMoveToOven}
           />
         </div>
       </div>

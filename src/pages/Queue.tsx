@@ -54,6 +54,7 @@ const QueuePage: React.FC = () => {
             <TabsList className="w-fit">
               <TabsTrigger value="pending" className="font-bold">PENDING</TabsTrigger>
               <TabsTrigger value="mixing" className="font-bold">MIXING</TabsTrigger>
+              <TabsTrigger value="oven" className="font-bold">OVEN</TabsTrigger>
               <TabsTrigger value="done" className="font-bold">DONE</TabsTrigger>
             </TabsList>
           </div>
@@ -68,6 +69,13 @@ const QueuePage: React.FC = () => {
               activeMixing={mockData.activeMixing}
               onCancelTimer={handleCancelTimer}
               onMixingComplete={handleMixingComplete}
+              onQuantityChange={handleQuantityChange}
+              onMoveToOven={handleMixingComplete}
+            />
+
+            <OvenTab
+              ovenReadyBatches={mockData.ovenReady}
+              onStartBaking={handleMixingComplete}
             />
             
             <CompletedTab
