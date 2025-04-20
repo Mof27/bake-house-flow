@@ -21,11 +21,20 @@ const OvenTab: React.FC<OvenTabProps> = ({
           <Card className="h-full overflow-hidden">
             <CardContent className="p-4 h-full">
               <h2 className="text-xl font-bold mb-4">Ready for Oven</h2>
-              <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-200px)]">
+              <div className="flex flex-wrap gap-4 overflow-y-auto max-h-[calc(100vh-200px)]">
                 {ovenReadyBatches.map(batch => (
                   <OvenReadyCard
                     key={batch.id}
-                    {...batch}
+                    id={batch.id}
+                    flavor={batch.flavor}
+                    shape={batch.shape}
+                    size={batch.size}
+                    batchLabel={batch.batchLabel}
+                    requestedAt={batch.requestedAt}
+                    requestedQuantity={batch.requestedQuantity}
+                    producedQuantity={batch.producedQuantity}
+                    isPriority={batch.isPriority}
+                    onQuantityChange={(delta) => console.log('Quantity change', delta)}
                     onStartBaking={(ovenNumber) => onStartBaking(batch.id, ovenNumber)}
                   />
                 ))}

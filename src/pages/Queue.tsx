@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/tabs';
 import PendingOrdersTab from '@/components/queue/tabs/PendingOrdersTab';
 import MixingTab from '@/components/queue/tabs/MixingTab';
+import OvenTab from '@/components/queue/tabs/OvenTab';
 import CompletedTab from '@/components/queue/tabs/CompletedTab';
 import { useQueueState } from '@/hooks/useQueueState';
 import { useQueueOperations } from '@/hooks/useQueueOperations';
@@ -74,8 +75,8 @@ const QueuePage: React.FC = () => {
             />
 
             <OvenTab
-              ovenReadyBatches={mockData.ovenReady}
-              onStartBaking={handleMixingComplete}
+              ovenReadyBatches={mockData.ovenReady || []}
+              onStartBaking={handleStartMixing}
             />
             
             <CompletedTab

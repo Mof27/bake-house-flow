@@ -18,6 +18,7 @@ interface OvenReadyCardProps {
   isPriority?: boolean;
   isNew?: boolean;
   onQuantityChange: (delta: number) => void;
+  onStartBaking: (ovenNumber: number) => void;
   id: string;
 }
 
@@ -31,7 +32,8 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
   producedQuantity,
   isPriority = false,
   isNew = false,
-  onQuantityChange
+  onQuantityChange,
+  onStartBaking
 }) => {
   const bgColor = flavor === 'vanilla' ? 'bg-amber-50 text-amber-950' : 'bg-amber-900 text-amber-50';
   
@@ -82,6 +84,15 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
           </div>
           
           <div className="text-sm">Actual: {producedQuantity}</div>
+          
+          <Button 
+            variant="secondary"
+            size="sm"
+            className="w-full mt-2"
+            onClick={() => onStartBaking(1)} // Default to oven #1 for simplicity
+          >
+            Start Baking
+          </Button>
         </div>
       </CardContent>
     </Card>
