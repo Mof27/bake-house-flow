@@ -4,7 +4,7 @@ import { TabsContent } from '@/components/ui/tabs';
 import { ActiveMixing } from '@/types/queue';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Undo, X } from 'lucide-react';
+import { ArrowRight, Undo } from 'lucide-react';
 import ActiveMixingCard from '@/components/queue/ActiveMixingCard';
 
 interface MixingTabProps {
@@ -37,14 +37,6 @@ const MixerSection: React.FC<{
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => items.forEach(item => onCancelTimer(item.id))}
-              >
-                <X className="mr-2 h-4 w-4" />
-                Cancel All
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
                 onClick={() => items.forEach(item => onMixingComplete(item.id))}
               >
                 <Undo className="mr-2 h-4 w-4" />
@@ -72,7 +64,8 @@ const MixerSection: React.FC<{
               batchLabel={item.batchLabel}
               requestedAt={item.requestedAt}
               isPriority={item.isPriority}
-              requestedQuantity={5}
+              requestedQuantity={item.requestedQuantity || 5}
+              producedQuantity={item.producedQuantity || item.requestedQuantity || 5}
               onQuantityChange={(delta) => onQuantityChange?.(item.id, delta)}
               onPutBack={() => onMixingComplete(item.id)}
             />

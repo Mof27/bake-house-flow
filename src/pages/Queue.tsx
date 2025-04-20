@@ -30,6 +30,7 @@ const QueuePage: React.FC = () => {
   
   const {
     handleQuantityChange,
+    handleMixingQuantityChange,
     handleStartMixing,
     handleCancelTimer,
     handleMixingComplete,
@@ -70,7 +71,7 @@ const QueuePage: React.FC = () => {
               activeMixing={mockData.activeMixing}
               onCancelTimer={handleCancelTimer}
               onMixingComplete={handleMixingComplete}
-              onQuantityChange={handleQuantityChange}
+              onQuantityChange={handleMixingQuantityChange}
               onMoveToOven={handleMixingComplete}
             />
 

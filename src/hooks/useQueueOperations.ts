@@ -8,12 +8,13 @@ export const useQueueOperations = (
   mockData: MockData, 
   setMockData: React.Dispatch<React.SetStateAction<MockData>>
 ) => {
-  const { handleQuantityChange } = useQuantityOperations(setMockData);
+  const { handleQuantityChange, handleMixingQuantityChange } = useQuantityOperations(setMockData);
   const { handleStartMixing, handleCancelTimer, handleMixingComplete } = useMixingOperations(setMockData);
   const { handleOvenComplete } = useOvenOperations(setMockData);
 
   return {
     handleQuantityChange,
+    handleMixingQuantityChange,
     handleStartMixing,
     handleCancelTimer,
     handleMixingComplete,

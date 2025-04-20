@@ -1,4 +1,3 @@
-
 export type CakeFlavor = 'vanilla' | 'chocolate';
 export type CakeShape = 'round' | 'square' | 'custom' | 'bowl';
 
@@ -35,6 +34,8 @@ export interface ActiveMixing {
   requestedAt: Date;
   isPriority: boolean;
   startTime?: Date;
+  requestedQuantity?: number;
+  producedQuantity?: number;
 }
 
 export interface OvenReadyBatch {
