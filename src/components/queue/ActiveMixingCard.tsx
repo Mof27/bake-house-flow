@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { XCircle, TimerOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CakeFlavor, CakeShape } from '@/types/queue';
@@ -14,9 +12,7 @@ interface ActiveMixingCardProps {
   batchLabel: string;
   requestedAt: Date;
   isPriority?: boolean;
-  onCancel: () => void;
-  onComplete: () => void;
-  startTime: Date;
+  requestedQuantity: number;
 }
 
 const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
@@ -26,8 +22,7 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
   batchLabel,
   requestedAt,
   isPriority = false,
-  onCancel,
-  onComplete
+  requestedQuantity
 }) => {
   const bgColor = flavor === 'vanilla' ? 'bg-amber-50 text-amber-950' : 'bg-amber-900 text-amber-50';
   const orderNumber = batchLabel.match(/\d+/)?.[0] || '001';
@@ -55,6 +50,9 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
           <div className="text-base font-bold">
             {flavor.toUpperCase()}
           </div>
+          <div className="text-base">
+            {`Qty: ${requestedQuantity}`}
+          </div>
         </div>
         
         {/* Tags */}
@@ -64,26 +62,6 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
               PRIORITY
             </Badge>
           )}
-        </div>
-        
-        {/* Action Buttons */}
-        <div className="mt-auto flex gap-1">
-          <Button 
-            variant="cancel"
-            size="sm"
-            className="flex-1 text-xs py-1 h-7" 
-            onClick={onCancel}
-          >
-            <XCircle className="mr-1 h-3 w-3" /> Cancel
-          </Button>
-          <Button 
-            variant="default"
-            size="sm"
-            className="flex-1 text-xs py-1 h-7"
-            onClick={onComplete}
-          >
-            <TimerOff className="mr-1 h-3 w-3" /> Complete
-          </Button>
         </div>
       </CardContent>
     </Card>
