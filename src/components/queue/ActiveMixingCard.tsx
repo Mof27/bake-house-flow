@@ -1,12 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
-import { Clock, XCircle, TimerOff } from 'lucide-react';
+import React from 'react';
+import { XCircle, TimerOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 import { CakeFlavor, CakeShape } from '@/types/queue';
-import { formatDateTime, formatTime } from '@/lib/date-utils';
+import { format } from 'date-fns';
 
 interface ActiveMixingCardProps {
   flavor: CakeFlavor;
@@ -28,134 +27,47 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
   requestedAt,
   isPriority = false,
   onCancel,
-  onComplete,
-  startTime
+  onComplete
 }) => {
-  const MIXING_TIME = 120; // 2 minutes in seconds
-  const WARNING_TIME = 30; // 30 seconds
+  const bgColor = flavor === 'vanilla' ? 'bg-amber-50 text-amber-950' : 'bg-amber-900 text-amber-50';
+  const orderNumber = batchLabel.match(/\d+/)?.[0] || '001';
+  const uniqueCode = `#A${orderNumber.padStart(3, '0')}`;
 
-  const calculateInitialTimeLeft = () => {
-    const now = new Date();
-    // Add null check for startTime
-    if (!startTime) return MIXING_TIME;
-    
-    const elapsedSeconds = Math.floor((now.getTime() - startTime.getTime()) / 1000);
-    return Math.max(0, MIXING_TIME - elapsedSeconds);
-  };
-  
-  const [timeLeft, setTimeLeft] = useState<number>(calculateInitialTimeLeft());
-  const [timerActive, setTimerActive] = useState<boolean>(true);
-  const [elapsedTime, setElapsedTime] = useState<number>(0);
-  const [isTimerExpired, setIsTimerExpired] = useState<boolean>(calculateInitialTimeLeft() <= 0);
-  
-  let baseTextColor = flavor === 'vanilla' ? 'text-amber-950' : 'text-amber-50';
-  let baseBgColor = flavor === 'vanilla' ? 'bg-amber-50' : 'bg-amber-900';
-  
-  let warningBgColor = flavor === 'vanilla' ? 'bg-red-200' : 'bg-red-700';
-  let warningTextColor = 'text-white';
-  
-  let expiredBgColor = 'bg-red-500';
-  let expiredTextColor = 'text-white';
-  
-  let bgColorClass = baseBgColor;
-  let textColorClass = baseTextColor;
-  let animationClass = '';
-  
-  // Split batch label into parts (assuming format like "ROUND VANILLA 16CM")
-  const parts = batchLabel.split(' ');
-
-  if (isTimerExpired) {
-    bgColorClass = expiredBgColor;
-    textColorClass = expiredTextColor;
-    animationClass = 'animate-pulse';
-  } else if (timeLeft <= WARNING_TIME) {
-    bgColorClass = warningBgColor;
-    textColorClass = warningTextColor;
-    animationClass = 'animate-pulse';
-  }
-  
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    
-    if (timerActive && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft(prev => {
-          const newTime = prev - 1;
-          if (newTime === WARNING_TIME) {
-            toast.warning("30 seconds left on mixing timer!", {
-              description: `${batchLabel} mixing will be done soon!`,
-              duration: 5000,
-            });
-            try {
-              const audio = new Audio('/beep.mp3');
-              audio.play();
-            } catch (error) {
-              console.log('Audio notification failed:', error);
-            }
-          }
-          return newTime;
-        });
-      }, 1000);
-    } else if (timeLeft === 0 && !isTimerExpired) {
-      setIsTimerExpired(true);
-      toast.success("Mixing complete!", {
-        description: `${batchLabel} is ready to be moved to oven queue`,
-      });
-      
-      if (interval) {
-        clearInterval(interval);
-      }
-      
-      interval = setInterval(() => {
-        setElapsedTime(prev => prev + 1);
-      }, 1000);
-    }
-    
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [timerActive, timeLeft, batchLabel, isTimerExpired]);
-  
-  const progressPercentage = (timeLeft / MIXING_TIME) * 100;
-  
   return (
     <Card className={`
       relative overflow-hidden transition-all
-      ${bgColorClass} ${textColorClass} ${animationClass}
+      ${bgColor}
       ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
-      hover:shadow-md w-[200px] h-[200px] flex-shrink-0
+      hover:shadow-md w-full
     `}>      
-      <CardContent className="p-3 h-full flex flex-col space-y-1.5">
-        {/* Shape */}
-        <div className="text-lg font-bold leading-tight">{parts[0] || ''}</div>
-        
-        {/* Flavor */}
-        <div className="text-lg font-bold leading-tight">{parts[1] || ''}</div>
-        
-        {/* Date */}
-        <div className="text-xs opacity-70">
-          {formatDateTime(requestedAt)}
+      <CardContent className="p-3 h-full flex flex-col">
+        {/* Header */}
+        <div className="flex justify-between items-start text-[10px] opacity-70">
+          <div>{format(new Date(requestedAt), 'dd MMM HH:mm')}</div>
+          <div className="font-mono">{uniqueCode}</div>
+        </div>
+
+        {/* Main Content */}
+        <div className="mt-1 space-y-0 leading-tight">
+          <div className="text-2xl font-bold">
+            {`${shape.toUpperCase()} ${size}CM`}
+          </div>
+          <div className="text-base font-bold">
+            {flavor.toUpperCase()}
+          </div>
         </div>
         
-        <div className="flex flex-col items-center mt-auto mb-auto">
-          <div className="flex items-center">
-            <Clock className="h-4 w-4 mr-1" />
-            {!isTimerExpired ? (
-              <span className="text-xl font-bold">{formatTime(timeLeft)}</span>
-            ) : (
-              <span className="text-xl font-bold">+{formatTime(elapsedTime)}</span>
-            )}
-          </div>
-          
-          {!isTimerExpired && (
-            <Progress 
-              value={progressPercentage} 
-              className="w-full h-2 mt-2" 
-            />
+        {/* Tags */}
+        <div className="flex gap-1 mt-1">
+          {isPriority && (
+            <Badge variant="destructive" className="text-[8px] px-1 py-0">
+              PRIORITY
+            </Badge>
           )}
         </div>
         
-        <div className="flex space-x-1 mt-auto">
+        {/* Action Buttons */}
+        <div className="mt-auto flex gap-1">
           <Button 
             variant="cancel"
             size="sm"
@@ -170,7 +82,7 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
             className="flex-1 text-xs py-1 h-7"
             onClick={onComplete}
           >
-            <TimerOff className="mr-1 h-3 w-3" /> Finish
+            <TimerOff className="mr-1 h-3 w-3" /> Complete
           </Button>
         </div>
       </CardContent>
