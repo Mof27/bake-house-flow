@@ -14,7 +14,7 @@ const Clock = () => {
   }, []);
 
   return (
-    <div className="fixed top-4 left-4 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+    <div className="fixed top-4 right-24 flex items-center gap-2 text-sm font-medium text-muted-foreground">
       {format(time, 'HH:mm:ss')}
     </div>
   );
