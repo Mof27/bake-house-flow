@@ -1,7 +1,7 @@
 
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
-import { estimateBakeTime } from '@/utils/orderUtils';
+import { estimateBakeTime, generateBatchLabel } from '@/utils/orderUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { ManualBakerOrder, NewOrderInput, OrderStatus } from '@/types/orders';
 import { Dispatch, SetStateAction } from 'react';
@@ -18,6 +18,10 @@ export const useOrderCreate = (
       const estimatedTime = estimateBakeTime();
       const batchNumber = nextBatchNumber.toString().padStart(3, '0');
       const batchLabel = `A${batchNumber}`;
+
+      // Generate a better batch label using the utility function
+      const detailedBatchLabel = generateBatchLabel(orderData.flavor, orderData.size, orderData.shape);
+      
       const newOrder: ManualBakerOrder = {
         id: uuidv4(),
         isPriority: orderData.isPriority,
@@ -25,7 +29,7 @@ export const useOrderCreate = (
         flavor: orderData.flavor,
         shape: orderData.shape,
         size: orderData.size,
-        batchLabel,
+        batchLabel: detailedBatchLabel,
         requestedQuantity: orderData.requestedQuantity,
         producedQuantity: 0,
         estimatedTime,
@@ -59,14 +63,25 @@ export const useOrderCreate = (
         notes: newOrder.notes,
       };
 
-      const { error } = await supabase.from('orders').insert(dbOrder);
+      console.log("Inserting order into Supabase:", dbOrder);
+      const { data, error } = await supabase.from('orders').insert(dbOrder).select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw new Error(`Failed to create order: ${error.message}`);
+      }
 
+      console.log("Order created successfully:", data);
+      
+      // Trigger manual refresh to update all views
+      const event = new CustomEvent('queue-refresh-requested');
+      window.dispatchEvent(event);
+      
       setNextBatchNumber(n => n + 1);
       toast.success("Order created successfully");
       return newOrder;
     } catch (error) {
+      console.error("Order creation error:", error);
       toast.error('Failed to create order');
       throw error;
     } finally {

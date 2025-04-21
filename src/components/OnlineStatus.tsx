@@ -2,11 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useQueueState } from '@/hooks/useQueueState';
+import { toast } from 'sonner';
 
 const OnlineStatus = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const { fetchLatestData } = useQueueState();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -22,7 +22,18 @@ const OnlineStatus = () => {
   }, []);
 
   const handleRefresh = () => {
-    fetchLatestData();
+    setIsRefreshing(true);
+    
+    // Dispatch refresh event that will be caught by useQueueState
+    const event = new CustomEvent('queue-refresh-requested');
+    window.dispatchEvent(event);
+    
+    toast.info("Refreshing data...");
+    
+    // Visual feedback for refresh button
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 1000);
   };
 
   return (
@@ -41,8 +52,9 @@ const OnlineStatus = () => {
         size="icon"
         className="h-8 w-8 rounded-full"
         onClick={handleRefresh}
+        disabled={isRefreshing}
       >
-        <RefreshCw className="h-4 w-4" />
+        <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
       </Button>
     </div>
   );
