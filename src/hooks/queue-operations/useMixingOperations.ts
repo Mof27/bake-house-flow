@@ -1,5 +1,5 @@
 
-import { MockData } from '@/types/queue';
+import { MockData, PendingOrder } from '@/types/queue';
 import { toast } from 'sonner';
 
 const MAX_ITEMS_PER_MIXER = 5;
@@ -36,7 +36,9 @@ export const useMixingOperations = (
           batchLabel: updatedBatchLabel,
           requestedAt: orderToMove.requestedAt,
           isPriority: orderToMove.isPriority,
-          startTime: new Date()
+          startTime: new Date(),
+          requestedQuantity: orderToMove.requestedQuantity,
+          producedQuantity: orderToMove.producedQuantity
         }]
       };
     });
@@ -52,20 +54,22 @@ export const useMixingOperations = (
       // Remove the mixer number from batch label when returning to pending
       const originalBatchLabel = orderToMove.batchLabel.replace(/ \(Mixer #[1-2]\)/, '');
       
+      const pendingOrder: PendingOrder = { 
+        id: orderToMove.id,
+        flavor: orderToMove.flavor,
+        shape: orderToMove.shape,
+        size: orderToMove.size,
+        batchLabel: originalBatchLabel,
+        requestedAt: orderToMove.requestedAt,
+        isPriority: orderToMove.isPriority,
+        requestedQuantity: orderToMove.requestedQuantity || 5,
+        producedQuantity: orderToMove.producedQuantity || 5
+      };
+      
       return {
         ...prev,
         activeMixing: prev.activeMixing.filter(order => order.id !== orderId),
-        pendingOrders: [...prev.pendingOrders, { 
-          id: orderToMove.id,
-          flavor: orderToMove.flavor,
-          shape: orderToMove.shape,
-          size: orderToMove.size,
-          batchLabel: originalBatchLabel,
-          requestedAt: orderToMove.requestedAt,
-          isPriority: orderToMove.isPriority,
-          requestedQuantity: 5,
-          producedQuantity: 5
-        }]
+        pendingOrders: [...prev.pendingOrders, pendingOrder]
       };
     });
     

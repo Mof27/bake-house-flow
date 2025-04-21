@@ -37,7 +37,7 @@ const MixerSection: React.FC<{
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => items.forEach(item => onMixingComplete(item.id))}
+                onClick={() => items.forEach(item => onCancelTimer(item.id))}
               >
                 <Undo className="mr-2 h-4 w-4" />
                 Put All Back
@@ -67,7 +67,7 @@ const MixerSection: React.FC<{
               requestedQuantity={item.requestedQuantity || 5}
               producedQuantity={item.producedQuantity || item.requestedQuantity || 5}
               onQuantityChange={(delta) => onQuantityChange?.(item.id, delta)}
-              onPutBack={() => onMixingComplete(item.id)}
+              onPutBack={() => onCancelTimer(item.id)}
             />
           ))}
           

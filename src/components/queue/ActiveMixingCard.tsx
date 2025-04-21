@@ -41,12 +41,12 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
       relative overflow-hidden transition-all
       ${bgColor}
       ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
-      hover:shadow-md w-full
+      hover:shadow-md w-full h-[150px]
     `}>      
-      <CardContent className="p-3 h-full flex flex-col space-y-3">
+      <CardContent className="p-2 h-full flex flex-col space-y-2">
         {/* Header with Batch Info and Put Back Button */}
         <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1">
             <div className="font-mono text-[10px] opacity-70">{uniqueCode}</div>
             <div className="text-[10px] opacity-70">
               {format(new Date(requestedAt), 'dd MMM HH:mm')}
@@ -56,41 +56,41 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
               </Badge>}
           </div>
           
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onPutBack}>
-            <Undo className="h-5 w-5" />
+          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onPutBack}>
+            <Undo className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Flavor, Shape & Size */}
-        <div className="text-lg font-bold">
+        <div className="text-base font-bold">
           {`${flavor.toUpperCase()} | ${shape.toUpperCase()} ${size}CM`}
         </div>
 
         {/* Quantities Section */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-auto">
           <div className="flex items-center gap-1">
-            <span className="text-sm">Req: {requestedQuantity}</span>
+            <span className="text-xs">Req: {requestedQuantity}</span>
             <span className="mx-1">|</span>
-            <span className="text-sm font-semibold">Actual: {producedQuantity}</span>
+            <span className="text-xs font-semibold">Actual: {producedQuantity}</span>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <Button 
               variant="outline" 
               size="icon" 
               onClick={() => onQuantityChange?.(-1)} 
               disabled={producedQuantity <= 1} 
-              className="h-10 w-10 bg-inherit"
+              className="h-7 w-7 bg-inherit"
             >
-              <MinusCircle className="h-6 w-6" />
+              <MinusCircle className="h-4 w-4" />
             </Button>
             <Button 
               variant="outline" 
               size="icon" 
               onClick={() => onQuantityChange?.(1)} 
-              className="h-10 w-10 bg-inherit"
+              className="h-7 w-7 bg-inherit"
             >
-              <PlusCircle className="h-6 w-6" />
+              <PlusCircle className="h-4 w-4" />
             </Button>
           </div>
         </div>
