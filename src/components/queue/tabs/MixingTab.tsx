@@ -6,6 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Undo } from 'lucide-react';
 import ActiveMixingCard from '@/components/queue/ActiveMixingCard';
+import ConsolidatedMixingCard from '@/components/queue/ConsolidatedMixingCard';
+import { consolidateMixingItems } from '@/utils/mixingUtils';
 
 interface MixingTabProps {
   activeMixing: ActiveMixing[];
@@ -29,6 +31,22 @@ const MixerSection: React.FC<{
 }) => {
   const handleMoveAllToOven = () => {
     items.forEach(item => onMoveToOven?.(item.id));
+  };
+
+  const consolidatedItems = consolidateMixingItems(items);
+
+  const handleConsolidatedQuantityChange = (consolidatedItem: any, delta: number) => {
+    // Apply the change to all items in the consolidated group
+    consolidatedItem.ids.forEach((id: string) => {
+      onQuantityChange?.(id, delta);
+    });
+  };
+
+  const handleConsolidatedPutBack = (consolidatedItem: any) => {
+    // Put back all items in the consolidated group individually
+    consolidatedItem.ids.forEach((id: string) => {
+      onPutBack?.(id);
+    });
   };
 
   return (
@@ -59,19 +77,20 @@ const MixerSection: React.FC<{
         </div>
         
         <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-hide">
-          {items.map(item => (
-            <ActiveMixingCard
-              key={item.id}
+          {consolidatedItems.map((item) => (
+            <ConsolidatedMixingCard
+              key={item.ids.join('-')}
+              ids={item.ids}
               flavor={item.flavor}
               shape={item.shape}
               size={item.size}
-              batchLabel={item.batchLabel}
+              batchLabels={item.batchLabels}
               requestedAt={item.requestedAt}
               isPriority={item.isPriority}
-              requestedQuantity={item.requestedQuantity || 5}
-              producedQuantity={item.producedQuantity || item.requestedQuantity || 5}
-              onQuantityChange={(delta) => onQuantityChange?.(item.id, delta)}
-              onPutBack={() => onPutBack?.(item.id)}
+              totalRequestedQuantity={item.totalRequestedQuantity}
+              totalProducedQuantity={item.totalProducedQuantity}
+              onQuantityChange={(delta) => handleConsolidatedQuantityChange(item, delta)}
+              onPutBack={() => handleConsolidatedPutBack(item)}
             />
           ))}
           

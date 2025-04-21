@@ -25,12 +25,16 @@ export const useQuantityOperations = (
         return prev;
       }
 
+      // Calculate the new produced quantity with a minimum of 1
+      const currentQuantity = mixingItem.producedQuantity || mixingItem.requestedQuantity || 5;
+      const newQuantity = Math.max(1, currentQuantity + delta);
+
       // Update the producedQuantity for when it moves to the oven ready state
       return {
         ...prev,
         activeMixing: prev.activeMixing.map(item => 
           item.id === orderId
-            ? { ...item, producedQuantity: Math.max(1, (item.producedQuantity || item.requestedQuantity || 5) + delta) }
+            ? { ...item, producedQuantity: newQuantity }
             : item
         )
       };
