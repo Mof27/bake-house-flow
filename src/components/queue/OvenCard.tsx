@@ -23,16 +23,26 @@ const OvenCard: React.FC<OvenCardProps> = ({
   batchLabel,
   isPriority = false,
   producedQuantity,
+  requestedQuantity,
 }) => {
   const bgColor =
     flavor === "vanilla"
       ? "bg-amber-50 text-amber-950"
       : "bg-amber-900 text-amber-50";
 
-  // Extract batch codes for display
-  const batchCodes = batchLabel.includes(',') 
-    ? batchLabel  // Already consolidated format
-    : batchLabel.match(/#A\d+/)?.[0] || batchLabel;
+  // Extract batch codes and clean up "(Mixer #X)" labels
+  const cleanBatchLabel = batchLabel.replace(/\s*\(Mixer #\d+\)/g, '');
+  
+  // Add "A" suffix to batch codes if quantity was adjusted
+  const batchCodes = cleanBatchLabel.split(', ').map(code => {
+    if (producedQuantity !== requestedQuantity) {
+      // If it's a batch code format like #A001, add "A" at the end
+      if (code.match(/#A\d+/)) {
+        return `${code}A`;
+      }
+    }
+    return code;
+  }).join(', ');
 
   return (
     <Card

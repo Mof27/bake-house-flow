@@ -36,7 +36,15 @@ const ConsolidatedMixingCard: React.FC<ConsolidatedMixingCardProps> = ({
   onPutBack
 }) => {
   const bgColor = flavor === 'vanilla' ? 'bg-amber-50 text-amber-950' : 'bg-amber-900 text-amber-50';
-  const batchLabelsDisplay = batchLabels.join(', ');
+  
+  // Clean up batch labels to remove mixer information
+  const cleanBatchLabels = batchLabels.map(label => {
+    // Extract only the batch code without the mixer part
+    const codeMatch = label.match(/#A\d+/);
+    return codeMatch ? codeMatch[0] : label;
+  });
+  
+  const batchLabelsDisplay = cleanBatchLabels.join(', ');
   
   return (
     <Card className={`

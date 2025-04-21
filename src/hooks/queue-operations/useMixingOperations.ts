@@ -110,6 +110,7 @@ export const useMixingOperations = (
         shape: orderToMove.shape,
         size: orderToMove.size,
         batchLabel: similarItems.map(item => {
+          // Extract only the #AXXX part, removing the mixer part
           const codeMatch = item.batchLabel.match(/#A(\d+)/);
           return codeMatch ? `#A${codeMatch[1]}` : '';
         }).filter(Boolean).join(', '),
