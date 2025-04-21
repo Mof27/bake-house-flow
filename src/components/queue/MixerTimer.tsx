@@ -24,7 +24,9 @@ const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
 
   // Cleanup interval on unmount
   useEffect(() => {
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); }
+    return () => { 
+      if (intervalRef.current) clearInterval(intervalRef.current); 
+    };
   }, []);
 
   const handleStart = () => {
@@ -34,7 +36,9 @@ const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
       intervalRef.current = setInterval(() => {
         setSeconds(prev => {
           if (prev <= 1) {
-            clearInterval(intervalRef.current as NodeJS.Timeout);
+            if (intervalRef.current) {
+              clearInterval(intervalRef.current);
+            }
             setStatus("done");
             setTimeout(() => setStatus("countup"), 800); // Briefly show done/flash
             return 0;
@@ -45,16 +49,23 @@ const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
     }
   };
 
+  // Handle countup timer
   useEffect(() => {
+    // Clear any existing interval first
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    
     if (status === "countup") {
       setSeconds(0);
       intervalRef.current = setInterval(() => {
         setSeconds((prev) => prev + 1);
       }, 1000);
-      return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-    }
-    if (status !== "countup" && intervalRef.current) {
-      clearInterval(intervalRef.current);
+      
+      return () => { 
+        if (intervalRef.current) clearInterval(intervalRef.current); 
+      };
     }
   }, [status]);
 
