@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { estimateBakeTime } from '@/utils/orderUtils';
 import { supabase } from '@/integrations/supabase/client';
-import { Order, NewOrderInput, OrderStatus } from '@/types/orders';
+import { ManualBakerOrder, NewOrderInput, OrderStatus } from '@/types/orders';
 import { Dispatch, SetStateAction } from 'react';
 
 export const useOrderCreate = (
@@ -12,13 +12,13 @@ export const useOrderCreate = (
   nextBatchNumber: number,
   setIsLoading: (loading: boolean) => void
 ) => {
-  const createOrder = async (orderData: NewOrderInput): Promise<Order> => {
+  const createOrder = async (orderData: NewOrderInput): Promise<ManualBakerOrder> => {
     setIsLoading(true);
     try {
       const estimatedTime = estimateBakeTime();
       const batchNumber = nextBatchNumber.toString().padStart(3, '0');
       const batchLabel = `A${batchNumber}`;
-      const newOrder: Order = {
+      const newOrder: ManualBakerOrder = {
         id: uuidv4(),
         isPriority: orderData.isPriority,
         status: 'queued' as OrderStatus,

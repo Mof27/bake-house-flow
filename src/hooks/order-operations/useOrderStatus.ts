@@ -1,13 +1,13 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Order, OrderStatus } from '@/types/orders';
+import { ManualBakerOrder, OrderStatus } from '@/types/orders';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@/contexts/AuthContext';
 import { useLogging } from '@/hooks/useLogging';
 
 export const useOrderStatus = (
-  orders: Order[],
+  orders: ManualBakerOrder[],
   setIsLoading: (loading: boolean) => void,
   user?: User
 ) => {

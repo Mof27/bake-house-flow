@@ -1,11 +1,11 @@
 
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { Order, OrderStatus } from '@/types/orders';
+import { ManualBakerOrder, OrderStatus } from '@/types/orders';
 import { supabase } from '@/integrations/supabase/client';
 
 // Normalization helper put in this file
-export const normalizeOrders = (data: any[]): Order[] =>
+export const normalizeOrders = (data: any[]): ManualBakerOrder[] =>
   (data || []).map((o: any) => ({
     id: o.id,
     isPriority: o.is_priority,
@@ -27,7 +27,7 @@ export const normalizeOrders = (data: any[]): Order[] =>
   }));
 
 export const useOrderFetch = () => {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<ManualBakerOrder[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchOrders = useCallback(async () => {

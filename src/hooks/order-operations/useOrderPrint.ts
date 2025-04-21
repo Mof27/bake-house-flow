@@ -1,10 +1,10 @@
 
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Order } from '@/types/orders';
+import { ManualBakerOrder } from '@/types/orders';
 
 export const useOrderPrint = (
-  orders: Order[],
+  orders: ManualBakerOrder[],
   setIsLoading: (loading: boolean) => void
 ) => {
   const printLabel = async (id: string): Promise<void> => {

@@ -2,14 +2,14 @@
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useLogging } from '@/hooks/useLogging';
-import { Order } from '@/types/orders';
+import { ManualBakerOrder } from '@/types/orders';
 
 export const useOrderDelete = (
   setIsLoading: (loading: boolean) => void
 ) => {
   const { logActivity } = useLogging();
 
-  const deleteOrder = async (id: string, order?: Order): Promise<void> => {
+  const deleteOrder = async (id: string, order?: ManualBakerOrder): Promise<void> => {
     setIsLoading(true);
     
     try {

@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { Order, NewOrderInput, OrderStatus } from '@/types/orders';
+import { ManualBakerOrder, NewOrderInput, OrderStatus } from '@/types/orders';
 import { User } from '@/contexts/AuthContext';
 import { useOrderFetch } from './order-operations/useOrderFetch';
 import { useOrderCreate } from './order-operations/useOrderCreate';
@@ -36,7 +36,7 @@ export const useOrderOperations = (user: User) => {
     return () => { supabase.removeChannel(channel); };
   }, [fetchOrders]);
 
-  const getOrderById = (id: string): Order | undefined =>
+  const getOrderById = (id: string): ManualBakerOrder | undefined =>
     orders.find(order => order.id === id);
 
   // Split operations

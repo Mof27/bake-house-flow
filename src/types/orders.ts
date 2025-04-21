@@ -1,4 +1,3 @@
-
 // Order status types
 export type OrderStatus = 'queued' | 'baking' | 'done' | 'mixing';
 
@@ -6,8 +5,8 @@ export type OrderStatus = 'queued' | 'baking' | 'done' | 'mixing';
 export type CakeFlavor = 'vanilla' | 'chocolate';
 export type CakeShape = 'round' | 'square' | 'custom' | 'bowl';
 
-// Order interface
-export interface Order {
+// Manual Baker Order interface (renamed from Order)
+export interface ManualBakerOrder {
   id: string;
   isPriority: boolean;
   status: OrderStatus;
@@ -38,9 +37,9 @@ export interface NewOrderInput {
 }
 
 export interface OrderContextType {
-  orders: Order[];
-  getOrderById: (id: string) => Order | undefined;
-  createOrder: (orderData: NewOrderInput) => Promise<Order>;
+  orders: ManualBakerOrder[];
+  getOrderById: (id: string) => ManualBakerOrder | undefined;
+  createOrder: (orderData: NewOrderInput) => Promise<ManualBakerOrder>;
   updateOrderStatus: (id: string, status: OrderStatus) => Promise<boolean>;
   printLabel: (id: string) => Promise<void>;
   deleteOrder: (id: string) => Promise<void>;
@@ -49,3 +48,6 @@ export interface OrderContextType {
   updateOrderQuantity: (id: string, delta: number) => Promise<void>;
   updateOrderNotes: (id: string, notes: string) => Promise<void>;
 }
+
+// For backwards compatibility - keeping the Order type as alias to ManualBakerOrder
+export type Order = ManualBakerOrder;

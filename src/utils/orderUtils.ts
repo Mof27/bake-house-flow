@@ -8,13 +8,13 @@ export const estimateBakeTime = (): number => {
 };
 
 export const updateOrdersArray = (
-  orders: Order[], 
+  orders: ManualBakerOrder[], 
   orderId: string, 
-  updateFn: (order: Order) => Order
-): Order[] => {
+  updateFn: (order: ManualBakerOrder) => ManualBakerOrder
+): ManualBakerOrder[] => {
   return orders.map(order => 
     order.id === orderId ? updateFn(order) : order
   );
 };
 
-import { Order } from '@/types/orders';
+import { ManualBakerOrder } from '@/types/orders';
