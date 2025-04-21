@@ -33,6 +33,17 @@ export const useOrderOperations = (user: User) => {
         createdAt: o.created_at ? new Date(o.created_at) : new Date(),
         startedAt: o.started_at ? new Date(o.started_at) : undefined,
         completedAt: o.completed_at ? new Date(o.completed_at) : undefined,
+        // Map database fields to client model
+        isPriority: o.is_priority,
+        batchLabel: o.batch_label,
+        requestedQuantity: o.requested_quantity,
+        producedQuantity: o.produced_quantity,
+        estimatedTime: o.estimated_time,
+        assignedTo: o.assigned_to,
+        createdBy: o.created_by,
+        printCount: o.print_count,
+        // Ensure status is a valid OrderStatus
+        status: o.status as OrderStatus,
       }));
       setOrders(normalized);
     }
@@ -68,10 +79,10 @@ export const useOrderOperations = (user: User) => {
       const batchNumber = nextBatchNumber.toString().padStart(3, '0');
       const batchLabel = `A${batchNumber}`;
 
-      const newOrder = {
+      const newOrder: Order = {
         id: uuidv4(),
         isPriority: orderData.isPriority,
-        status: 'queued',
+        status: 'queued' as OrderStatus,
         flavor: orderData.flavor,
         shape: orderData.shape,
         size: orderData.size,
@@ -88,22 +99,28 @@ export const useOrderOperations = (user: User) => {
         notes: orderData.notes,
       };
 
-      const { error } = await supabase.from('orders').insert([
-        {
-          ...newOrder,
-          is_priority: newOrder.isPriority,
-          batch_label: newOrder.batchLabel,
-          requested_quantity: newOrder.requestedQuantity,
-          produced_quantity: newOrder.producedQuantity,
-          estimated_time: newOrder.estimatedTime,
-          assigned_to: newOrder.assignedTo,
-          created_by: newOrder.createdBy,
-          created_at: newOrder.createdAt,
-          started_at: newOrder.startedAt,
-          completed_at: newOrder.completedAt,
-          print_count: newOrder.printCount,
-        },
-      ]);
+      // Convert the client-side model to the database schema
+      const dbOrder = {
+        id: newOrder.id,
+        is_priority: newOrder.isPriority,
+        status: newOrder.status,
+        flavor: newOrder.flavor,
+        shape: newOrder.shape,
+        size: newOrder.size,
+        batch_label: newOrder.batchLabel,
+        requested_quantity: newOrder.requestedQuantity,
+        produced_quantity: newOrder.producedQuantity,
+        estimated_time: newOrder.estimatedTime,
+        assigned_to: newOrder.assignedTo,
+        created_by: newOrder.createdBy,
+        created_at: newOrder.createdAt.toISOString(),
+        started_at: null,
+        completed_at: null,
+        print_count: newOrder.printCount,
+        notes: newOrder.notes,
+      };
+
+      const { error } = await supabase.from('orders').insert(dbOrder);
 
       if (error) {
         throw error;
@@ -134,11 +151,11 @@ export const useOrderOperations = (user: User) => {
     let updates: any = { status };
 
     if (status === 'baking' && !curr.startedAt) {
-      updates.started_at = new Date();
+      updates.started_at = new Date().toISOString();
       updates.assigned_to = user?.id || null;
     }
     if (status === 'done' && !curr.completedAt) {
-      updates.completed_at = new Date();
+      updates.completed_at = new Date().toISOString();
     }
 
     const { error } = await supabase

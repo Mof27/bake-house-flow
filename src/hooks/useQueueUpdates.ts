@@ -20,8 +20,8 @@ const defaultMock: MockData = {
   completedBatches: [],
 };
 
-export const useQueueUpdates = (initialData: MockData) => {
-  const [mockData, setMockData] = useState<MockData>(defaultMock);
+export const useQueueUpdates = (initialData: Partial<MockData> = {}) => {
+  const [mockData, setMockData] = useState<MockData>({...defaultMock, ...initialData});
   const { orders } = useOrders();
 
   useEffect(() => {
