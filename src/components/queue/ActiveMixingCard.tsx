@@ -40,8 +40,10 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
     <Card className={`
       relative overflow-hidden transition-all
       ${bgColor}
-      ${isPriority ? 'border-2 border-red-500' : 'border border-gray-200'}
-      hover:shadow-md w-full h-[150px]
+      ${isPriority ? 'border-2 border-red-500 animate-flash-priority' : 'border border-gray-200'}
+      hover:shadow-md w-full
+      h-[113px]  /* reduced from 150px by about 25% */
+      rounded-lg
     `}>      
       <CardContent className="p-2 h-full flex flex-col space-y-2">
         {/* Header with Batch Info and Put Back Button */}
@@ -56,7 +58,7 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
               </Badge>}
           </div>
           
-          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onPutBack}>
+          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onPutBack} aria-label="Put back to pending">
             <Undo className="h-4 w-4" />
           </Button>
         </div>
@@ -81,6 +83,7 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
               onClick={() => onQuantityChange?.(-1)} 
               disabled={producedQuantity <= 1} 
               className="h-7 w-7 bg-inherit"
+              aria-label="Decrease quantity"
             >
               <MinusCircle className="h-4 w-4" />
             </Button>
@@ -89,6 +92,7 @@ const ActiveMixingCard: React.FC<ActiveMixingCardProps> = ({
               size="icon" 
               onClick={() => onQuantityChange?.(1)} 
               className="h-7 w-7 bg-inherit"
+              aria-label="Increase quantity"
             >
               <PlusCircle className="h-4 w-4" />
             </Button>

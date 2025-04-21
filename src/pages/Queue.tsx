@@ -36,6 +36,27 @@ const QueuePage: React.FC = () => {
     handleMixingComplete,
   } = useQueueOperations(mockData, setMockData);
 
+  // New handler to put back a mixing item to pending orders
+  const handlePutBackToPending = (orderId: string) => {
+    setMockData((prev) => {
+      // Find item in activeMixing based on orderId
+      const itemToPutBack = prev.activeMixing.find(item => item.id === orderId);
+      if (!itemToPutBack) return prev;
+
+      // Remove from activeMixing
+      const newActiveMixing = prev.activeMixing.filter(item => item.id !== orderId);
+
+      // Add back to pendingOrders, preserving any order (added at start to be recent)
+      const newPendingOrders = [itemToPutBack, ...prev.pendingOrders];
+
+      return {
+        ...prev,
+        activeMixing: newActiveMixing,
+        pendingOrders: newPendingOrders,
+      };
+    });
+  };
+
   const sidebar = (
     <Sidebar 
       dailyCompleted={mockData.dailyCompleted} 
@@ -72,6 +93,7 @@ const QueuePage: React.FC = () => {
               onCancelTimer={handleCancelTimer}
               onMixingComplete={handleMixingComplete}
               onQuantityChange={handleMixingQuantityChange}
+              onPutBack={handlePutBackToPending}
               onMoveToOven={handleMixingComplete}
             />
 

@@ -12,6 +12,7 @@ interface MixingTabProps {
   onCancelTimer: (orderId: string) => void;
   onMixingComplete: (orderId: string) => void;
   onQuantityChange?: (orderId: string, delta: number) => void;
+  onPutBack?: (orderId: string) => void;
   onMoveToOven?: (orderId: string) => void;
 }
 
@@ -21,8 +22,11 @@ const MixerSection: React.FC<{
   onCancelTimer: (orderId: string) => void;
   onMixingComplete: (orderId: string) => void;
   onQuantityChange?: (orderId: string, delta: number) => void;
+  onPutBack?: (orderId: string) => void;
   onMoveToOven?: (orderId: string) => void;
-}> = ({ mixerNumber, items, onCancelTimer, onMixingComplete, onQuantityChange, onMoveToOven }) => {
+}> = ({
+  mixerNumber, items, onCancelTimer, onMixingComplete, onQuantityChange, onPutBack, onMoveToOven
+}) => {
   const handleMoveAllToOven = () => {
     items.forEach(item => onMoveToOven?.(item.id));
   };
@@ -54,7 +58,7 @@ const MixerSection: React.FC<{
           )}
         </div>
         
-        <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-200px)]">
+        <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-hide">
           {items.map(item => (
             <ActiveMixingCard
               key={item.id}
@@ -67,7 +71,7 @@ const MixerSection: React.FC<{
               requestedQuantity={item.requestedQuantity || 5}
               producedQuantity={item.producedQuantity || item.requestedQuantity || 5}
               onQuantityChange={(delta) => onQuantityChange?.(item.id, delta)}
-              onPutBack={() => onCancelTimer(item.id)}
+              onPutBack={() => onPutBack?.(item.id)}
             />
           ))}
           
@@ -87,6 +91,7 @@ const MixingTab: React.FC<MixingTabProps> = ({
   onCancelTimer,
   onMixingComplete,
   onQuantityChange,
+  onPutBack,
   onMoveToOven,
 }) => {
   const mixer1Items = activeMixing.filter(item => item.batchLabel.includes('Mixer #1'));
@@ -102,6 +107,7 @@ const MixingTab: React.FC<MixingTabProps> = ({
             onCancelTimer={onCancelTimer} 
             onMixingComplete={onMixingComplete}
             onQuantityChange={onQuantityChange}
+            onPutBack={onPutBack}
             onMoveToOven={onMoveToOven}
           />
           <MixerSection 
@@ -110,6 +116,7 @@ const MixingTab: React.FC<MixingTabProps> = ({
             onCancelTimer={onCancelTimer} 
             onMixingComplete={onMixingComplete}
             onQuantityChange={onQuantityChange}
+            onPutBack={onPutBack}
             onMoveToOven={onMoveToOven}
           />
         </div>
