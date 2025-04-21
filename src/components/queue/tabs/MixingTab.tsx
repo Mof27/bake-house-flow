@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import { ActiveMixing } from '@/types/queue';
@@ -9,6 +8,7 @@ import ActiveMixingCard from '@/components/queue/ActiveMixingCard';
 import ConsolidatedMixingCard from '@/components/queue/ConsolidatedMixingCard';
 import { consolidateMixingItems } from '@/utils/mixingUtils';
 import { CountdownButton } from '@/components/ui/countdown-button';
+import MixerTimer from '@/components/queue/MixerTimer';
 
 interface MixingTabProps {
   activeMixing: ActiveMixing[];
@@ -30,8 +30,12 @@ const MixerSection: React.FC<{
 }> = ({
   mixerNumber, items, onCancelTimer, onMixingComplete, onQuantityChange, onPutBack, onMoveToOven
 }) => {
+  const [timerReady, setTimerReady] = React.useState(false);
+
   const handleMoveAllToOven = () => {
-    items.forEach(item => onMoveToOven?.(item.id));
+    if (timerReady) {
+      items.forEach(item => onMoveToOven?.(item.id));
+    }
   };
 
   const handlePutAllBack = () => {
@@ -41,14 +45,12 @@ const MixerSection: React.FC<{
   const consolidatedItems = consolidateMixingItems(items);
 
   const handleConsolidatedQuantityChange = (consolidatedItem: any, delta: number) => {
-    // Apply the change to all items in the consolidated group
     consolidatedItem.ids.forEach((id: string) => {
       onQuantityChange?.(id, delta);
     });
   };
 
   const handleConsolidatedPutBack = (consolidatedItem: any) => {
-    // Put back all items in the consolidated group individually
     consolidatedItem.ids.forEach((id: string) => {
       onPutBack?.(id);
     });
@@ -59,30 +61,30 @@ const MixerSection: React.FC<{
       <CardContent className="p-4 h-full">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Mixer #{mixerNumber}</h2>
-          {items.length > 0 && (
-            <div className="flex gap-2">
-              <CountdownButton
-                variant="outline"
-                size="sm"
-                onAction={handlePutAllBack}
-                countdownText="Cancel"
-                className="flex items-center"
-              >
-                <Undo className="mr-2 h-4 w-4" />
-                Put All Back
-              </CountdownButton>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleMoveAllToOven}
-              >
-                <ArrowRight className="mr-2 h-4 w-4" />
-                Move All to Oven
-              </Button>
-            </div>
-          )}
         </div>
-        
+        <MixerTimer onReady={setTimerReady} />
+        <div className="flex gap-2 mb-4">
+          <CountdownButton
+            variant="outline"
+            size="sm"
+            onAction={handlePutAllBack}
+            countdownText="Cancel"
+            className="flex items-center"
+          >
+            <Undo className="mr-2 h-4 w-4" />
+            Put All Back
+          </CountdownButton>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleMoveAllToOven}
+            disabled={!timerReady || items.length === 0}
+            className={(!timerReady || items.length === 0) ? "opacity-50 cursor-not-allowed" : ""}
+          >
+            <ArrowRight className="mr-2 h-4 w-4" />
+            Move All to Oven
+          </Button>
+        </div>
         <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-hide">
           {consolidatedItems.map((item) => (
             <ConsolidatedMixingCard
@@ -100,7 +102,6 @@ const MixerSection: React.FC<{
               onPutBack={() => handleConsolidatedPutBack(item)}
             />
           ))}
-          
           {items.length === 0 && (
             <div className="text-sm text-gray-500">
               No items in mixer #{mixerNumber}
