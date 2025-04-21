@@ -62,7 +62,7 @@ const OnlineStatus = () => {
         className="h-8 w-8 rounded-full"
         onClick={handleRefresh}
         disabled={isRefreshing}
-        title="Last refreshed at: " + new Date(lastRefresh).toLocaleTimeString()
+        title={`Last refreshed at: ${new Date(lastRefresh).toLocaleTimeString()}`}
       >
         <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
       </Button>
