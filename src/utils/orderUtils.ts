@@ -17,4 +17,16 @@ export const updateOrdersArray = (
   );
 };
 
+export const generateBatchLabel = (flavor: string, size: number, shape: string): string => {
+  const now = new Date();
+  const day = now.getDate().toString().padStart(2, '0');
+  const month = now.toLocaleString('en-US', { month: 'short' }).toUpperCase().substring(0, 3);
+  const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  
+  const flavorCode = flavor === 'vanilla' ? 'VC' : 'DC';
+  const shapeCode = shape.charAt(0).toUpperCase();
+  
+  return `${size}cm-${shapeCode}${flavorCode}-${day}${month}-${time}`;
+};
+
 import { ManualBakerOrder } from '@/types/orders';

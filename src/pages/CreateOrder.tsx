@@ -14,12 +14,18 @@ const CreateOrder = () => {
   const { createOrder } = useOrders();
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
   
   const handleSubmit = async (orderData: NewOrderInput) => {
     setIsSubmitting(true);
+    setErrorMessage("");
     try {
+      console.log("Submitting order data:", orderData);
       await createOrder(orderData);
       setShowSuccessDialog(true);
+    } catch (error) {
+      console.error('Error creating order:', error);
+      setErrorMessage(error instanceof Error ? error.message : "Failed to create order. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -27,6 +33,7 @@ const CreateOrder = () => {
 
   const handleReset = () => {
     setShowSuccessDialog(false);
+    setErrorMessage("");
   };
 
   return (
@@ -45,6 +52,7 @@ const CreateOrder = () => {
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
           onCancel={() => navigate('/')}
+          errorMessage={errorMessage}
         />
       </div>
 

@@ -10,14 +10,22 @@ import SizeSelector from './SizeSelector';
 import QuantitySelector from './QuantitySelector';
 import FlavorSelector from './FlavorSelector';
 import PriorityToggle from './PriorityToggle';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 
 interface OrderFormProps {
   onSubmit: (orderData: NewOrderInput) => Promise<void>;
   isSubmitting: boolean;
   onCancel: () => void;
+  errorMessage?: string;
 }
 
-const OrderForm: React.FC<OrderFormProps> = ({ onSubmit, isSubmitting, onCancel }) => {
+const OrderForm: React.FC<OrderFormProps> = ({ 
+  onSubmit, 
+  isSubmitting, 
+  onCancel, 
+  errorMessage 
+}) => {
   const [shape, setShape] = useState<CakeShape>('round');
   const [size, setSize] = useState<number>(18);
   const [width, setWidth] = useState<number>(20);
@@ -63,6 +71,13 @@ const OrderForm: React.FC<OrderFormProps> = ({ onSubmit, isSubmitting, onCancel 
       </CardHeader>
       
       <CardContent>
+        {errorMessage && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <ShapeSelector shape={shape} onShapeChange={setShape} />
           
