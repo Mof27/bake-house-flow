@@ -9,7 +9,66 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      orders: {
+        Row: {
+          assigned_to: string | null
+          batch_label: string
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          estimated_time: number
+          flavor: string
+          id: string
+          is_priority: boolean
+          notes: string | null
+          print_count: number
+          produced_quantity: number
+          requested_quantity: number
+          shape: string
+          size: number
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          batch_label: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          estimated_time?: number
+          flavor: string
+          id?: string
+          is_priority?: boolean
+          notes?: string | null
+          print_count?: number
+          produced_quantity?: number
+          requested_quantity: number
+          shape: string
+          size: number
+          started_at?: string | null
+          status: string
+        }
+        Update: {
+          assigned_to?: string | null
+          batch_label?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          estimated_time?: number
+          flavor?: string
+          id?: string
+          is_priority?: boolean
+          notes?: string | null
+          print_count?: number
+          produced_quantity?: number
+          requested_quantity?: number
+          shape?: string
+          size?: number
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

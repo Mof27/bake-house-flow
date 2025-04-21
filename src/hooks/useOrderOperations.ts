@@ -1,15 +1,59 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 import { Order, NewOrderInput, OrderStatus } from '@/types/orders';
 import { estimateBakeTime, updateOrdersArray } from '@/utils/orderUtils';
 import { User } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+
+/**
+ * useOrderOperations now syncs directly with Supabase.
+ */
 
 export const useOrderOperations = (user: User) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [nextBatchNumber, setNextBatchNumber] = useState(1); // Add counter for batch numbers
+  const [nextBatchNumber, setNextBatchNumber] = useState(1); // Use only for local label fallback
+
+  // Load all orders from Supabase
+  const fetchOrders = useCallback(async () => {
+    setIsLoading(true);
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) {
+      toast.error("Failed to fetch orders");
+      setOrders([]);
+    } else {
+      // Convert timestamp fields to JS Date
+      const normalized = (data || []).map((o: any) => ({
+        ...o,
+        createdAt: o.created_at ? new Date(o.created_at) : new Date(),
+        startedAt: o.started_at ? new Date(o.started_at) : undefined,
+        completedAt: o.completed_at ? new Date(o.completed_at) : undefined,
+      }));
+      setOrders(normalized);
+    }
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchOrders();
+    // Listen to realtime changes for 'orders'
+    const channel = supabase.channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        (payload) => {
+          fetchOrders();
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchOrders]);
 
   const getOrderById = (id: string): Order | undefined => {
     return orders.find(order => order.id === id);
@@ -17,17 +61,14 @@ export const useOrderOperations = (user: User) => {
 
   const createOrder = async (orderData: NewOrderInput): Promise<Order> => {
     setIsLoading(true);
-    
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       const estimatedTime = estimateBakeTime();
-      
-      // Generate a unique batch label with incrementing number
+      // Generate a unique batch label with incrementing number (local fallback)
       const batchNumber = nextBatchNumber.toString().padStart(3, '0');
       const batchLabel = `A${batchNumber}`;
-      
-      const newOrder: Order = {
+
+      const newOrder = {
         id: uuidv4(),
         isPriority: orderData.isPriority,
         status: 'queued',
@@ -39,27 +80,36 @@ export const useOrderOperations = (user: User) => {
         producedQuantity: 0,
         estimatedTime,
         assignedTo: null,
-        createdBy: user.id,
+        createdBy: user?.id || '',
         createdAt: new Date(),
         startedAt: null,
         completedAt: null,
         printCount: 1,
-        notes: orderData.notes
+        notes: orderData.notes,
       };
-      
-      console.log('Creating new order with data:', newOrder);
-      
-      setOrders(prevOrders => {
-        const updatedOrders = [newOrder, ...prevOrders];
-        console.log('Updated orders array:', updatedOrders);
-        return updatedOrders;
-      });
-      
-      // Increment the batch number for next order
-      setNextBatchNumber(prevNumber => prevNumber + 1);
-      
-      console.log('Printing label for new order:', newOrder.id);
-      toast.success(`Order created successfully`);
+
+      const { error } = await supabase.from('orders').insert([
+        {
+          ...newOrder,
+          is_priority: newOrder.isPriority,
+          batch_label: newOrder.batchLabel,
+          requested_quantity: newOrder.requestedQuantity,
+          produced_quantity: newOrder.producedQuantity,
+          estimated_time: newOrder.estimatedTime,
+          assigned_to: newOrder.assignedTo,
+          created_by: newOrder.createdBy,
+          created_at: newOrder.createdAt,
+          started_at: newOrder.startedAt,
+          completed_at: newOrder.completedAt,
+          print_count: newOrder.printCount,
+        },
+      ]);
+
+      if (error) {
+        throw error;
+      }
+      setNextBatchNumber(n => n + 1);
+      toast.success("Order created successfully");
       return newOrder;
     } catch (error) {
       console.error('Error creating order:', error);
@@ -72,106 +122,119 @@ export const useOrderOperations = (user: User) => {
 
   const updateOrderStatus = async (id: string, status: OrderStatus): Promise<void> => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    setOrders(prevOrders => 
-      updateOrdersArray(prevOrders, id, order => {
-        const updatedOrder = { ...order, status };
-        
-        if (status === 'baking' && !order.startedAt) {
-          updatedOrder.startedAt = new Date();
-          updatedOrder.assignedTo = user?.id || null;
-        }
-        
-        if (status === 'done' && !order.completedAt) {
-          updatedOrder.completedAt = new Date();
-          const totalTime = updatedOrder.completedAt.getTime() - order.createdAt.getTime();
-          const timeInMinutes = Math.round(totalTime / (1000 * 60));
-          console.log(`Order ${id} completed in ${timeInMinutes} minutes. Estimated: ${order.estimatedTime} minutes.`);
-        }
-        
-        return updatedOrder;
-      })
-    );
-    
+
+    // Find current order state to update time etc
+    const curr = orders.find(order => order.id === id);
+    if (!curr) {
+      setIsLoading(false);
+      toast.error("Order not found");
+      throw new Error("Order not found");
+    }
+
+    let updates: any = { status };
+
+    if (status === 'baking' && !curr.startedAt) {
+      updates.started_at = new Date();
+      updates.assigned_to = user?.id || null;
+    }
+    if (status === 'done' && !curr.completedAt) {
+      updates.completed_at = new Date();
+    }
+
+    const { error } = await supabase
+      .from('orders')
+      .update(updates)
+      .eq('id', id);
+
+    if (error) {
+      toast.error('Failed to update order status');
+    } else {
+      toast.success(`Order status updated to ${status}`);
+    }
     setIsLoading(false);
-    toast.success(`Order status updated to ${status}`);
   };
 
   const printLabel = async (id: string): Promise<void> => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setOrders(prevOrders => 
-      updateOrdersArray(prevOrders, id, order => ({
-        ...order,
-        printCount: order.printCount + 1
-      }))
-    );
-    
+
+    const curr = orders.find(order => order.id === id);
+    if (!curr) {
+      setIsLoading(false);
+      toast.error("Order not found");
+      throw new Error("Order not found");
+    }
+
+    const { error } = await supabase
+      .from('orders')
+      .update({ print_count: (curr.printCount ?? 0) + 1 })
+      .eq('id', id);
+
+    if (error) {
+      toast.error('Failed to update print count');
+    } else {
+      toast.success('Label printed successfully');
+    }
     setIsLoading(false);
-    console.log('Printing label for order:', id);
-    toast.success('Label printed successfully');
   };
 
   const deleteOrder = async (id: string): Promise<void> => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setOrders(prevOrders => prevOrders.filter(order => order.id !== id));
+    const { error } = await supabase
+      .from('orders')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      toast.error('Failed to delete order');
+    } else {
+      toast.success('Order deleted');
+    }
     setIsLoading(false);
-    toast.success('Order deleted');
   };
 
-  const reorderQueue = (orderId: string, newPosition: number) => {
-    const ordersCopy = [...orders];
-    const orderIndex = ordersCopy.findIndex(o => o.id === orderId);
-    
-    if (orderIndex === -1) return;
-    
-    const orderToMove = ordersCopy[orderIndex];
-    const filteredOrders = ordersCopy.filter(o => o.status === orderToMove.status);
-    
-    filteredOrders.splice(orderIndex, 1);
-    filteredOrders.splice(newPosition, 0, orderToMove);
-    
-    const otherOrders = ordersCopy.filter(o => o.status !== orderToMove.status);
-    setOrders([...filteredOrders, ...otherOrders]);
-    
-    toast.success('Order queue updated');
+  const reorderQueue = () => {
+    toast.info("Queue reordering from backend is not implemented yet.");
   };
 
   const updateOrderQuantity = async (id: string, delta: number): Promise<void> => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    setOrders(prevOrders => 
-      updateOrdersArray(prevOrders, id, order => {
-        const updatedProducedQuantity = Math.max(0, order.producedQuantity + delta);
-        
-        return {
-          ...order,
-          producedQuantity: updatedProducedQuantity
-        };
-      })
-    );
-    
+
+    const curr = orders.find(order => order.id === id);
+    if (!curr) {
+      setIsLoading(false);
+      toast.error("Order not found");
+      return;
+    }
+
+    const updatedProducedQuantity = Math.max(0, (curr.producedQuantity ?? 0) + delta);
+
+    const { error } = await supabase
+      .from('orders')
+      .update({ produced_quantity: updatedProducedQuantity })
+      .eq('id', id);
+
+    if (error) {
+      toast.error('Failed to update order quantity');
+    } else {
+      toast.success(`Order quantity updated`);
+    }
     setIsLoading(false);
-    toast.success(`Order quantity updated`);
   };
 
   const updateOrderNotes = async (id: string, notes: string): Promise<void> => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    setOrders(prevOrders => 
-      updateOrdersArray(prevOrders, id, order => ({
-        ...order,
-        notes
-      }))
-    );
-    
+
+    const { error } = await supabase
+      .from('orders')
+      .update({ notes })
+      .eq('id', id);
+
+    if (error) {
+      toast.error('Failed to update order notes');
+    } else {
+      toast.success('Order notes updated');
+    }
     setIsLoading(false);
-    toast.success(`Order notes updated`);
   };
 
   return {

@@ -1,44 +1,82 @@
 
 import { useState, useEffect } from 'react';
-import { MockData, PendingOrder } from '@/types/queue';
-import { toast } from 'sonner';
+import { MockData, PendingOrder, OvenReadyBatch, CompletedBatch, ActiveMixing } from '@/types/queue';
 import { useOrders } from '@/contexts/OrderContext';
 
+/**
+ * This hook now transforms "orders" from the OrderContext (Supabase-backed)
+ * into the correct MockData structure for queue visualization.
+ */
+const defaultMock: MockData = {
+  dailyCompleted: 0,
+  dailyTarget: 20,
+  pendingOrders: [],
+  activeMixing: [],
+  ovenReady: [],
+  ovens: [
+    { number: 1, isActive: false, batches: [] },
+    { number: 2, isActive: false, batches: [] },
+  ],
+  completedBatches: [],
+};
+
 export const useQueueUpdates = (initialData: MockData) => {
-  const [mockData, setMockData] = useState<MockData>(initialData);
+  const [mockData, setMockData] = useState<MockData>(defaultMock);
   const { orders } = useOrders();
 
   useEffect(() => {
-    if (orders.length > 0) {
-      const newPendingOrders: PendingOrder[] = orders
-        .filter(order => order.status === 'queued')
-        .map(order => ({
-          id: order.id,
-          flavor: order.flavor,
-          shape: order.shape,
-          size: order.size,
-          batchLabel: order.batchLabel,
-          requestedQuantity: order.requestedQuantity,
-          producedQuantity: order.producedQuantity,
-          requestedAt: order.createdAt,
-          isPriority: order.isPriority,
-          notes: order.notes,
-          isNew: true
-        }));
+    // Classify orders into correct Tab groups
+    const pendingOrders: PendingOrder[] = [];
+    const activeMixing: ActiveMixing[] = [];
+    const ovenReady: OvenReadyBatch[] = [];
+    const completedBatches: CompletedBatch[] = [];
+    let dailyCompleted = 0;
 
-      if (newPendingOrders.length > 0) {
-        setMockData(prevMockData => ({
-          ...prevMockData,
-          pendingOrders: [...newPendingOrders, ...prevMockData.pendingOrders.filter(
-            existingOrder => !newPendingOrders.some(newOrder => newOrder.id === existingOrder.id)
-          )]
-        }));
+    orders.forEach((order) => {
+      const base = {
+        id: order.id,
+        flavor: order.flavor,
+        shape: order.shape,
+        size: order.size,
+        batchLabel: order.batchLabel,
+        requestedAt: order.createdAt,
+        isPriority: order.isPriority,
+        requestedQuantity: order.requestedQuantity,
+        producedQuantity: order.producedQuantity ?? order.requestedQuantity,
+        notes: order.notes,
+      };
 
-        toast.success("Queue updated with new orders", {
-          description: `${newPendingOrders.length} new orders added to the queue`,
-        });
+      if (order.status === 'queued') {
+        pendingOrders.push(base as PendingOrder);
+      } else if (order.status === 'mixing') {
+        activeMixing.push({
+          ...base,
+          startTime: order.startedAt || order.createdAt
+        } as ActiveMixing);
+      } else if (order.status === 'baking') {
+        // For this mock we treat baking as oven-ready
+        ovenReady.push(base as OvenReadyBatch);
+      } else if (order.status === 'done') {
+        completedBatches.push({
+          ...base,
+          completedAt: order.completedAt || new Date(),
+        } as CompletedBatch);
+        dailyCompleted += 1;
       }
-    }
+    });
+
+    setMockData({
+      dailyCompleted,
+      dailyTarget: 20, // could derive from profile/settings
+      pendingOrders,
+      activeMixing,
+      ovenReady,
+      ovens: [
+        { number: 1, isActive: false, batches: [] },
+        { number: 2, isActive: false, batches: [] },
+      ],
+      completedBatches,
+    });
   }, [orders]);
 
   return { mockData, setMockData };
