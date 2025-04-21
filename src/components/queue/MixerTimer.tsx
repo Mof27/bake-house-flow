@@ -1,18 +1,13 @@
 
 import React, { useRef, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Timer } from "lucide-react";
+import { Timer, Play, Pause, RefreshCw } from "lucide-react";
 
-// The timer can be in one of these states
-type TimerStatus = "idle" | "countdown" | "done" | "countup";
+const COUNTDOWN_SECONDS = 60; // 1 minute
 
-interface MixerTimerProps {
-  onReady: (isReady: boolean) => void;
-}
+type TimerStatus = "idle" | "countdown" | "countup";
 
-const COUNTDOWN_SECONDS = 60; // 1 minute countdown
-
-const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
+const MixerTimer: React.FC = () => {
   const [status, setStatus] = useState<TimerStatus>("idle");
   const [seconds, setSeconds] = useState(COUNTDOWN_SECONDS);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -27,57 +22,54 @@ const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
     };
   }, []);
 
-  // Notify parent when countdown is done (ready = true)
-  useEffect(() => {
-    onReady(status === "done" || status === "countup");
-  }, [status, onReady]);
-
-  const handleStart = () => {
-    if (status === "idle") {
+  // Starts the timer or resumes it (if paused, but here just toggling start/stop)
+  const handleToggle = () => {
+    if (status === "idle" || status === "countup") {
+      // Start/restart countdown from 1:00
       setSeconds(COUNTDOWN_SECONDS);
       setStatus("countdown");
-      
-      // Clear any existing interval
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-      
-      // Start countdown
+    } else if (status === "countdown") {
+      // Stop the timer and reset to idle (1:00)
+      handleReset();
+    }
+  };
+
+  // Manually reset timer to idle state (1:00)
+  const handleReset = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    setStatus("idle");
+    setSeconds(COUNTDOWN_SECONDS);
+  };
+
+  // Countdown / countup logic
+  useEffect(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    if (status === "countdown") {
       intervalRef.current = setInterval(() => {
         setSeconds(prev => {
           if (prev <= 1) {
-            // Clear the countdown interval
-            if (intervalRef.current) {
-              clearInterval(intervalRef.current);
-              intervalRef.current = null;
-            }
-            setStatus("done");
-            // Set timer to switch to countup mode after a brief pause
-            setTimeout(() => setStatus("countup"), 800);
+            clearInterval(intervalRef.current!);
+            intervalRef.current = null;
+            setStatus("countup");
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
-    }
-  };
-
-  // Handle countup timer separately
-  useEffect(() => {
-    // Clear any existing interval first
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    
-    if (status === "countup") {
-      setSeconds(0);
+    } else if (status === "countup") {
       intervalRef.current = setInterval(() => {
         setSeconds(prev => prev + 1);
       }, 1000);
     }
-    
-    return () => { 
+    // interval is always cleared on status change/unmount
+    return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -85,33 +77,59 @@ const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
     };
   }, [status]);
 
+  // Format timer for display
   const formatTime = () => {
-    if (status === "idle") return "Start Mixing Timer";
     if (status === "countup") {
-      return "+" + String(seconds).padStart(2, "0") + "s";
+      return `+${String(seconds).padStart(2, "0")}s`;
     }
-    return String(Math.floor(seconds / 60)).padStart(2, "0") + ":" + 
-           String(seconds % 60).padStart(2, "0");
+    return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(
+      seconds % 60
+    ).padStart(2, "0")}`;
   };
 
-  // Determine button variant based on timer status
+  // Visual styles
   const getButtonVariant = () => {
-    if (status === "idle") return "secondary";
-    if (status === "countdown") return "default"; // Blue color when counting down
-    return "destructive"; // Red color when done or counting up
+    if (status === "idle") return "secondary"; // gray
+    if (status === "countdown") return "default"; // blue
+    return "destructive"; // red for overtime
+  };
+
+  // The main timer toggle: play for idle/after stop, pause to stop (with reset on stop)
+  const renderToggleIcon = () => {
+    if (status === "idle" || status === "countup") {
+      return <Play className="mr-2 h-4 w-4" />;
+    }
+    // In countdown: show pause (stops and resets)
+    return <Pause className="mr-2 h-4 w-4" />;
   };
 
   return (
-    <Button
-      size="sm"
-      variant={getButtonVariant()}
-      disabled={status !== "idle"}
-      onClick={handleStart}
-      className={`flex items-center ${status === "countup" || status === "done" ? "animate-pulse" : ""}`}
-    >
-      <Timer className="mr-2 h-4 w-4" />
-      {formatTime()}
-    </Button>
+    <div className="flex items-center gap-2">
+      <Button
+        size="sm"
+        variant={getButtonVariant()}
+        className={`flex items-center min-w-[160px] text-lg ${status === "countup" ? "animate-pulse" : ""}`}
+        onClick={handleToggle}
+        aria-label={
+          status === "idle" || status === "countup"
+            ? "Start Timer"
+            : "Stop Timer"
+        }
+      >
+        <Timer className="mr-2 h-4 w-4" />
+        {renderToggleIcon()}
+        {formatTime()}
+      </Button>
+      <Button
+        size="icon"
+        variant="ghost"
+        onClick={handleReset}
+        aria-label="Reset Timer"
+        className="ml-1"
+      >
+        <RefreshCw className="h-4 w-4" />
+      </Button>
+    </div>
   );
 };
 
