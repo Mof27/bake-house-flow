@@ -86,6 +86,10 @@ export const useMixingOperations = (
       // Remove the mixer number from batch label when moving to oven ready
       const originalBatchLabel = orderToMove.batchLabel.replace(/ \(Mixer #[1-2]\)/, '');
       
+      // Make sure to use the actual produced quantity that was modified in the mixing tab
+      const producedQuantity = orderToMove.producedQuantity || orderToMove.requestedQuantity || 5;
+      const requestedQuantity = orderToMove.requestedQuantity || 5;
+      
       return {
         ...prev,
         activeMixing: prev.activeMixing.filter(order => order.id !== orderId),
@@ -97,8 +101,8 @@ export const useMixingOperations = (
           batchLabel: originalBatchLabel,
           requestedAt: orderToMove.requestedAt,
           isPriority: orderToMove.isPriority,
-          requestedQuantity: 5,
-          producedQuantity: 5
+          requestedQuantity: requestedQuantity,
+          producedQuantity: producedQuantity
         }]
       };
     });
@@ -112,3 +116,4 @@ export const useMixingOperations = (
     handleMixingComplete,
   };
 };
+
