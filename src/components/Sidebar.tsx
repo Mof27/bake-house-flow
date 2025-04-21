@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { ChevronLeft, ChevronRight, FilePlus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FilePlus, FileText } from 'lucide-react';
 
 interface SidebarProps {
   dailyCompleted: number;
@@ -23,6 +23,10 @@ const Sidebar: React.FC<SidebarProps> = ({ dailyCompleted, dailyTarget }) => {
 
   const handleNewOrder = () => {
     navigate('/create-order');
+  };
+  
+  const handleNavigation = (path: string) => {
+    navigate(path);
   };
 
   return (
@@ -50,11 +54,30 @@ const Sidebar: React.FC<SidebarProps> = ({ dailyCompleted, dailyTarget }) => {
         </Button>
       </div>
 
-      {/* Create Order Button */}
-      <div className="p-4 border-b">
+      {/* Navigation Links */}
+      <div className="p-4 flex flex-col gap-2 border-b">
+        <Button 
+          onClick={() => handleNavigation('/')} 
+          variant={location.pathname === '/' || location.pathname === '/queue' ? 'default' : 'ghost'}
+          className={cn("w-full justify-start", isCollapsed ? "p-2 justify-center" : "")}
+        >
+          <FilePlus className={cn("mr-2", isCollapsed ? "m-0" : "")} />
+          {!isCollapsed && "Queue"}
+        </Button>
+        
+        <Button 
+          onClick={() => handleNavigation('/logs')} 
+          variant={location.pathname === '/logs' ? 'default' : 'ghost'}
+          className={cn("w-full justify-start", isCollapsed ? "p-2 justify-center" : "")}
+        >
+          <FileText className={cn("mr-2", isCollapsed ? "m-0" : "")} />
+          {!isCollapsed && "Activity Logs"}
+        </Button>
+        
         <Button 
           onClick={handleNewOrder} 
-          className={cn("w-full", isCollapsed ? "p-2" : "")}
+          variant="outline"
+          className={cn("w-full justify-start", isCollapsed ? "p-2 justify-center" : "")}
         >
           <FilePlus className={cn("mr-2", isCollapsed ? "m-0" : "")} />
           {!isCollapsed && "Create Order"}
@@ -62,7 +85,7 @@ const Sidebar: React.FC<SidebarProps> = ({ dailyCompleted, dailyTarget }) => {
       </div>
       
       {/* Daily progress section */}
-      <div className={cn("p-4 border-t", isCollapsed ? "px-2" : "")}>
+      <div className={cn("p-4 border-t mt-auto", isCollapsed ? "px-2" : "")}>
         {!isCollapsed && (
           <div className="text-sm font-medium text-muted-foreground mb-1">Daily Progress</div>
         )}

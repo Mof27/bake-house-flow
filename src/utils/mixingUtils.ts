@@ -1,4 +1,3 @@
-
 import { ActiveMixing } from '@/types/queue';
 
 // Interface for consolidated mixing items
@@ -40,10 +39,10 @@ export const consolidateMixingItems = (mixingItems: ActiveMixing[]): Consolidate
   
   // Convert the grouped items to consolidated items
   return Array.from(groupedItems.values()).map(items => {
-    // Extract batch codes from labels
+    // Extract batch codes from labels and clean up mixer information
     const batchLabels = items.map(item => {
-      const codeMatch = item.batchLabel.match(/#A(\d+)/);
-      return codeMatch ? `#A${codeMatch[1]}` : item.batchLabel;
+      // Clean up the mixer info but keep the batch code intact
+      return item.batchLabel;
     });
     
     // Get the earliest requested time

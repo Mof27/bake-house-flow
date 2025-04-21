@@ -41,7 +41,7 @@ const ConsolidatedMixingCard: React.FC<ConsolidatedMixingCardProps> = ({
   const cleanBatchLabels = batchLabels.map(label => {
     // Extract only the batch code without the mixer part
     const codeMatch = label.match(/#A\d+/);
-    return codeMatch ? codeMatch[0] : label;
+    return codeMatch ? codeMatch[0] : label.replace(/\s*\(Mixer #\d+\)/g, '');
   });
   
   const batchLabelsDisplay = cleanBatchLabels.join(', ');

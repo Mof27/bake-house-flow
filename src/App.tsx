@@ -13,6 +13,7 @@ import OnlineStatus from "@/components/OnlineStatus";
 import Queue from "./pages/Queue";
 import NotFound from "./pages/NotFound";
 import CreateOrder from "./pages/CreateOrder";
+import Logs from "./pages/Logs";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => {
                     <Route path="/" element={<Queue />} />
                     <Route path="/queue" element={<Queue />} />
                     <Route path="/create-order" element={<CreateOrder />} />
+                    <Route path="/logs" element={<Logs />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </TooltipProvider>
