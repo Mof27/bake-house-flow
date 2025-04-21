@@ -23,7 +23,7 @@ const OvenCard: React.FC<OvenCardProps> = ({
   batchLabel,
   requestedAt,
   isPriority = false,
-  requestedQuantity,
+  // requestedQuantity, // not needed now
   producedQuantity,
 }) => {
   const bgColor =
@@ -53,7 +53,7 @@ const OvenCard: React.FC<OvenCardProps> = ({
               {format(new Date(requestedAt), "dd MMM HH:mm")}
             </div>
             {isPriority && (
-              <Badge variant="destructive" className="text-[8px] px-1 py-0">
+              <Badge variant="destructive" className="text-[8px] px-1 py-0.5 h-4 leading-none">
                 PRIORITY
               </Badge>
             )}
@@ -63,13 +63,9 @@ const OvenCard: React.FC<OvenCardProps> = ({
         <div className="text-base font-bold">
           {`${flavor.toUpperCase()} | ${shape.toUpperCase()} ${size}CM`}
         </div>
-        {/* Quantities */}
+        {/* Only Actual Qty */}
         <div className="flex items-center justify-between mt-auto">
-          <div className="flex items-center gap-1">
-            <span className="text-xs">Req: {requestedQuantity}</span>
-            <span className="mx-1">|</span>
-            <span className="text-xs font-semibold">Actual: {producedQuantity}</span>
-          </div>
+          <span className="text-xs font-semibold">Actual: {producedQuantity}</span>
         </div>
       </CardContent>
     </Card>
