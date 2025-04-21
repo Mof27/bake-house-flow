@@ -47,6 +47,7 @@ export interface OrderContextType {
   reorderQueue: (orderId: string, newPosition: number) => void;
   updateOrderQuantity: (id: string, delta: number) => Promise<void>;
   updateOrderNotes: (id: string, notes: string) => Promise<void>;
+  refresh?: () => Promise<void>;
 }
 
 // For backwards compatibility - keeping the Order type as alias to ManualBakerOrder

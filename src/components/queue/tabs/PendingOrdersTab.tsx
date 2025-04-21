@@ -6,6 +6,7 @@ import { PendingOrder } from '@/types/queue';
 import PendingCard from '@/components/queue/PendingCard';
 import ScrollableCardSection from '@/components/queue/ScrollableCardSection';
 import { usePendingOrdersFilter } from '@/hooks/usePendingOrdersFilter';
+import { CakeFlavor } from '@/types/orders';
 
 interface PendingOrdersTabProps {
   pendingOrders: PendingOrder[];
@@ -49,7 +50,7 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
         {pendingOrders.length > 0 ? (
           <ScrollableCardSection 
             title="Pending Orders"
-            selectedFlavor={filters.selectedFlavor}
+            selectedFlavor={filters.selectedFlavor as CakeFlavor | 'all'}
             onFlavorChange={(flavor) => handleFlavorChange(flavor as any)}
             showFilters={true}
             showPriorityFilter={true}

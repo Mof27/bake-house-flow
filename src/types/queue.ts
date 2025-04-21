@@ -36,6 +36,7 @@ export interface ActiveMixing {
   startTime?: Date;
   requestedQuantity: number;
   producedQuantity: number;
+  notes?: string;
 }
 
 export interface OvenReadyBatch {

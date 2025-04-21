@@ -14,12 +14,16 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   useEffect(() => {
     // Initial fetch
-    orderOperations.fetchOrders();
+    if (orderOperations.refresh) {
+      orderOperations.refresh();
+    }
     
     // Listen for refresh events
     const handleRefresh = () => {
       console.log("OrderContext: Refresh event received, fetching orders");
-      orderOperations.fetchOrders();
+      if (orderOperations.refresh) {
+        orderOperations.refresh();
+      }
     };
     
     window.addEventListener('queue-refresh-requested', handleRefresh);

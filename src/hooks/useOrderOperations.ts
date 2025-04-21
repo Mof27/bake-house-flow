@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ManualBakerOrder, NewOrderInput, OrderStatus } from '@/types/orders';
 import { User } from '@/contexts/AuthContext';
 import { useOrderFetch } from './order-operations/useOrderFetch';
@@ -19,6 +19,10 @@ export const useOrderOperations = (user: User) => {
 
   // For local batch increment support (fallback)
   const [nextBatchNumber, setNextBatchNumber] = useState(1);
+
+  const refresh = useCallback(async () => {
+    await fetchOrders();
+  }, [fetchOrders]);
 
   useEffect(() => {
     fetchOrders();
@@ -62,5 +66,6 @@ export const useOrderOperations = (user: User) => {
     reorderQueue,
     updateOrderQuantity,
     updateOrderNotes,
+    refresh,
   };
 };
