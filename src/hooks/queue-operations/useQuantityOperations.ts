@@ -1,5 +1,5 @@
 
-import { MockData, ActiveMixing } from '@/types/queue';
+import { MockData } from '@/types/queue';
 import { toast } from 'sonner';
 
 export const useQuantityOperations = (
@@ -26,10 +26,9 @@ export const useQuantityOperations = (
       }
 
       // Calculate the new produced quantity with a minimum of 1
-      const currentQuantity = mixingItem.producedQuantity || mixingItem.requestedQuantity || 5;
-      const newQuantity = Math.max(1, currentQuantity + delta);
+      const newQuantity = Math.max(1, mixingItem.producedQuantity + delta);
 
-      // Update the producedQuantity for when it moves to the oven ready state
+      // Update the producedQuantity
       return {
         ...prev,
         activeMixing: prev.activeMixing.map(item => 

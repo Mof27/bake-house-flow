@@ -1,3 +1,4 @@
+
 import { ActiveMixing } from '@/types/queue';
 
 // Interface for consolidated mixing items
@@ -39,11 +40,8 @@ export const consolidateMixingItems = (mixingItems: ActiveMixing[]): Consolidate
   
   // Convert the grouped items to consolidated items
   return Array.from(groupedItems.values()).map(items => {
-    // Extract batch codes from labels and clean up mixer information
-    const batchLabels = items.map(item => {
-      // Clean up the mixer info but keep the batch code intact
-      return item.batchLabel;
-    });
+    // Extract batch codes from labels
+    const batchLabels = items.map(item => item.batchLabel);
     
     // Get the earliest requested time
     const earliestDate = new Date(
@@ -56,9 +54,9 @@ export const consolidateMixingItems = (mixingItems: ActiveMixing[]): Consolidate
     
     // Calculate total quantities
     const totalRequestedQuantity = items.reduce((sum, item) => 
-      sum + (item.requestedQuantity || 5), 0);
+      sum + item.requestedQuantity, 0);
     const totalProducedQuantity = items.reduce((sum, item) => 
-      sum + (item.producedQuantity || item.requestedQuantity || 5), 0);
+      sum + item.producedQuantity, 0);
     
     // Check if any item is priority
     const isPriority = items.some(item => item.isPriority);
@@ -68,7 +66,7 @@ export const consolidateMixingItems = (mixingItems: ActiveMixing[]): Consolidate
       flavor: items[0].flavor,
       shape: items[0].shape,
       size: items[0].size,
-      batchLabels: batchLabels,
+      batchLabels,
       requestedAt: earliestDate,
       isPriority,
       mixerNumber,
