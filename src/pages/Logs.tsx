@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LogEntry {
   id: string;
@@ -22,25 +23,89 @@ interface LogEntry {
 const Logs: React.FC = () => {
   const [logEntries, setLogEntries] = useState<LogEntry[]>([]);
   const [activeTab, setActiveTab] = useState<string>('all');
-  const [dailyCompleted, setDailyCompleted] = useState(45);
-  const [dailyTarget, setDailyTarget] = useState(100);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dailyCompleted, setDailyCompleted] = useState(0);
+  const [dailyTarget, setDailyTarget] = useState(20);
 
-  // Load logs from localStorage if available
+  // Load logs from Supabase
   useEffect(() => {
-    const savedLogs = localStorage.getItem('batchLogs');
-    if (savedLogs) {
+    const fetchLogs = async () => {
+      setIsLoading(true);
       try {
-        const parsedLogs = JSON.parse(savedLogs);
-        // Convert string timestamps back to Date objects
-        const logsWithDates = parsedLogs.map((log: any) => ({
-          ...log,
-          timestamp: new Date(log.timestamp)
-        }));
-        setLogEntries(logsWithDates);
+        // Get logs from Supabase
+        const { data, error } = await supabase
+          .from('logs')
+          .select('*')
+          .order('timestamp', { ascending: false });
+
+        if (error) {
+          throw error;
+        }
+
+        if (data) {
+          // Transform data to match our LogEntry interface
+          const transformedLogs = data.map((log: any) => ({
+            id: log.id,
+            timestamp: new Date(log.timestamp),
+            batchId: log.batch_id,
+            action: log.action,
+            details: log.details,
+            type: log.type as 'quantity' | 'status' | 'mixing' | 'oven',
+            producedQuantity: log.produced_quantity,
+            requestedQuantity: log.requested_quantity
+          }));
+          setLogEntries(transformedLogs);
+        }
       } catch (error) {
-        console.error('Error parsing logs from localStorage:', error);
+        console.error('Error fetching logs:', error);
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
+
+    fetchLogs();
+
+    // Also fetch daily statistics from orders
+    const fetchDailyStats = async () => {
+      try {
+        // Count completed orders for today
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const { count, error } = await supabase
+          .from('orders')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'done')
+          .gte('completed_at', today.toISOString());
+        
+        if (error) {
+          throw error;
+        }
+
+        // Set daily completed count from database
+        if (count !== null) {
+          setDailyCompleted(count);
+        }
+      } catch (error) {
+        console.error('Error fetching daily stats:', error);
+      }
+    };
+
+    fetchDailyStats();
+
+    // Set up real-time subscription for logs
+    const channel = supabase
+      .channel('logs-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'logs' }, (payload) => {
+        // Refresh logs when data changes
+        fetchLogs();
+        fetchDailyStats();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const filteredLogs = activeTab === 'all' 
@@ -91,7 +156,11 @@ const Logs: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-[calc(100vh-250px)]">
-                  {sortedDates.length > 0 ? (
+                  {isLoading ? (
+                    <div className="flex justify-center py-8">
+                      <div className="animate-spin h-8 w-8 border-4 border-primary rounded-full border-t-transparent"></div>
+                    </div>
+                  ) : sortedDates.length > 0 ? (
                     sortedDates.map(dateKey => (
                       <div key={dateKey} className="mb-6">
                         <h3 className="text-sm font-medium text-muted-foreground mb-2">

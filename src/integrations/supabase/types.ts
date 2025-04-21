@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      logs: {
+        Row: {
+          action: string
+          batch_id: string
+          created_by: string | null
+          details: string
+          id: string
+          produced_quantity: number | null
+          requested_quantity: number | null
+          timestamp: string
+          type: string
+        }
+        Insert: {
+          action: string
+          batch_id: string
+          created_by?: string | null
+          details: string
+          id?: string
+          produced_quantity?: number | null
+          requested_quantity?: number | null
+          timestamp?: string
+          type: string
+        }
+        Update: {
+          action?: string
+          batch_id?: string
+          created_by?: string | null
+          details?: string
+          id?: string
+          produced_quantity?: number | null
+          requested_quantity?: number | null
+          timestamp?: string
+          type?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           assigned_to: string | null
