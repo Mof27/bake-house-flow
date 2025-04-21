@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react';
 import { initialMockData } from '@/data/mockQueueData';
 import { useQueueUpdates } from './useQueueUpdates';
 import { useQueueRefresh } from './useQueueRefresh';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export const useQueueState = () => {
-  // Use localStorage to persist data if available
+  // Use localStorage as a fallback if Supabase data isn't available
   const savedData = localStorage.getItem('queueState');
   const initialState = savedData ? JSON.parse(savedData) : initialMockData;
   

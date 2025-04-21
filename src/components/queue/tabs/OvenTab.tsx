@@ -3,7 +3,6 @@ import React from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import { OvenReadyBatch } from '@/types/queue';
 import OvenSection from "@/components/queue/OvenSection";
-import { useQueueDragDrop } from '@/hooks/useQueueDragDrop';
 
 interface OvenTabProps {
   ovenReadyBatches: OvenReadyBatch[];
