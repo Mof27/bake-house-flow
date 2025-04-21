@@ -41,7 +41,7 @@ export interface OrderContextType {
   orders: Order[];
   getOrderById: (id: string) => Order | undefined;
   createOrder: (orderData: NewOrderInput) => Promise<Order>;
-  updateOrderStatus: (id: string, status: OrderStatus) => Promise<void>;
+  updateOrderStatus: (id: string, status: OrderStatus) => Promise<boolean>;
   printLabel: (id: string) => Promise<void>;
   deleteOrder: (id: string) => Promise<void>;
   isLoading: boolean;
