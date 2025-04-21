@@ -7,7 +7,11 @@ const COUNTDOWN_SECONDS = 60; // 1 minute
 
 type TimerStatus = "idle" | "countdown" | "countup";
 
-const MixerTimer: React.FC = () => {
+interface MixerTimerProps {
+  onReady?: (isReady: boolean) => void;
+}
+
+const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
   const [status, setStatus] = useState<TimerStatus>("idle");
   const [seconds, setSeconds] = useState(COUNTDOWN_SECONDS);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -21,6 +25,14 @@ const MixerTimer: React.FC = () => {
       }
     };
   }, []);
+
+  // Notify parent component about timer status changes
+  useEffect(() => {
+    if (onReady) {
+      // Timer is "ready" when in countup mode (overtime)
+      onReady(status === "countup");
+    }
+  }, [status, onReady]);
 
   // Starts the timer or resumes it (if paused, but here just toggling start/stop)
   const handleToggle = () => {
