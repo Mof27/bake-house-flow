@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 const QueuePage: React.FC = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<string>('pending');
-  const { mockData, setMockData, refresh: refreshQueue } = useQueueState();
+  const { mockData, setMockData } = useQueueState();
   const lastTabState = useRef<Record<string, any>>({});
   
   // Set the active tab to 'pending' when showNewest is in the query parameters
@@ -105,6 +105,9 @@ const QueuePage: React.FC = () => {
       dailyTarget={mockData.dailyTarget} 
     />
   );
+
+  console.log("Current Queue State - Pending Orders:", mockData.pendingOrders);
+  console.log("Current Queue State - Active Mixing:", mockData.activeMixing);
 
   return (
     <Layout sidebar={sidebar}>

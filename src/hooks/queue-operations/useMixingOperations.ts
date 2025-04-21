@@ -9,6 +9,8 @@ export const useMixingOperations = (
   setMockData: React.Dispatch<React.SetStateAction<MockData>>
 ) => {
   const handleStartMixing = (orderId: string, mixerNumber: number) => {
+    console.log(`Starting mixing process for order ${orderId} in Mixer #${mixerNumber}`);
+    
     setMockData(prev => {
       // Check if the selected mixer is full (has 5 items already)
       const currentMixerItems = prev.activeMixing.filter(item => 
@@ -21,12 +23,20 @@ export const useMixingOperations = (
       }
       
       const orderToMove = prev.pendingOrders.find(order => order.id === orderId);
-      if (!orderToMove) return prev;
+      if (!orderToMove) {
+        console.error(`Order with ID ${orderId} not found in pending orders`);
+        return prev;
+      }
       
       // Add the mixer number to the batch label
       const updatedBatchLabel = `${orderToMove.batchLabel} (Mixer #${mixerNumber})`;
       
-      return {
+      // Log the state changes for debugging
+      console.log("Moving order from pending to active mixing:", orderToMove);
+      console.log("Updated batch label:", updatedBatchLabel);
+      
+      // Create the new state
+      const newState = {
         ...prev,
         pendingOrders: prev.pendingOrders.filter(order => order.id !== orderId),
         activeMixing: [...prev.activeMixing, { 
@@ -39,9 +49,14 @@ export const useMixingOperations = (
           isPriority: orderToMove.isPriority,
           startTime: new Date(),
           requestedQuantity: orderToMove.requestedQuantity,
-          producedQuantity: orderToMove.producedQuantity
+          producedQuantity: orderToMove.producedQuantity,
+          notes: orderToMove.notes
         }]
       };
+      
+      console.log("New state after moving to mixing:", newState);
+      
+      return newState;
     });
     
     toast.success(`Started mixing process in Mixer #${mixerNumber}`);
