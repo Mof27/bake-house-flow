@@ -3,7 +3,6 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CakeFlavor, CakeShape } from "@/types/queue";
-import { format } from "date-fns";
 
 interface OvenCardProps {
   flavor: CakeFlavor;
@@ -20,60 +19,47 @@ const OvenCard: React.FC<OvenCardProps> = ({
   flavor,
   shape,
   size,
-  batchLabel,
   isPriority = false,
   producedQuantity,
   requestedQuantity,
 }) => {
+  // Choose colors based on flavor for slight visual context
   const bgColor =
     flavor === "vanilla"
-      ? "bg-amber-50 text-amber-950"
-      : "bg-amber-900 text-amber-50";
-
-  // Extract batch codes and clean up "(Mixer #X)" labels
-  const cleanBatchLabel = batchLabel.replace(/\s*\(Mixer #\d+\)/g, '');
-  
-  // Add "A" suffix to batch codes if quantity was adjusted
-  const batchCodes = cleanBatchLabel.split(', ').map(code => {
-    if (producedQuantity !== requestedQuantity) {
-      // If it's a batch code format like #A001, add "A" at the end
-      if (code.match(/#A\d+/)) {
-        return `${code}A`;
-      }
-    }
-    return code;
-  }).join(', ');
+      ? "bg-[#FEF7CD] text-[#403E43]"
+      : "bg-[#E5DEFF] text-[#403E43]";
+  const borderColor = isPriority
+    ? "border-2 border-[color:hsl(var(--bakery-danger))]"
+    : "border border-gray-200";
 
   return (
     <Card
-      className={`
-      relative overflow-hidden transition-all
-      ${bgColor}
-      ${isPriority ? "border-2 border-red-500" : "border border-gray-200"}
-      hover:shadow-md w-full
-      h-[100px]
-      rounded-lg
-    `}
+      className={`relative transition-all ${bgColor} ${borderColor} hover:shadow-md w-full h-[100px] rounded-xl`}
     >
-      <CardContent className="p-2 h-full flex flex-col justify-between">
-        {/* Header with batch identifier */}
-        <div className="flex justify-between items-center">
-          <div className="font-mono text-sm font-bold">{batchCodes}</div>
+      <CardContent className="p-3 h-full flex items-center justify-between">
+        {/* Left column: Cake details */}
+        <div className="flex flex-col gap-0.5 justify-center w-1/2">
+          <div className="text-base font-bold mb-1">
+            {flavor.toUpperCase()} | {shape.toUpperCase()} {size}CM
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Requested: <span className="font-semibold">{requestedQuantity}</span>
+          </div>
+        </div>
+        {/* Right column: Final quantity & priority */}
+        <div className="flex flex-col gap-1 items-end w-1/2">
+          <span className="text-sm font-medium">
+            Final Qty:{" "}
+            <span className="font-bold text-lg">{producedQuantity}</span>
+          </span>
           {isPriority && (
-            <Badge variant="destructive" className="text-[10px] px-1 py-0.5 h-4">
+            <Badge
+              variant="destructive"
+              className="text-[12px] px-2 py-0.5 h-5 animate-flash-priority"
+            >
               PRIORITY
             </Badge>
           )}
-        </div>
-        
-        {/* Flavor, Shape & Size */}
-        <div className="text-base font-bold">
-          {`${flavor.toUpperCase()} | ${shape.toUpperCase()} ${size}CM`}
-        </div>
-        
-        {/* Only Final Qty */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold">Final Qty: {producedQuantity}</span>
         </div>
       </CardContent>
     </Card>
@@ -81,3 +67,4 @@ const OvenCard: React.FC<OvenCardProps> = ({
 };
 
 export default OvenCard;
+
