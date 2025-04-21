@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Timer } from "lucide-react";
 
 // The timer can be in one of these states
-type TimerStatus = "idle" | "countdown" | "done" | "countup";  // Added "countup" to the type definition
+type TimerStatus = "idle" | "countdown" | "done" | "countup";
 
 interface MixerTimerProps {
   onReady: (isReady: boolean) => void;
