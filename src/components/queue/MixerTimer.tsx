@@ -46,6 +46,7 @@ const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
       intervalRef.current = setInterval(() => {
         setSeconds(prev => {
           if (prev <= 1) {
+            // Clear the countdown interval
             if (intervalRef.current) {
               clearInterval(intervalRef.current);
               intervalRef.current = null;
@@ -72,20 +73,20 @@ const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
     if (status === "countup") {
       setSeconds(0);
       intervalRef.current = setInterval(() => {
-        setSeconds((prev) => prev + 1);
+        setSeconds(prev => prev + 1);
       }, 1000);
-      
-      return () => { 
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-      };
     }
+    
+    return () => { 
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
   }, [status]);
 
   const formatTime = () => {
-    if (status === "idle") return "--:--";
+    if (status === "idle") return "Start Mixing Timer";
     if (status === "countup") {
       return "+" + String(seconds).padStart(2, "0") + "s";
     }
@@ -93,19 +94,23 @@ const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
            String(seconds % 60).padStart(2, "0");
   };
 
+  // Determine button variant based on timer status
+  const getButtonVariant = () => {
+    if (status === "idle") return "secondary";
+    if (status === "countdown") return "default"; // Blue color when counting down
+    return "destructive"; // Red color when done or counting up
+  };
+
   return (
     <Button
       size="sm"
-      variant={status === "idle" ? "secondary" : 
-              status === "countdown" ? "secondary" : 
-              status === "done" ? "destructive" :
-              "destructive"}
+      variant={getButtonVariant()}
       disabled={status !== "idle"}
       onClick={handleStart}
       className={`flex items-center ${status === "countup" || status === "done" ? "animate-pulse" : ""}`}
     >
       <Timer className="mr-2 h-4 w-4" />
-      {status === "idle" ? "Start Mixing Timer" : formatTime()}
+      {formatTime()}
     </Button>
   );
 };
