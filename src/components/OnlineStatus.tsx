@@ -5,10 +5,12 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useQueueRefresh } from '@/hooks/useQueueRefresh';
 import { useQueueState } from '@/hooks/useQueueState';
+import { useOrders } from '@/contexts/OrderContext';
 
 const OnlineStatus = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { mockData, setMockData } = useQueueState();
+  const { refresh: refreshOrders } = useOrders();
   const { fetchLatestData, isRefreshing } = useQueueRefresh(mockData, setMockData);
   const [lastRefresh, setLastRefresh] = useState(Date.now());
 
@@ -35,14 +37,27 @@ const OnlineStatus = () => {
     };
   }, []);
 
-  const handleRefresh = () => {
-    fetchLatestData();
-    
-    // Additional broadcast of refresh event
-    const refreshEvent = new CustomEvent('queue-refresh-requested');
-    window.dispatchEvent(refreshEvent);
-    
-    setLastRefresh(Date.now());
+  const handleRefresh = async () => {
+    try {
+      // First refresh order context
+      if (refreshOrders) {
+        await refreshOrders();
+      }
+      
+      // Then refresh the queue state
+      await fetchLatestData();
+      
+      // Additional broadcast of refresh event
+      const refreshEvent = new CustomEvent('queue-refresh-requested');
+      window.dispatchEvent(refreshEvent);
+      
+      setLastRefresh(Date.now());
+      
+      toast.success("Data refreshed successfully");
+    } catch (error) {
+      console.error("Error in refresh:", error);
+      toast.error("Failed to refresh data");
+    }
   };
 
   return (

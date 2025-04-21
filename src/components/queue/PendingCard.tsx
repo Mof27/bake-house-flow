@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CakeFlavor, CakeShape } from '@/types/queue';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 interface PendingCardProps {
   flavor: CakeFlavor;
@@ -40,6 +41,16 @@ const PendingCard: React.FC<PendingCardProps> = ({
   const orderNumber = batchLabel.match(/\d+/)?.[0] || '001';
   const uniqueCode = `#A${orderNumber.padStart(3, '0')}`;
 
+  const handleMixerClick = (mixerId: number) => {
+    try {
+      console.log(`Starting mixing in Mixer #${mixerId} for order ${uniqueCode}`);
+      onAction(mixerId);
+    } catch (error) {
+      console.error(`Error starting mixing for ${uniqueCode} in Mixer #${mixerId}:`, error);
+      toast.error(`Failed to start mixing for ${uniqueCode}`);
+    }
+  };
+
   return (
     <Card className={`
       relative overflow-hidden transition-all
@@ -55,7 +66,7 @@ const PendingCard: React.FC<PendingCardProps> = ({
         </div>
 
         {/* Main Content */}
-        <div className="mt-1 space-y-0 leading-tight"> {/* Reduced line spacing here */}
+        <div className="mt-1 space-y-0 leading-tight">
           <div className="text-2xl font-bold">
             {`${shape.toUpperCase()} ${size}CM`}
           </div>
@@ -84,10 +95,20 @@ const PendingCard: React.FC<PendingCardProps> = ({
         
         {/* Mixer Buttons */}
         <div className="mt-auto flex gap-1">
-          <Button variant="default" size="sm" className="flex-1 text-xs" onClick={() => onAction(1)}>
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="flex-1 text-xs" 
+            onClick={() => handleMixerClick(1)}
+          >
             Mixer #1
           </Button>
-          <Button variant="default" size="sm" className="flex-1 text-xs" onClick={() => onAction(2)}>
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="flex-1 text-xs" 
+            onClick={() => handleMixerClick(2)}
+          >
             Mixer #2
           </Button>
         </div>

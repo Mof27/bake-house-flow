@@ -4,7 +4,6 @@ import { ActiveMixing } from '@/types/queue';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Undo } from 'lucide-react';
-import ActiveMixingCard from '@/components/queue/ActiveMixingCard';
 import ConsolidatedMixingCard from '@/components/queue/ConsolidatedMixingCard';
 import { consolidateMixingItems } from '@/utils/mixingUtils';
 import { CountdownButton } from '@/components/ui/countdown-button';

@@ -24,6 +24,13 @@ export const useQueueRefresh = (mockData: MockData, setMockData: React.Dispatch<
         throw error;
       }
       
+      // If no data returned, don't show an error, just warn
+      if (!latestOrders || latestOrders.length === 0) {
+        console.log("No orders found in database");
+        toast.info("No orders found");
+        return;
+      }
+      
       console.log("Refreshed data from Supabase:", latestOrders);
       
       // Force re-fetch in parent hooks by triggering a custom event
@@ -38,10 +45,7 @@ export const useQueueRefresh = (mockData: MockData, setMockData: React.Dispatch<
       });
       window.dispatchEvent(supabaseEvent);
       
-      toast.success("Data refreshed successfully", {
-        description: "Latest queue data has been loaded",
-        position: "top-right",
-      });
+      toast.success("Data refreshed successfully");
     } catch (error) {
       console.error("Error refreshing data:", error);
       toast.error("Failed to refresh data");

@@ -5,6 +5,7 @@ import { useQueueRefresh } from './useQueueRefresh';
 import { initialMockData } from '@/data/mockQueueData';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useOrders } from '@/contexts/OrderContext';
 
 export const useQueueState = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -13,6 +14,7 @@ export const useQueueState = () => {
   const { mockData, setMockData } = useQueueUpdates({...initialMockData, dailyCompleted, dailyTarget});
   const { fetchLatestData } = useQueueRefresh(mockData, setMockData);
   const [lastUpdateTime, setLastUpdateTime] = useState(Date.now());
+  const { refresh: refreshOrders } = useOrders();
 
   // Fetch daily statistics and all orders data
   const fetchDailyStats = useCallback(async () => {
@@ -42,27 +44,21 @@ export const useQueueState = () => {
         }));
       }
       
-      // Also fetch all orders to ensure we have the latest data
-      const { data: allOrders, error: ordersError } = await supabase
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false });
-        
-      if (ordersError) {
-        throw ordersError;
+      // Also ensure order context is refreshed
+      if (refreshOrders) {
+        await refreshOrders();
       }
       
-      console.log("Received updated orders from Supabase:", allOrders);
       setLastUpdateTime(Date.now());
+      toast.success("Queue data refreshed");
       
-      // The useQueueUpdates hook will react to this change and update mockData
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to refresh data');
     } finally {
       setIsLoading(false);
     }
-  }, [setMockData]);
+  }, [setMockData, refreshOrders]);
 
   useEffect(() => {
     // Initial fetch on mount

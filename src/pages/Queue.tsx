@@ -15,11 +15,12 @@ import CompletedTab from '@/components/queue/tabs/CompletedTab';
 import { useQueueState } from '@/hooks/useQueueState';
 import { useQueueOperations } from '@/hooks/useQueueOperations';
 import { PendingOrder, ActiveMixing } from '@/types/queue';
+import { toast } from 'sonner';
 
 const QueuePage: React.FC = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<string>('pending');
-  const { mockData, setMockData } = useQueueState();
+  const { mockData, setMockData, refresh: refreshQueue } = useQueueState();
   const lastTabState = useRef<Record<string, any>>({});
   
   // Set the active tab to 'pending' when showNewest is in the query parameters
@@ -56,37 +57,46 @@ const QueuePage: React.FC = () => {
 
   // New handler to put back a mixing item to pending orders
   const handlePutBackToPending = (orderId: string) => {
-    setMockData((prev) => {
-      // Find item in activeMixing based on orderId
-      const itemToPutBack = prev.activeMixing.find(item => item.id === orderId);
-      if (!itemToPutBack) return prev;
+    try {
+      console.log("Putting order back to pending:", orderId);
+      
+      setMockData((prev) => {
+        // Find item in activeMixing based on orderId
+        const itemToPutBack = prev.activeMixing.find(item => item.id === orderId);
+        if (!itemToPutBack) return prev;
 
-      // Remove from activeMixing
-      const newActiveMixing = prev.activeMixing.filter(item => item.id !== orderId);
+        // Remove from activeMixing
+        const newActiveMixing = prev.activeMixing.filter(item => item.id !== orderId);
 
-      // Convert ActiveMixing item to PendingOrder item
-      const pendingOrderItem: PendingOrder = {
-        id: itemToPutBack.id,
-        flavor: itemToPutBack.flavor,
-        shape: itemToPutBack.shape,
-        size: itemToPutBack.size,
-        batchLabel: itemToPutBack.batchLabel.replace(/ \(Mixer #[1-2]\)/, ''), // Remove the mixer number
-        requestedAt: itemToPutBack.requestedAt,
-        isPriority: itemToPutBack.isPriority,
-        requestedQuantity: itemToPutBack.requestedQuantity || 5, // Default value if not present
-        producedQuantity: itemToPutBack.producedQuantity || itemToPutBack.requestedQuantity || 5, // Default value if not present
-        notes: itemToPutBack.notes || ''
-      };
+        // Convert ActiveMixing item to PendingOrder item
+        const pendingOrderItem: PendingOrder = {
+          id: itemToPutBack.id,
+          flavor: itemToPutBack.flavor,
+          shape: itemToPutBack.shape,
+          size: itemToPutBack.size,
+          batchLabel: itemToPutBack.batchLabel.replace(/ \(Mixer #[1-2]\)/, ''), // Remove the mixer number
+          requestedAt: itemToPutBack.requestedAt,
+          isPriority: itemToPutBack.isPriority,
+          requestedQuantity: itemToPutBack.requestedQuantity || 5, // Default value if not present
+          producedQuantity: itemToPutBack.producedQuantity || itemToPutBack.requestedQuantity || 5, // Default value if not present
+          notes: itemToPutBack.notes || ''
+        };
 
-      // Add back to pendingOrders, preserving any order (added at start to be recent)
-      const newPendingOrders = [pendingOrderItem, ...prev.pendingOrders];
+        // Add back to pendingOrders, preserving any order (added at start to be recent)
+        const newPendingOrders = [pendingOrderItem, ...prev.pendingOrders];
 
-      return {
-        ...prev,
-        activeMixing: newActiveMixing,
-        pendingOrders: newPendingOrders,
-      };
-    });
+        return {
+          ...prev,
+          activeMixing: newActiveMixing,
+          pendingOrders: newPendingOrders,
+        };
+      });
+      
+      toast.success("Order returned to pending queue");
+    } catch (error) {
+      console.error("Error returning order to pending:", error);
+      toast.error("Failed to return order to pending queue");
+    }
   };
 
   const sidebar = (

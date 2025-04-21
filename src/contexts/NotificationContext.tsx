@@ -21,6 +21,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [hasOverdueOrders, setHasOverdueOrders] = useState(false);
   const [newOrdersCount, setNewOrdersCount] = useState(0);
   const [overdueOrdersCount, setOverdueOrdersCount] = useState(0);
+  const [initialized, setInitialized] = useState(false);
 
   // Audio elements for notifications
   const newOrderSound = new Audio('/notification-sounds/new-order.mp3'); // This would be added to public folder
@@ -37,8 +38,23 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   };
 
+  // Initialize - don't show notifications for existing orders on first load
+  useEffect(() => {
+    if (!initialized && orders.length > 0) {
+      const latestOrderTime = orders.reduce((latest, order) => {
+        const orderTime = new Date(order.createdAt).getTime();
+        return orderTime > latest.getTime() ? new Date(orderTime) : latest;
+      }, new Date(0));
+      
+      setLastSeenOrderTime(latestOrderTime);
+      setInitialized(true);
+    }
+  }, [orders, initialized]);
+
   // Check for new orders
   useEffect(() => {
+    if (!initialized) return;
+    
     const newOrders = orders.filter(order => 
       new Date(order.createdAt) > lastSeenOrderTime
     );
@@ -50,10 +66,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       toast.info(`${newOrders.length} new order${newOrders.length > 1 ? 's' : ''}`);
       playNotificationSound('new');
     }
-  }, [orders, lastSeenOrderTime]);
+  }, [orders, lastSeenOrderTime, hasNewOrders, initialized]);
 
   // Check for overdue orders
   useEffect(() => {
+    if (!initialized) return;
+    
     const now = new Date();
     
     const checkIfOverdue = (order: Order): boolean => {
@@ -64,10 +82,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         return elapsedMinutes > order.estimatedTime;
       }
       
-      if (order.status === 'queued') {
-        const elapsedMinutes = (now.getTime() - new Date(order.createdAt).getTime()) / (1000 * 60);
-        return elapsedMinutes > order.estimatedTime;
-      }
+      // Temporarily disable overdue checks for queued orders since we don't have a feature to handle them yet
+      // We'll handle this in a future update
+      // if (order.status === 'queued') {
+      //   const elapsedMinutes = (now.getTime() - new Date(order.createdAt).getTime()) / (1000 * 60);
+      //   return elapsedMinutes > order.estimatedTime;
+      // }
       
       return false;
     };
@@ -82,7 +102,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       toast.warning(`${overdueOrders.length} order${overdueOrders.length > 1 ? 's are' : ' is'} overdue!`);
       playNotificationSound('overdue');
     }
-  }, [orders]);
+  }, [orders, hasOverdueOrders, initialized]);
 
   const markNewOrdersSeen = () => {
     setLastSeenOrderTime(new Date());
