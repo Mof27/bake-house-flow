@@ -16,7 +16,7 @@ const CompletedTab: React.FC<CompletedTabProps> = ({ completedBatches }) => {
         <div className="pb-4">
           <h2 className="text-lg font-bold mb-2">Completed Batches</h2>
           
-          {completedBatches.length === 0 ? (
+          {(!completedBatches || completedBatches.length === 0) ? (
             <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
               <p className="text-muted-foreground">No completed batches yet</p>
             </div>
