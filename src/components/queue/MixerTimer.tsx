@@ -10,37 +10,49 @@ interface MixerTimerProps {
   onReady: (isReady: boolean) => void;
 }
 
-const COUNTDOWN_SECONDS = 60;
+const COUNTDOWN_SECONDS = 60; // 1 minute countdown
 
 const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
   const [status, setStatus] = useState<TimerStatus>("idle");
   const [seconds, setSeconds] = useState(COUNTDOWN_SECONDS);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, []);
+
   // Notify parent when countdown is done (ready = true)
   useEffect(() => {
     onReady(status === "done" || status === "countup");
   }, [status, onReady]);
 
-  // Cleanup interval on unmount
-  useEffect(() => {
-    return () => { 
-      if (intervalRef.current) clearInterval(intervalRef.current); 
-    };
-  }, []);
-
   const handleStart = () => {
     if (status === "idle") {
       setSeconds(COUNTDOWN_SECONDS);
       setStatus("countdown");
+      
+      // Clear any existing interval
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      
+      // Start countdown
       intervalRef.current = setInterval(() => {
         setSeconds(prev => {
           if (prev <= 1) {
             if (intervalRef.current) {
               clearInterval(intervalRef.current);
+              intervalRef.current = null;
             }
             setStatus("done");
-            setTimeout(() => setStatus("countup"), 800); // Briefly show done/flash
+            // Set timer to switch to countup mode after a brief pause
+            setTimeout(() => setStatus("countup"), 800);
             return 0;
           }
           return prev - 1;
@@ -49,7 +61,7 @@ const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
     }
   };
 
-  // Handle countup timer
+  // Handle countup timer separately
   useEffect(() => {
     // Clear any existing interval first
     if (intervalRef.current) {
@@ -64,38 +76,37 @@ const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
       }, 1000);
       
       return () => { 
-        if (intervalRef.current) clearInterval(intervalRef.current); 
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
       };
     }
   }, [status]);
 
+  const formatTime = () => {
+    if (status === "idle") return "--:--";
+    if (status === "countup") {
+      return "+" + String(seconds).padStart(2, "0") + "s";
+    }
+    return String(Math.floor(seconds / 60)).padStart(2, "0") + ":" + 
+           String(seconds % 60).padStart(2, "0");
+  };
+
   return (
-    <div className="flex items-center gap-2 mb-2">
-      <Button
-        size="sm"
-        variant="secondary"
-        disabled={status !== "idle"}
-        onClick={handleStart}
-        className="flex items-center"
-      >
-        <Timer className="mr-2 h-4 w-4" />
-        {status === "idle" ? "Start Mixing Timer" : "Running..."}
-      </Button>
-      <div
-        className={
-          "px-3 py-1 rounded text-sm font-mono font-bold ml-2 min-w-[48px] text-center" +
-          (status === "done" ? " bg-red-600 text-white animate-pulse ring-2 ring-red-400" : "") +
-          (status === "countup" ? " bg-red-200 text-red-800 animate-pulse" : "") +
-          (status === "countdown" ? " bg-secondary/80" : "") +
-          (status === "idle" ? " bg-gray-200" : "")
-        }
-      >
-        {status === "idle" ? "--:--" :
-          (status === "countup"
-            ? "+" + String(seconds).padStart(2, "0") + "s"
-            : String(Math.floor(seconds / 60)).padStart(2, "0") + ":" + String(seconds % 60).padStart(2, "0"))}
-      </div>
-    </div>
+    <Button
+      size="sm"
+      variant={status === "idle" ? "secondary" : 
+              status === "countdown" ? "secondary" : 
+              status === "done" ? "destructive" :
+              "destructive"}
+      disabled={status !== "idle"}
+      onClick={handleStart}
+      className={`flex items-center ${status === "countup" || status === "done" ? "animate-pulse" : ""}`}
+    >
+      <Timer className="mr-2 h-4 w-4" />
+      {status === "idle" ? "Start Mixing Timer" : formatTime()}
+    </Button>
   );
 };
 

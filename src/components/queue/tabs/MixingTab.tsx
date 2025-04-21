@@ -64,10 +64,7 @@ const MixerSection: React.FC<{
           <h2 className="text-xl font-bold">Mixer #{mixerNumber}</h2>
         </div>
         
-        {/* Timer placed before move to oven button */}
-        <MixerTimer onReady={setTimerReady} />
-        
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-4 items-center">
           <CountdownButton
             variant="outline"
             size="sm"
@@ -79,13 +76,16 @@ const MixerSection: React.FC<{
             Put All Back
           </CountdownButton>
           
+          {/* Timer placed next to Put All Back button */}
+          <MixerTimer onReady={setTimerReady} />
+          
           {/* Only show Move All to Oven button if timer is ready */}
           {timerReady && items.length > 0 && (
             <Button
               variant="secondary"
               size="sm"
               onClick={handleMoveAllToOven}
-              className="flex items-center"
+              className="flex items-center ml-auto"
             >
               <ArrowRight className="mr-2 h-4 w-4" />
               Move All to Oven
