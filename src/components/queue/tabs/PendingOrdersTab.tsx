@@ -50,13 +50,13 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
           <ScrollableCardSection 
             title="Pending Orders"
             selectedFlavor={filters.selectedFlavor}
-            onFlavorChange={handleFlavorChange}
+            onFlavorChange={(flavor) => handleFlavorChange(flavor as any)}
             showFilters={true}
             showPriorityFilter={true}
             isPriorityOnly={filters.isPriorityOnly}
             onPriorityChange={handlePriorityChange}
-            sortOrder={filters.sortOrder}
-            onSortOrderChange={handleSortOrderChange}
+            sortOrder={filters.sortOrder as any}
+            onSortOrderChange={(order) => handleSortOrderChange(order as any)}
           >
             {filteredOrders.map(order => (
               <PendingCard 

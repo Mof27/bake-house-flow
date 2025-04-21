@@ -12,6 +12,7 @@ export const useQueueState = () => {
   const [dailyTarget, setDailyTarget] = useState(20);
   const { mockData, setMockData } = useQueueUpdates({...initialMockData, dailyCompleted, dailyTarget});
   const { fetchLatestData } = useQueueRefresh(mockData, setMockData);
+  const [lastUpdateTime, setLastUpdateTime] = useState(Date.now());
 
   // Fetch daily statistics and all orders data
   const fetchDailyStats = useCallback(async () => {
@@ -52,6 +53,7 @@ export const useQueueState = () => {
       }
       
       console.log("Received updated orders from Supabase:", allOrders);
+      setLastUpdateTime(Date.now());
       
       // The useQueueUpdates hook will react to this change and update mockData
     } catch (error) {
@@ -75,6 +77,12 @@ export const useQueueState = () => {
           console.log("Supabase real-time update received:", payload);
           // React immediately to the change
           fetchDailyStats();
+          
+          // Also broadcast an event for other components to react
+          const event = new CustomEvent('supabase-order-update', { 
+            detail: { payload, timestamp: Date.now() } 
+          });
+          window.dispatchEvent(event);
         }
       )
       .subscribe((status) => {
@@ -107,6 +115,7 @@ export const useQueueState = () => {
     setMockData,
     fetchLatestData,
     isLoading,
-    refresh: fetchDailyStats
+    refresh: fetchDailyStats,
+    lastUpdateTime
   };
 };

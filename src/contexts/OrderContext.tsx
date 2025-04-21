@@ -11,16 +11,15 @@ const OrderContext = createContext<OrderContextType | undefined>(undefined);
 export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   const orderOperations = useOrderOperations(user);
-  const { fetchOrders } = orderOperations;
   
   useEffect(() => {
     // Initial fetch
-    fetchOrders();
+    orderOperations.fetchOrders();
     
     // Listen for refresh events
     const handleRefresh = () => {
       console.log("OrderContext: Refresh event received, fetching orders");
-      fetchOrders();
+      orderOperations.fetchOrders();
     };
     
     window.addEventListener('queue-refresh-requested', handleRefresh);
@@ -28,7 +27,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return () => {
       window.removeEventListener('queue-refresh-requested', handleRefresh);
     };
-  }, [fetchOrders]);
+  }, [orderOperations]);
 
   return (
     <OrderContext.Provider value={orderOperations}>

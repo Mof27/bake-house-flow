@@ -27,8 +27,16 @@ export const useQueueRefresh = (mockData: MockData, setMockData: React.Dispatch<
       console.log("Refreshed data from Supabase:", latestOrders);
       
       // Force re-fetch in parent hooks by triggering a custom event
-      const event = new CustomEvent('queue-refresh-requested');
+      const event = new CustomEvent('queue-refresh-requested', {
+        detail: { timestamp: Date.now(), source: 'manual-refresh' }
+      });
       window.dispatchEvent(event);
+      
+      // Also trigger a specific Supabase update event
+      const supabaseEvent = new CustomEvent('supabase-order-update', {
+        detail: { orders: latestOrders, timestamp: Date.now() }
+      });
+      window.dispatchEvent(supabaseEvent);
       
       toast.success("Data refreshed successfully", {
         description: "Latest queue data has been loaded",

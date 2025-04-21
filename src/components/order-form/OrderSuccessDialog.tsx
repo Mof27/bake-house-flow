@@ -15,24 +15,34 @@ interface OrderSuccessDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onReset: () => void;
+  orderId?: string;
 }
 
 const OrderSuccessDialog: React.FC<OrderSuccessDialogProps> = ({
   open,
   onOpenChange,
   onReset,
+  orderId
 }) => {
   const navigate = useNavigate();
 
   const handleViewQueue = () => {
     // First trigger a refresh event to ensure data is up-to-date
-    const refreshEvent = new CustomEvent('queue-refresh-requested');
+    const refreshEvent = new CustomEvent('queue-refresh-requested', {
+      detail: { orderId }
+    });
     window.dispatchEvent(refreshEvent);
     
     // Then navigate to queue with parameters to show newest orders
     setTimeout(() => {
       // Add timestamp to force the component to re-render completely
       navigate('/queue?showNewest=true&timestamp=' + Date.now(), { replace: true });
+      
+      // Add another refresh after navigation is complete
+      setTimeout(() => {
+        const refreshEvent = new CustomEvent('queue-refresh-requested');
+        window.dispatchEvent(refreshEvent);
+      }, 500);
     }, 300);
   };
 

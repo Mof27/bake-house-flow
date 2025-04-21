@@ -14,7 +14,7 @@ import OvenTab from '@/components/queue/tabs/OvenTab';
 import CompletedTab from '@/components/queue/tabs/CompletedTab';
 import { useQueueState } from '@/hooks/useQueueState';
 import { useQueueOperations } from '@/hooks/useQueueOperations';
-import { PendingOrder } from '@/types/queue';
+import { PendingOrder, ActiveMixing } from '@/types/queue';
 
 const QueuePage: React.FC = () => {
   const location = useLocation();
@@ -75,7 +75,7 @@ const QueuePage: React.FC = () => {
         isPriority: itemToPutBack.isPriority,
         requestedQuantity: itemToPutBack.requestedQuantity || 5, // Default value if not present
         producedQuantity: itemToPutBack.producedQuantity || itemToPutBack.requestedQuantity || 5, // Default value if not present
-        notes: itemToPutBack.notes
+        notes: itemToPutBack.notes || ''
       };
 
       // Add back to pendingOrders, preserving any order (added at start to be recent)

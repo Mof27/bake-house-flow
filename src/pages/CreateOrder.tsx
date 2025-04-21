@@ -15,16 +15,22 @@ const CreateOrder = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [createdOrderId, setCreatedOrderId] = useState<string>("");
   
   const handleSubmit = async (orderData: NewOrderInput) => {
     setIsSubmitting(true);
     setErrorMessage("");
     try {
       console.log("Submitting order data:", orderData);
-      await createOrder(orderData);
+      const newOrder = await createOrder(orderData);
+      setCreatedOrderId(newOrder.id);
       
       // After successful creation, show the dialog
       setShowSuccessDialog(true);
+      
+      // Immediately trigger a refresh event to update all views
+      const refreshEvent = new CustomEvent('queue-refresh-requested');
+      window.dispatchEvent(refreshEvent);
     } catch (error) {
       console.error('Error creating order:', error);
       setErrorMessage(error instanceof Error ? error.message : "Failed to create order. Please try again.");
@@ -36,6 +42,7 @@ const CreateOrder = () => {
   const handleReset = () => {
     setShowSuccessDialog(false);
     setErrorMessage("");
+    setCreatedOrderId("");
   };
   
   const handleBackToDashboard = () => {
@@ -46,7 +53,7 @@ const CreateOrder = () => {
     // Give a small delay to ensure event is processed
     setTimeout(() => {
       navigate('/');
-    }, 100);
+    }, 300);
   };
 
   return (
@@ -73,6 +80,7 @@ const CreateOrder = () => {
         open={showSuccessDialog}
         onOpenChange={setShowSuccessDialog}
         onReset={handleReset}
+        orderId={createdOrderId}
       />
     </Layout>
   );

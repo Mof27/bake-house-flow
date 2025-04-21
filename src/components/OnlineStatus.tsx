@@ -10,6 +10,7 @@ const OnlineStatus = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { mockData, setMockData } = useQueueState();
   const { fetchLatestData, isRefreshing } = useQueueRefresh(mockData, setMockData);
+  const [lastRefresh, setLastRefresh] = useState(Date.now());
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -17,15 +18,31 @@ const OnlineStatus = () => {
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    
+    // Listen for real-time updates to update the "last refreshed" indicator
+    const handleRealtimeUpdate = () => {
+      setLastRefresh(Date.now());
+    };
+    
+    window.addEventListener('supabase-order-update', handleRealtimeUpdate);
+    window.addEventListener('queue-refresh-requested', handleRealtimeUpdate);
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('supabase-order-update', handleRealtimeUpdate);
+      window.removeEventListener('queue-refresh-requested', handleRealtimeUpdate);
     };
   }, []);
 
   const handleRefresh = () => {
     fetchLatestData();
+    
+    // Additional broadcast of refresh event
+    const refreshEvent = new CustomEvent('queue-refresh-requested');
+    window.dispatchEvent(refreshEvent);
+    
+    setLastRefresh(Date.now());
   };
 
   return (
@@ -45,6 +62,7 @@ const OnlineStatus = () => {
         className="h-8 w-8 rounded-full"
         onClick={handleRefresh}
         disabled={isRefreshing}
+        title="Last refreshed at: " + new Date(lastRefresh).toLocaleTimeString()
       >
         <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
       </Button>
