@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import { ActiveMixing } from '@/types/queue';
@@ -34,7 +33,7 @@ const MixerSection: React.FC<{
   const [timerReady, setTimerReady] = React.useState(false);
 
   const handleMoveAllToOven = () => {
-    if (timerReady) {
+    if (items.length > 0) {
       items.forEach(item => onMoveToOven?.(item.id));
     }
   };
@@ -79,18 +78,17 @@ const MixerSection: React.FC<{
           {/* Timer placed next to Put All Back button */}
           <MixerTimer onReady={setTimerReady} />
           
-          {/* Only show Move All to Oven button if timer is ready */}
-          {timerReady && items.length > 0 && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleMoveAllToOven}
-              className="flex items-center ml-auto"
-            >
-              <ArrowRight className="mr-2 h-4 w-4" />
-              Move All to Oven
-            </Button>
-          )}
+          {/* "Move All to Oven" button always visible now */}
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleMoveAllToOven}
+            className="flex items-center ml-auto"
+            disabled={items.length === 0}
+          >
+            <ArrowRight className="mr-2 h-4 w-4" />
+            Move All to Oven
+          </Button>
         </div>
         
         <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-hide">

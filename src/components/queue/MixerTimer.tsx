@@ -1,7 +1,7 @@
-
 import React, { useRef, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Timer, Play, Pause, RefreshCw } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 const COUNTDOWN_SECONDS = 60; // 1 minute
 
@@ -16,7 +16,6 @@ const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
   const [seconds, setSeconds] = useState(COUNTDOWN_SECONDS);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Cleanup interval on unmount
   useEffect(() => {
     return () => {
       if (intervalRef.current) {
@@ -26,27 +25,19 @@ const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
     };
   }, []);
 
-  // Notify parent component about timer status changes
   useEffect(() => {
-    if (onReady) {
-      // Timer is "ready" when in countup mode (overtime)
-      onReady(status === "countup");
-    }
+    if (onReady) onReady(status === "countup");
   }, [status, onReady]);
 
-  // Starts the timer or resumes it (if paused, but here just toggling start/stop)
   const handleToggle = () => {
     if (status === "idle" || status === "countup") {
-      // Start/restart countdown from 1:00
       setSeconds(COUNTDOWN_SECONDS);
       setStatus("countdown");
     } else if (status === "countdown") {
-      // Stop the timer and reset to idle (1:00)
       handleReset();
     }
   };
 
-  // Manually reset timer to idle state (1:00)
   const handleReset = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -56,7 +47,6 @@ const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
     setSeconds(COUNTDOWN_SECONDS);
   };
 
-  // Countdown / countup logic
   useEffect(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -70,6 +60,11 @@ const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
             clearInterval(intervalRef.current!);
             intervalRef.current = null;
             setStatus("countup");
+            toast({
+              title: "Mixing completed",
+              description: "Time is up! Please move products to the oven.",
+              variant: "destructive"
+            });
             return 0;
           }
           return prev - 1;
@@ -80,7 +75,6 @@ const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
         setSeconds(prev => prev + 1);
       }, 1000);
     }
-    // interval is always cleared on status change/unmount
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -89,29 +83,26 @@ const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
     };
   }, [status]);
 
-  // Format timer for display
   const formatTime = () => {
-    if (status === "countup") {
-      return `+${String(seconds).padStart(2, "0")}s`;
-    }
     return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(
       seconds % 60
     ).padStart(2, "0")}`;
   };
 
-  // Visual styles
-  const getButtonVariant = () => {
-    if (status === "idle") return "secondary"; // gray
-    if (status === "countdown") return "default"; // blue
-    return "destructive"; // red for overtime
+  const getButtonStyle = () => {
+    if (status === "countdown") {
+      return "bg-blue-500 text-white hover:bg-blue-600 border-blue-700 shadow font-semibold";
+    }
+    if (status === "countup") {
+      return "bg-red-600 text-white border-red-700 shadow font-extrabold animate-pulse";
+    }
+    return "bg-gray-200 text-gray-800 hover:bg-gray-300 border border-gray-300";
   };
 
-  // The main timer toggle: play for idle/after stop, pause to stop (with reset on stop)
   const renderToggleIcon = () => {
     if (status === "idle" || status === "countup") {
       return <Play className="mr-2 h-4 w-4" />;
     }
-    // In countdown: show pause (stops and resets)
     return <Pause className="mr-2 h-4 w-4" />;
   };
 
@@ -119,14 +110,15 @@ const MixerTimer: React.FC<MixerTimerProps> = ({ onReady }) => {
     <div className="flex items-center gap-2">
       <Button
         size="sm"
-        variant={getButtonVariant()}
-        className={`flex items-center min-w-[160px] text-lg ${status === "countup" ? "animate-pulse" : ""}`}
+        variant="ghost"
+        className={`flex items-center min-w-[160px] text-lg transition-all duration-500 ${getButtonStyle()}`}
         onClick={handleToggle}
         aria-label={
           status === "idle" || status === "countup"
             ? "Start Timer"
             : "Stop Timer"
         }
+        data-status={status}
       >
         <Timer className="mr-2 h-4 w-4" />
         {renderToggleIcon()}
