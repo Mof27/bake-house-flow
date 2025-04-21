@@ -1,6 +1,7 @@
 
-import { MockData, PendingOrder } from '@/types/queue';
+import { MockData, PendingOrder, OvenReadyBatch } from '@/types/queue';
 import { toast } from 'sonner';
+import { consolidateMixingItems } from '@/utils/mixingUtils';
 
 const MAX_ITEMS_PER_MIXER = 5;
 
@@ -83,27 +84,47 @@ export const useMixingOperations = (
       const orderToMove = prev.activeMixing.find(order => order.id === orderId);
       if (!orderToMove) return prev;
       
-      // Remove the mixer number from batch label when moving to oven ready
-      const originalBatchLabel = orderToMove.batchLabel.replace(/ \(Mixer #[1-2]\)/, '');
+      // Find all items with the same flavor, shape, and size in the same mixer
+      const mixerMatch = orderToMove.batchLabel.match(/Mixer #(\d+)/);
+      const mixerNumber = mixerMatch ? parseInt(mixerMatch[1]) : 1;
       
-      // Make sure to use the actual produced quantity that was modified in the mixing tab
-      const producedQuantity = orderToMove.producedQuantity || orderToMove.requestedQuantity || 5;
-      const requestedQuantity = orderToMove.requestedQuantity || 5;
+      // Get all items from the same mixer
+      const itemsInSameMixer = prev.activeMixing.filter(item => 
+        item.batchLabel.includes(`Mixer #${mixerNumber}`)
+      );
+      
+      // Find items with same properties (flavor, shape, size)
+      const similarItems = itemsInSameMixer.filter(item => 
+        item.flavor === orderToMove.flavor &&
+        item.shape === orderToMove.shape &&
+        item.size === orderToMove.size
+      );
+      
+      // Only process if there are items to move
+      if (similarItems.length === 0) return prev;
+      
+      // Create a consolidated batch for the oven
+      const consolidatedBatch: OvenReadyBatch = {
+        id: similarItems.map(item => item.id).join('-'), // Combined ID
+        flavor: orderToMove.flavor,
+        shape: orderToMove.shape,
+        size: orderToMove.size,
+        batchLabel: similarItems.map(item => {
+          const codeMatch = item.batchLabel.match(/#A(\d+)/);
+          return codeMatch ? `#A${codeMatch[1]}` : '';
+        }).filter(Boolean).join(', '),
+        requestedAt: new Date(Math.min(...similarItems.map(item => new Date(item.requestedAt).getTime()))),
+        isPriority: similarItems.some(item => item.isPriority),
+        requestedQuantity: similarItems.reduce((sum, item) => sum + (item.requestedQuantity || 5), 0),
+        producedQuantity: similarItems.reduce((sum, item) => sum + (item.producedQuantity || item.requestedQuantity || 5), 0)
+      };
       
       return {
         ...prev,
-        activeMixing: prev.activeMixing.filter(order => order.id !== orderId),
-        ovenReady: [...prev.ovenReady, { 
-          id: orderToMove.id,
-          flavor: orderToMove.flavor,
-          shape: orderToMove.shape,
-          size: orderToMove.size,
-          batchLabel: originalBatchLabel,
-          requestedAt: orderToMove.requestedAt,
-          isPriority: orderToMove.isPriority,
-          requestedQuantity: requestedQuantity,
-          producedQuantity: producedQuantity
-        }]
+        // Remove all similar items from activeMixing
+        activeMixing: prev.activeMixing.filter(item => !similarItems.includes(item)),
+        // Add the consolidated batch to ovenReady
+        ovenReady: [...prev.ovenReady, consolidatedBatch]
       };
     });
     
@@ -116,4 +137,3 @@ export const useMixingOperations = (
     handleMixingComplete,
   };
 };
-
