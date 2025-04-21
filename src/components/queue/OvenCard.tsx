@@ -23,7 +23,7 @@ const OvenCard: React.FC<OvenCardProps> = ({
   batchLabel,
   requestedAt,
   isPriority = false,
-  // requestedQuantity, // not needed now
+  requestedQuantity, // We'll keep this in the props but not display it
   producedQuantity,
 }) => {
   const bgColor =
@@ -40,11 +40,11 @@ const OvenCard: React.FC<OvenCardProps> = ({
       ${bgColor}
       ${isPriority ? "border-2 border-red-500 animate-flash-priority" : "border border-gray-200"}
       hover:shadow-md w-full
-      h-[113px]
+      h-[100px]
       rounded-lg
     `}
     >
-      <CardContent className="p-2 h-full flex flex-col space-y-2">
+      <CardContent className="p-2 h-full flex flex-col space-y-1">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div className="flex flex-wrap items-center gap-1">
@@ -65,7 +65,7 @@ const OvenCard: React.FC<OvenCardProps> = ({
         </div>
         {/* Only Actual Qty */}
         <div className="flex items-center justify-between mt-auto">
-          <span className="text-xs font-semibold">Actual: {producedQuantity}</span>
+          <span className="text-xs font-semibold">Final Qty: {producedQuantity}</span>
         </div>
       </CardContent>
     </Card>
