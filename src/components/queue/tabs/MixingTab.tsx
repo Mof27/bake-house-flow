@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import { ActiveMixing } from '@/types/queue';
@@ -62,7 +63,10 @@ const MixerSection: React.FC<{
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Mixer #{mixerNumber}</h2>
         </div>
+        
+        {/* Timer placed before move to oven button */}
         <MixerTimer onReady={setTimerReady} />
+        
         <div className="flex gap-2 mb-4">
           <CountdownButton
             variant="outline"
@@ -74,17 +78,21 @@ const MixerSection: React.FC<{
             <Undo className="mr-2 h-4 w-4" />
             Put All Back
           </CountdownButton>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleMoveAllToOven}
-            disabled={!timerReady || items.length === 0}
-            className={(!timerReady || items.length === 0) ? "opacity-50 cursor-not-allowed" : ""}
-          >
-            <ArrowRight className="mr-2 h-4 w-4" />
-            Move All to Oven
-          </Button>
+          
+          {/* Only show Move All to Oven button if timer is ready */}
+          {timerReady && items.length > 0 && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleMoveAllToOven}
+              className="flex items-center"
+            >
+              <ArrowRight className="mr-2 h-4 w-4" />
+              Move All to Oven
+            </Button>
+          )}
         </div>
+        
         <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-hide">
           {consolidatedItems.map((item) => (
             <ConsolidatedMixingCard
