@@ -12,7 +12,7 @@ export const useQueueState = () => {
   const [dailyCompleted, setDailyCompleted] = useState(0);
   const [dailyTarget, setDailyTarget] = useState(20);
   const { mockData, setMockData } = useQueueUpdates({...initialMockData, dailyCompleted, dailyTarget});
-  const { fetchLatestData } = useQueueRefresh(mockData, setMockData);
+  const { fetchLatestData } = useQueueRefresh();
   const [lastUpdateTime, setLastUpdateTime] = useState(Date.now());
   const { refresh: refreshOrders } = useOrders();
 
