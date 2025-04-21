@@ -25,8 +25,15 @@ const OrderSuccessDialog: React.FC<OrderSuccessDialogProps> = ({
   const navigate = useNavigate();
 
   const handleViewQueue = () => {
-    // Clear any existing query params first
-    navigate('/queue?showNewest=true&timestamp=' + Date.now());
+    // First trigger a refresh event to ensure data is up-to-date
+    const refreshEvent = new CustomEvent('queue-refresh-requested');
+    window.dispatchEvent(refreshEvent);
+    
+    // Then navigate to queue with parameters to show newest orders
+    setTimeout(() => {
+      // Add timestamp to force the component to re-render completely
+      navigate('/queue?showNewest=true&timestamp=' + Date.now(), { replace: true });
+    }, 300);
   };
 
   return (

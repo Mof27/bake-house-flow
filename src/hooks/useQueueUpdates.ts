@@ -25,6 +25,12 @@ export const useQueueUpdates = (initialData: Partial<MockData> = {}) => {
   const { orders } = useOrders();
 
   useEffect(() => {
+    console.log("Orders changed, updating queue data:", orders);
+    
+    if (!orders || orders.length === 0) {
+      return;
+    }
+    
     // Classify orders into correct Tab groups
     const pendingOrders: PendingOrder[] = [];
     const activeMixing: ActiveMixing[] = [];
@@ -65,9 +71,9 @@ export const useQueueUpdates = (initialData: Partial<MockData> = {}) => {
       }
     });
 
-    setMockData({
+    setMockData(prevData => ({
       dailyCompleted,
-      dailyTarget: 20, // could derive from profile/settings
+      dailyTarget: prevData.dailyTarget || 20, // preserve existing target or use default
       pendingOrders,
       activeMixing,
       ovenReady,
@@ -76,7 +82,7 @@ export const useQueueUpdates = (initialData: Partial<MockData> = {}) => {
         { number: 2, isActive: false, batches: [] },
       ],
       completedBatches,
-    });
+    }));
   }, [orders]);
 
   return { mockData, setMockData };

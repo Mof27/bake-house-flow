@@ -1,53 +1,68 @@
 
-import { useState, useMemo } from 'react';
-import { PendingOrder, CakeFlavor } from '@/types/queue';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { PendingOrder } from '@/types/queue';
+
+type SortOrder = 'newest' | 'oldest';
 
 interface FilterState {
-  selectedFlavor: CakeFlavor | 'all';
+  selectedFlavor: string | null;
   isPriorityOnly: boolean;
-  sortOrder: 'asc' | 'desc';
+  sortOrder: SortOrder;
 }
 
-export function usePendingOrdersFilter(pendingOrders: PendingOrder[]) {
-  const [filterState, setFilterState] = useState<FilterState>({
-    selectedFlavor: 'all',
+export const usePendingOrdersFilter = (pendingOrders: PendingOrder[]) => {
+  const [filters, setFilters] = useState<FilterState>({
+    selectedFlavor: null,
     isPriorityOnly: false,
-    sortOrder: 'asc'
+    sortOrder: 'newest',
   });
 
-  // Filtered and sorted orders based on current filter state
+  // Reset filters function (needed for external resets)
+  const resetFilters = useCallback(() => {
+    setFilters({
+      selectedFlavor: null,
+      isPriorityOnly: false,
+      sortOrder: 'newest',
+    });
+  }, []);
+
+  const handleFlavorChange = (flavor: string | null) => {
+    setFilters(prev => ({ ...prev, selectedFlavor: flavor }));
+  };
+
+  const handlePriorityChange = (isPriorityOnly: boolean) => {
+    setFilters(prev => ({ ...prev, isPriorityOnly }));
+  };
+
+  const handleSortOrderChange = (sortOrder: SortOrder) => {
+    setFilters(prev => ({ ...prev, sortOrder }));
+  };
+
+  // Apply filters to the pendingOrders
   const filteredOrders = useMemo(() => {
-    return pendingOrders
-      .filter(order => {
-        const flavorMatch = filterState.selectedFlavor === 'all' || order.flavor === filterState.selectedFlavor;
-        const priorityMatch = !filterState.isPriorityOnly || order.isPriority;
-        return flavorMatch && priorityMatch;
-      })
-      .sort((a, b) => {
-        const timeA = new Date(a.requestedAt).getTime();
-        const timeB = new Date(b.requestedAt).getTime();
-        return filterState.sortOrder === 'asc' ? timeA - timeB : timeB - timeA;
-      });
-  }, [pendingOrders, filterState.selectedFlavor, filterState.isPriorityOnly, filterState.sortOrder]);
+    let filtered = [...pendingOrders];
 
-  // Handler functions
-  const handleFlavorChange = (flavor: CakeFlavor | 'all') => {
-    setFilterState(prev => ({ ...prev, selectedFlavor: flavor }));
-  };
+    if (filters.selectedFlavor) {
+      filtered = filtered.filter(order => order.flavor === filters.selectedFlavor);
+    }
 
-  const handlePriorityChange = (isPriority: boolean) => {
-    setFilterState(prev => ({ ...prev, isPriorityOnly: isPriority }));
-  };
+    if (filters.isPriorityOnly) {
+      filtered = filtered.filter(order => order.isPriority);
+    }
 
-  const handleSortOrderChange = (order: 'asc' | 'desc') => {
-    setFilterState(prev => ({ ...prev, sortOrder: order }));
-  };
+    return filtered.sort((a, b) => {
+      const dateA = new Date(a.requestedAt).getTime();
+      const dateB = new Date(b.requestedAt).getTime();
+      return filters.sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+    });
+  }, [pendingOrders, filters]);
 
   return {
-    filters: filterState,
+    filters,
     filteredOrders,
     handleFlavorChange,
     handlePriorityChange,
-    handleSortOrderChange
+    handleSortOrderChange,
+    resetFilters
   };
-}
+};

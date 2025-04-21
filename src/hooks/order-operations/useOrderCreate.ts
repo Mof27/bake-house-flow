@@ -73,9 +73,11 @@ export const useOrderCreate = (
 
       console.log("Order created successfully:", data);
       
-      // Trigger manual refresh to update all views
-      const event = new CustomEvent('queue-refresh-requested');
-      window.dispatchEvent(event);
+      // Trigger immediate refresh of the queue data
+      setTimeout(() => {
+        const event = new CustomEvent('queue-refresh-requested');
+        window.dispatchEvent(event);
+      }, 200);
       
       setNextBatchNumber(n => n + 1);
       toast.success("Order created successfully");

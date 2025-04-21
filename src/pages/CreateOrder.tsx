@@ -22,6 +22,8 @@ const CreateOrder = () => {
     try {
       console.log("Submitting order data:", orderData);
       await createOrder(orderData);
+      
+      // After successful creation, show the dialog
       setShowSuccessDialog(true);
     } catch (error) {
       console.error('Error creating order:', error);
@@ -35,6 +37,17 @@ const CreateOrder = () => {
     setShowSuccessDialog(false);
     setErrorMessage("");
   };
+  
+  const handleBackToDashboard = () => {
+    // Trigger a refresh before navigating
+    const refreshEvent = new CustomEvent('queue-refresh-requested');
+    window.dispatchEvent(refreshEvent);
+    
+    // Give a small delay to ensure event is processed
+    setTimeout(() => {
+      navigate('/');
+    }, 100);
+  };
 
   return (
     <Layout title="Create Cake Order">
@@ -42,7 +55,7 @@ const CreateOrder = () => {
         <Button 
           variant="ghost" 
           className="mb-4 flex items-center" 
-          onClick={() => navigate('/')}
+          onClick={handleBackToDashboard}
         >
           <ChevronLeft className="h-4 w-4 mr-1" />
           Back to Dashboard
@@ -51,7 +64,7 @@ const CreateOrder = () => {
         <OrderForm
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
-          onCancel={() => navigate('/')}
+          onCancel={handleBackToDashboard}
           errorMessage={errorMessage}
         />
       </div>

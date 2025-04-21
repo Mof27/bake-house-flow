@@ -1,9 +1,10 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useQueueUpdates } from './useQueueUpdates';
 import { useQueueRefresh } from './useQueueRefresh';
 import { initialMockData } from '@/data/mockQueueData';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export const useQueueState = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -12,10 +13,12 @@ export const useQueueState = () => {
   const { mockData, setMockData } = useQueueUpdates({...initialMockData, dailyCompleted, dailyTarget});
   const { fetchLatestData } = useQueueRefresh(mockData, setMockData);
 
-  // Fetch daily statistics when component mounts
-  const fetchDailyStats = async () => {
+  // Fetch daily statistics and all orders data
+  const fetchDailyStats = useCallback(async () => {
     try {
       setIsLoading(true);
+      console.log("Fetching daily stats and all orders...");
+      
       // Count completed orders for today
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -37,26 +40,54 @@ export const useQueueState = () => {
           dailyCompleted: count
         }));
       }
+      
+      // Also fetch all orders to ensure we have the latest data
+      const { data: allOrders, error: ordersError } = await supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (ordersError) {
+        throw ordersError;
+      }
+      
+      console.log("Received updated orders from Supabase:", allOrders);
+      
+      // The useQueueUpdates hook will react to this change and update mockData
     } catch (error) {
-      console.error('Error fetching daily stats:', error);
+      console.error('Error fetching data:', error);
+      toast.error('Failed to refresh data');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [setMockData]);
 
   useEffect(() => {
+    // Initial fetch on mount
     fetchDailyStats();
 
-    // Set up real-time subscription for order changes
+    // Set up real-time subscription for order changes - with improved error handling
     const channel = supabase
-      .channel('orders-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
-        console.log("Supabase real-time update received:", payload);
-        fetchDailyStats();
-      })
-      .subscribe();
+      .channel('orders-realtime')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'orders' }, 
+        (payload) => {
+          console.log("Supabase real-time update received:", payload);
+          // React immediately to the change
+          fetchDailyStats();
+        }
+      )
+      .subscribe((status) => {
+        console.log('Supabase realtime subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to real-time updates');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('Error subscribing to real-time updates');
+          toast.error('Real-time updates unavailable');
+        }
+      });
 
-    // Listen for manual refresh requests
+    // Listen for manual refresh requests from buttons
     const handleRefreshRequest = () => {
       console.log("Manual refresh requested");
       fetchDailyStats();
@@ -65,10 +96,11 @@ export const useQueueState = () => {
     window.addEventListener('queue-refresh-requested', handleRefreshRequest);
 
     return () => {
+      console.log('Cleaning up Supabase channel');
       supabase.removeChannel(channel);
       window.removeEventListener('queue-refresh-requested', handleRefreshRequest);
     };
-  }, [setMockData]);
+  }, [fetchDailyStats]);
 
   return {
     mockData,

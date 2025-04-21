@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TabsContent } from '@/components/ui/tabs';
 import { PendingOrder } from '@/types/queue';
@@ -17,23 +17,31 @@ const PendingOrdersTab: React.FC<PendingOrdersTabProps> = ({
   onStartMixing,
 }) => {
   const location = useLocation();
-  const [forceRender, setForceRender] = React.useState(0);
+  const [forceRender, setForceRender] = useState(0);
   const { 
     filters, 
     filteredOrders, 
     handleFlavorChange, 
     handlePriorityChange, 
-    handleSortOrderChange 
+    handleSortOrderChange,
+    resetFilters
   } = usePendingOrdersFilter(pendingOrders);
 
   // When the query parameter is present, enforce a re-render to help with scrolling
   useEffect(() => {
     const showNewest = new URLSearchParams(location.search).get('showNewest');
     if (showNewest === 'true') {
-      // Force a re-render to help with scroll position
+      // Force a re-render and reset filters to ensure newest orders are visible
       setForceRender(prev => prev + 1);
+      resetFilters();
     }
-  }, [location.search, pendingOrders.length]);
+  }, [location.search, pendingOrders.length, resetFilters]);
+  
+  // Force recheck of filtered orders when pending orders change
+  useEffect(() => {
+    // This will ensure filtered orders are recalculated when pendingOrders change
+    setForceRender(prev => prev + 1);
+  }, [pendingOrders.length]);
 
   return (
     <TabsContent value="pending" className="mt-0 h-full overflow-hidden">

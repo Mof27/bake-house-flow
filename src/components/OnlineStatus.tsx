@@ -3,10 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useQueueRefresh } from '@/hooks/useQueueRefresh';
+import { useQueueState } from '@/hooks/useQueueState';
 
 const OnlineStatus = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { mockData, setMockData } = useQueueState();
+  const { fetchLatestData, isRefreshing } = useQueueRefresh(mockData, setMockData);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -22,18 +25,7 @@ const OnlineStatus = () => {
   }, []);
 
   const handleRefresh = () => {
-    setIsRefreshing(true);
-    
-    // Dispatch refresh event that will be caught by useQueueState
-    const event = new CustomEvent('queue-refresh-requested');
-    window.dispatchEvent(event);
-    
-    toast.info("Refreshing data...");
-    
-    // Visual feedback for refresh button
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 1000);
+    fetchLatestData();
   };
 
   return (
