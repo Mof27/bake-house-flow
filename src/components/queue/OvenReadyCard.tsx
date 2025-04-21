@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { PlusCircle, MinusCircle } from 'lucide-react';
 import { CakeFlavor, CakeShape } from '@/types/queue';
 import { formatDateTime } from '@/lib/date-utils';
+import { CountdownButton } from '@/components/ui/countdown-button';
 
 interface OvenReadyCardProps {
   flavor: CakeFlavor;
@@ -85,14 +86,16 @@ const OvenReadyCard: React.FC<OvenReadyCardProps> = ({
           
           <div className="text-sm">Actual: {producedQuantity}</div>
           
-          <Button 
+          <CountdownButton 
             variant="secondary"
             size="sm"
             className="w-full mt-2"
-            onClick={() => onStartBaking(1)} // Default to oven #1 for simplicity
+            onAction={() => onStartBaking(1)} // Default to oven #1 for simplicity
+            countdownSeconds={3}
+            showCancelText={true}
           >
             Start Baking
-          </Button>
+          </CountdownButton>
         </div>
       </CardContent>
     </Card>

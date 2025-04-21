@@ -8,6 +8,7 @@ import { ArrowRight, Undo } from 'lucide-react';
 import ActiveMixingCard from '@/components/queue/ActiveMixingCard';
 import ConsolidatedMixingCard from '@/components/queue/ConsolidatedMixingCard';
 import { consolidateMixingItems } from '@/utils/mixingUtils';
+import { CountdownButton } from '@/components/ui/countdown-button';
 
 interface MixingTabProps {
   activeMixing: ActiveMixing[];
@@ -33,6 +34,10 @@ const MixerSection: React.FC<{
     items.forEach(item => onMoveToOven?.(item.id));
   };
 
+  const handlePutAllBack = () => {
+    items.forEach(item => onPutBack?.(item.id));
+  };
+
   const consolidatedItems = consolidateMixingItems(items);
 
   const handleConsolidatedQuantityChange = (consolidatedItem: any, delta: number) => {
@@ -56,14 +61,16 @@ const MixerSection: React.FC<{
           <h2 className="text-xl font-bold">Mixer #{mixerNumber}</h2>
           {items.length > 0 && (
             <div className="flex gap-2">
-              <Button
+              <CountdownButton
                 variant="outline"
                 size="sm"
-                onClick={() => items.forEach(item => onCancelTimer(item.id))}
+                onAction={handlePutAllBack}
+                countdownText="Cancel"
+                className="flex items-center"
               >
                 <Undo className="mr-2 h-4 w-4" />
                 Put All Back
-              </Button>
+              </CountdownButton>
               <Button
                 variant="secondary"
                 size="sm"

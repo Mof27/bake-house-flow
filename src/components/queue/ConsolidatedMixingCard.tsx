@@ -7,6 +7,7 @@ import { PlusCircle, MinusCircle, Undo } from 'lucide-react';
 import { CakeFlavor, CakeShape } from '@/types/queue';
 import { format } from 'date-fns';
 import { ConsolidatedMixingItem } from '@/utils/mixingUtils';
+import { CountdownButton } from '@/components/ui/countdown-button';
 
 interface ConsolidatedMixingCardProps {
   ids: string[];
@@ -59,9 +60,16 @@ const ConsolidatedMixingCard: React.FC<ConsolidatedMixingCardProps> = ({
               </Badge>}
           </div>
           
-          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onPutBack} aria-label="Put back to pending">
+          <CountdownButton 
+            variant="ghost" 
+            size="icon" 
+            className="h-6 w-6" 
+            onAction={onPutBack || (() => {})} 
+            aria-label="Put back to pending"
+            showCancelText={false}
+          >
             <Undo className="h-4 w-4" />
-          </Button>
+          </CountdownButton>
         </div>
 
         {/* Flavor, Shape & Size */}
