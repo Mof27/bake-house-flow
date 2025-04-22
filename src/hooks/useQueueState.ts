@@ -12,7 +12,7 @@ export const useQueueState = () => {
   const [dailyCompleted, setDailyCompleted] = useState(0);
   const [dailyTarget, setDailyTarget] = useState(20);
   const { mockData, setMockData } = useQueueUpdates({...initialMockData, dailyCompleted, dailyTarget});
-  const { fetchLatestData } = useQueueRefresh();
+  const { fetchLatestData, isRefreshing } = useQueueRefresh();
   const [lastUpdateTime, setLastUpdateTime] = useState(Date.now());
   const { refresh: refreshOrders } = useOrders();
 
@@ -60,6 +60,11 @@ export const useQueueState = () => {
     }
   }, [setMockData, refreshOrders]);
 
+  // Simple refresh function that triggers the manual refresh event
+  const refresh = useCallback(() => {
+    window.dispatchEvent(new CustomEvent('queue-refresh-requested'));
+  }, []);
+
   useEffect(() => {
     // Initial fetch on mount
     fetchDailyStats();
@@ -97,12 +102,20 @@ export const useQueueState = () => {
       fetchDailyStats();
     };
 
+    // Listen for the custom refresh event from useQueueRefresh
+    const handleManualRefresh = () => {
+      console.log("Manual refresh from Supabase triggered");
+      fetchDailyStats();
+    };
+
     window.addEventListener('queue-refresh-requested', handleRefreshRequest);
+    window.addEventListener('supabase-manual-refresh', handleManualRefresh);
 
     return () => {
       console.log('Cleaning up Supabase channel');
       supabase.removeChannel(channel);
       window.removeEventListener('queue-refresh-requested', handleRefreshRequest);
+      window.removeEventListener('supabase-manual-refresh', handleManualRefresh);
     };
   }, [fetchDailyStats]);
 
@@ -111,7 +124,8 @@ export const useQueueState = () => {
     setMockData,
     fetchLatestData,
     isLoading,
-    refresh: fetchDailyStats,
+    isRefreshing,
+    refresh: fetchLatestData, // Use the fetchLatestData function directly
     lastUpdateTime
   };
 };

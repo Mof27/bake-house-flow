@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { MockData } from '@/types/queue';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const useQueueRefresh = () => {
@@ -11,11 +11,16 @@ export const useQueueRefresh = () => {
     
     setIsRefreshing(true);
     try {
-      console.log("Manual refresh requested but functionality is temporarily disabled");
-      // Functionality removed for now
-      toast.info("Refresh functionality temporarily disabled");
+      // Simple ping to verify connection to Supabase
+      const { error } = await supabase.from('orders').select('id', { count: 'exact', head: true }).limit(1);
+      if (error) throw error;
+      
+      // If connection successful, dispatch a custom event for components to react
+      window.dispatchEvent(new CustomEvent('supabase-manual-refresh'));
+      toast.success("Refresh successful");
     } catch (error) {
       console.error("Error refreshing data:", error);
+      toast.error("Refresh failed");
     } finally {
       setIsRefreshing(false);
     }

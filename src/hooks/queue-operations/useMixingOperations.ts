@@ -2,16 +2,24 @@
 import { MockData, PendingOrder, OvenReadyBatch } from '@/types/queue';
 import { toast } from 'sonner';
 import { consolidateMixingItems } from '@/utils/mixingUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 const MAX_ITEMS_PER_MIXER = 5;
 
 export const useMixingOperations = (
   setMockData: React.Dispatch<React.SetStateAction<MockData>>
 ) => {
-  const handleStartMixing = (orderId: string, mixerNumber: number) => {
+  const handleStartMixing = async (orderId: string, mixerNumber: number) => {
     console.log(`Starting mixing process for order ${orderId} in Mixer #${mixerNumber}`);
     
+    // First do an optimistic UI update
+    let orderToMove: any = null;
+    let originalState: MockData | null = null;
+    
     setMockData(prev => {
+      // Store original state for rollback if needed
+      originalState = JSON.parse(JSON.stringify(prev));
+      
       // Check if the selected mixer is full (has 5 items already)
       const currentMixerItems = prev.activeMixing.filter(item => 
         item.batchLabel.includes(`Mixer #${mixerNumber}`)
@@ -22,7 +30,7 @@ export const useMixingOperations = (
         return prev; // Return unchanged state
       }
       
-      const orderToMove = prev.pendingOrders.find(order => order.id === orderId);
+      orderToMove = prev.pendingOrders.find(order => order.id === orderId);
       if (!orderToMove) {
         console.error(`Order with ID ${orderId} not found in pending orders`);
         return prev;
@@ -30,10 +38,6 @@ export const useMixingOperations = (
       
       // Add the mixer number to the batch label
       const updatedBatchLabel = `${orderToMove.batchLabel} (Mixer #${mixerNumber})`;
-      
-      // Log the state changes for debugging
-      console.log("Moving order from pending to active mixing:", orderToMove);
-      console.log("Updated batch label:", updatedBatchLabel);
       
       // Create the new state
       const newState = {
@@ -54,16 +58,42 @@ export const useMixingOperations = (
         }]
       };
       
-      console.log("New state after moving to mixing:", newState);
-      
       return newState;
     });
     
-    toast.success(`Started mixing process in Mixer #${mixerNumber}`);
+    // Then persist to Supabase
+    if (orderToMove) {
+      try {
+        const { error } = await supabase
+          .from('orders')
+          .update({ 
+            status: 'mixing', 
+            batch_label: `${orderToMove.batchLabel} (Mixer #${mixerNumber})`,
+            started_at: new Date().toISOString()
+          })
+          .eq('id', orderId);
+          
+        if (error) throw error;
+        toast.success(`Started mixing process in Mixer #${mixerNumber}`);
+      } catch (error) {
+        console.error("Failed to update order status in database:", error);
+        toast.error("Failed to update order status");
+        
+        // Rollback UI on error
+        if (originalState) {
+          setMockData(originalState);
+        }
+      }
+    }
   };
 
-  const handleCancelTimer = (orderId: string) => {
+  const handleCancelTimer = async (orderId: string) => {
+    let orderToMove: any = null;
+    let originalState: MockData | null = null;
+    
+    // Optimistic UI update
     setMockData(prev => {
+      originalState = JSON.parse(JSON.stringify(prev));
       const orderToMove = prev.activeMixing.find(order => order.id === orderId);
       if (!orderToMove) return prev;
       
@@ -79,7 +109,8 @@ export const useMixingOperations = (
         requestedAt: orderToMove.requestedAt,
         isPriority: orderToMove.isPriority,
         requestedQuantity: orderToMove.requestedQuantity || 5,
-        producedQuantity: orderToMove.producedQuantity || 5
+        producedQuantity: orderToMove.producedQuantity || 5,
+        notes: orderToMove.notes
       };
       
       return {
@@ -89,13 +120,41 @@ export const useMixingOperations = (
       };
     });
     
-    toast("Mixing cancelled", { 
-      description: "Order returned to pending queue" 
-    });
+    // Persist to Supabase
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ 
+          status: 'queued', 
+          batch_label: orderToMove?.batchLabel.replace(/ \(Mixer #[1-2]\)/, '') || '',
+          started_at: null
+        })
+        .eq('id', orderId);
+        
+      if (error) throw error;
+      toast("Mixing cancelled", { 
+        description: "Order returned to pending queue" 
+      });
+    } catch (error) {
+      console.error("Failed to update order status in database:", error);
+      toast.error("Failed to return to pending queue");
+      
+      // Rollback UI on error
+      if (originalState) {
+        setMockData(originalState);
+      }
+    }
   };
 
-  const handleMixingComplete = (orderId: string) => {
+  const handleMixingComplete = async (orderId: string) => {
+    let orderToMove: any = null;
+    let consolidatedItems: any[] = [];
+    let originalState: MockData | null = null;
+    let consolidatedBatch: OvenReadyBatch | null = null;
+    
+    // Optimistic UI update
     setMockData(prev => {
+      originalState = JSON.parse(JSON.stringify(prev));
       const orderToMove = prev.activeMixing.find(order => order.id === orderId);
       if (!orderToMove) return prev;
       
@@ -115,11 +174,14 @@ export const useMixingOperations = (
         item.size === orderToMove.size
       );
       
+      // Store for database update
+      consolidatedItems = [...similarItems];
+      
       // Only process if there are items to move
       if (similarItems.length === 0) return prev;
       
       // Create a consolidated batch for the oven
-      const consolidatedBatch: OvenReadyBatch = {
+      consolidatedBatch = {
         id: similarItems.map(item => item.id).join('-'), // Combined ID
         flavor: orderToMove.flavor,
         shape: orderToMove.shape,
@@ -144,7 +206,29 @@ export const useMixingOperations = (
       };
     });
     
-    toast.success("Mixing complete! Order ready for oven.");
+    // Persist changes to Supabase
+    try {
+      // Update all the items in the batch to 'baking' status
+      for (const item of consolidatedItems) {
+        await supabase
+          .from('orders')
+          .update({ 
+            status: 'baking',
+            batch_label: item.batchLabel // Keep the existing batch label
+          })
+          .eq('id', item.id);
+      }
+      
+      toast.success("Mixing complete! Order ready for oven.");
+    } catch (error) {
+      console.error("Failed to update order status in database:", error);
+      toast.error("Failed to complete mixing process");
+      
+      // Rollback UI on error
+      if (originalState) {
+        setMockData(originalState);
+      }
+    }
   };
 
   return {

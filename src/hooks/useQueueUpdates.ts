@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { MockData, PendingOrder, OvenReadyBatch, CompletedBatch, ActiveMixing } from '@/types/queue';
 import { useOrders } from '@/contexts/OrderContext';
+import { isEqual } from 'lodash';
 
 /**
  * This hook now transforms "orders" from the OrderContext (Supabase-backed)
@@ -22,6 +23,7 @@ const defaultMock: MockData = {
 
 export const useQueueUpdates = (initialData: Partial<MockData> = {}) => {
   const [mockData, setMockData] = useState<MockData>({...defaultMock, ...initialData});
+  const [previousOrders, setPreviousOrders] = useState<any[]>([]);
   const { orders } = useOrders();
 
   useEffect(() => {
@@ -30,6 +32,15 @@ export const useQueueUpdates = (initialData: Partial<MockData> = {}) => {
     if (!orders || orders.length === 0) {
       return;
     }
+    
+    // Check if the orders array has changed (shallow comparison)
+    if (isEqual(orders, previousOrders)) {
+      console.log("Orders unchanged, skipping update");
+      return;
+    }
+    
+    // Store current orders for future comparison
+    setPreviousOrders(orders);
     
     // Classify orders into correct Tab groups
     const pendingOrders: PendingOrder[] = [];
@@ -71,18 +82,31 @@ export const useQueueUpdates = (initialData: Partial<MockData> = {}) => {
       }
     });
 
-    setMockData(prevData => ({
-      dailyCompleted,
-      dailyTarget: prevData.dailyTarget || 20, // preserve existing target or use default
-      pendingOrders,
-      activeMixing,
-      ovenReady,
-      ovens: [
-        { number: 1, isActive: false, batches: [] },
-        { number: 2, isActive: false, batches: [] },
-      ],
-      completedBatches,
-    }));
+    setMockData(prevData => {
+      // Preserve any client-side state that isn't stored in the DB
+      return {
+        // Preserve daily target from previous state
+        dailyTarget: prevData.dailyTarget,
+        // Use calculated daily completed or preserve if no completed items found
+        dailyCompleted: dailyCompleted || prevData.dailyCompleted,
+        pendingOrders,
+        activeMixing,
+        ovenReady,
+        // Preserve oven state which might not be in the database
+        ovens: prevData.ovens.map(oven => {
+          // If an oven was active, try to maintain its state
+          if (oven.isActive) {
+            return oven;
+          }
+          return { 
+            number: oven.number, 
+            isActive: false, 
+            batches: [] 
+          };
+        }),
+        completedBatches,
+      };
+    });
   }, [orders]);
 
   return { mockData, setMockData };
