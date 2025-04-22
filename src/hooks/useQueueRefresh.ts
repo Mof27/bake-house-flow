@@ -1,21 +1,22 @@
 
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
+import { queueKeys } from './react-query/useQueueQueries';
 
 export const useQueueRefresh = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const queryClient = useQueryClient();
 
   const fetchLatestData = async () => {
     if (isRefreshing) return;
     
     setIsRefreshing(true);
     try {
-      // Simple ping to verify connection to Supabase
-      const { error } = await supabase.from('orders').select('id', { count: 'exact', head: true }).limit(1);
-      if (error) throw error;
+      // Refresh all queue-related queries
+      await queryClient.refetchQueries({ queryKey: queueKeys.all });
       
-      // If connection successful, dispatch a custom event for components to react
+      // Dispatch event for backward compatibility
       window.dispatchEvent(new CustomEvent('supabase-manual-refresh'));
       toast.success("Refresh successful");
     } catch (error) {

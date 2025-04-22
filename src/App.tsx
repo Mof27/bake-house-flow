@@ -1,49 +1,67 @@
 
-import React from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { OrderProvider } from "@/contexts/OrderContext";
-import { NotificationProvider } from "@/contexts/NotificationContext";
-import { AuthProvider } from "@/contexts/AuthContext";
-import OnlineStatus from "@/components/OnlineStatus";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import { OrderProvider } from '@/contexts/OrderContext';
+import { NotificationProvider } from '@/contexts/NotificationContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
-import Queue from "./pages/Queue";
-import NotFound from "./pages/NotFound";
-import CreateOrder from "./pages/CreateOrder";
-import Logs from "./pages/Logs";
+import './App.css';
+import { Toaster } from 'sonner';
 
-const queryClient = new QueryClient();
+// Pages
+import Dashboard from './pages/Dashboard';
+import QueuePage from './pages/Queue';
+import CreateOrder from './pages/CreateOrder';
+import NewCakeOrder from './pages/NewCakeOrder';
+import NewOrder from './pages/NewOrder';
+import Login from './pages/Login';
+import NotFound from './pages/NotFound';
+import Index from './pages/Index';
+import OrderDetails from './pages/OrderDetails';
+import Logs from './pages/Logs';
 
-const App = () => {
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+      refetchOnReconnect: true,
+      retry: 1,
+      staleTime: 30 * 1000, // 30 seconds
+    },
+  },
+});
+
+function App() {
   return (
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <AuthProvider>
-            <OrderProvider>
-              <NotificationProvider>
-                <TooltipProvider>
-                  <OnlineStatus />
-                  <Toaster />
-                  <Sonner />
-                  <Routes>
-                    <Route path="/" element={<Queue />} />
-                    <Route path="/queue" element={<Queue />} />
-                    <Route path="/create-order" element={<CreateOrder />} />
-                    <Route path="/logs" element={<Logs />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </TooltipProvider>
-              </NotificationProvider>
-            </OrderProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </QueryClientProvider>
-    </React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <NotificationProvider>
+          <OrderProvider>
+            <Router>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/queue" element={<QueuePage />} />
+                <Route path="/create-order" element={<CreateOrder />} />
+                <Route path="/new-cake-order" element={<NewCakeOrder />} />
+                <Route path="/new-order" element={<NewOrder />} />
+                <Route path="/orders/:id" element={<OrderDetails />} />
+                <Route path="/logs" element={<Logs />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Router>
+            <Toaster position="top-right" />
+          </OrderProvider>
+        </NotificationProvider>
+      </ThemeProvider>
+      {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
+    </QueryClientProvider>
   );
-};
+}
 
 export default App;

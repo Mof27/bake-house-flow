@@ -12,14 +12,95 @@ import PendingOrdersTab from '@/components/queue/tabs/PendingOrdersTab';
 import MixingTab from '@/components/queue/tabs/MixingTab';
 import OvenTab from '@/components/queue/tabs/OvenTab';
 import CompletedTab from '@/components/queue/tabs/CompletedTab';
-import { useQueueState } from '@/hooks/useQueueState';
-import { useQueueOperations } from '@/hooks/useQueueOperations';
 import { toast } from 'sonner';
+import { 
+  useOrdersByStatus, 
+  useDailyCompletedCount,
+  useQueueRefresh
+} from '@/hooks/react-query/useQueueQueries';
+import { useQueueStore } from '@/stores/queueStore';
+import { PendingOrder, ActiveMixing, OvenReadyBatch, CompletedBatch } from '@/types/queue';
+import { ManualBakerOrder } from '@/types/orders';
+
+// Helper function to convert ManualBakerOrder to PendingOrder
+const toPendingOrder = (order: ManualBakerOrder): PendingOrder => ({
+  id: order.id,
+  flavor: order.flavor,
+  shape: order.shape,
+  size: order.size,
+  batchLabel: order.batchLabel,
+  requestedAt: order.createdAt,
+  isPriority: order.isPriority,
+  requestedQuantity: order.requestedQuantity,
+  producedQuantity: order.producedQuantity,
+  notes: order.notes
+});
+
+// Helper function to convert ManualBakerOrder to ActiveMixing
+const toActiveMixing = (order: ManualBakerOrder): ActiveMixing => ({
+  id: order.id,
+  flavor: order.flavor,
+  shape: order.shape,
+  size: order.size,
+  batchLabel: order.batchLabel,
+  requestedAt: order.createdAt,
+  isPriority: order.isPriority,
+  startTime: order.startedAt || new Date(),
+  requestedQuantity: order.requestedQuantity,
+  producedQuantity: order.producedQuantity,
+  notes: order.notes
+});
+
+// Helper function to convert ManualBakerOrder to OvenReadyBatch
+const toOvenReadyBatch = (order: ManualBakerOrder): OvenReadyBatch => ({
+  id: order.id,
+  flavor: order.flavor,
+  shape: order.shape,
+  size: order.size,
+  batchLabel: order.batchLabel,
+  requestedAt: order.createdAt,
+  isPriority: order.isPriority,
+  requestedQuantity: order.requestedQuantity,
+  producedQuantity: order.producedQuantity
+});
+
+// Helper function to convert ManualBakerOrder to CompletedBatch
+const toCompletedBatch = (order: ManualBakerOrder): CompletedBatch => ({
+  id: order.id,
+  batchLabel: order.batchLabel,
+  flavor: order.flavor,
+  shape: order.shape,
+  size: order.size,
+  producedQuantity: order.producedQuantity,
+  completedAt: order.completedAt || new Date()
+});
 
 const QueuePage: React.FC = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<string>('pending');
-  const { mockData, setMockData, fetchLatestData } = useQueueState();
+  
+  // React Query hooks
+  const { data: pendingOrdersData, isLoading: isPendingLoading } = useOrdersByStatus('queued');
+  const { data: mixingOrdersData, isLoading: isMixingLoading } = useOrdersByStatus('mixing');
+  const { data: bakingOrdersData, isLoading: isBakingLoading } = useOrdersByStatus('baking');
+  const { data: completedOrdersData, isLoading: isCompletedLoading } = useOrdersByStatus('done');
+  const { data: dailyCompletedCount = 0, isLoading: isCountLoading } = useDailyCompletedCount();
+  const { refresh, isRefreshing } = useQueueRefresh();
+  
+  // Zustand store
+  const { 
+    dailyTarget,
+    startMixing, 
+    cancelMixing, 
+    completeMixing,
+    updateQuantity
+  } = useQueueStore();
+  
+  // Convert API data to our UI models
+  const pendingOrders: PendingOrder[] = pendingOrdersData?.map(toPendingOrder) || [];
+  const activeMixing: ActiveMixing[] = mixingOrdersData?.map(toActiveMixing) || [];
+  const ovenReadyBatches: OvenReadyBatch[] = bakingOrdersData?.map(toOvenReadyBatch) || [];
+  const completedBatches: CompletedBatch[] = completedOrdersData?.map(toCompletedBatch) || [];
   
   // Set the active tab to 'pending' when showNewest is in the query parameters
   useEffect(() => {
@@ -29,38 +110,48 @@ const QueuePage: React.FC = () => {
     }
   }, [location.search]);
   
-  const {
-    handleQuantityChange,
-    handleMixingQuantityChange,
-    handleStartMixing,
-    handleCancelTimer,
-    handleMixingComplete,
-  } = useQueueOperations(mockData, setMockData);
-
   const handleTabChange = (value: string) => {
     setActiveTab(value);
   };
-
-  // New handler to put back a mixing item to pending orders
+  
+  // Handler functions using our store
+  const handleStartMixing = (orderId: string, mixerId: number) => {
+    startMixing(orderId, mixerId);
+  };
+  
   const handlePutBackToPending = (orderId: string) => {
     try {
       console.log("Putting order back to pending:", orderId);
-      handleCancelTimer(orderId);
+      cancelMixing(orderId);
     } catch (error) {
       console.error("Error returning order to pending:", error);
       toast.error("Failed to return order to pending queue");
     }
   };
-
+  
+  const handleMixingComplete = (orderId: string) => {
+    // Extract mixer number from order
+    const order = activeMixing.find(o => o.id === orderId);
+    if (!order) return;
+    
+    const mixerMatch = order.batchLabel.match(/Mixer #(\d+)/);
+    const mixerNumber = mixerMatch ? parseInt(mixerMatch[1]) : 1;
+    
+    completeMixing(orderId, mixerNumber);
+  };
+  
+  const handleMixingQuantityChange = (orderId: string, delta: number) => {
+    updateQuantity(orderId, delta);
+  };
+  
+  const isLoading = isPendingLoading || isMixingLoading || isBakingLoading || isCompletedLoading || isCountLoading;
+  
   const sidebar = (
     <Sidebar 
-      dailyCompleted={mockData.dailyCompleted} 
-      dailyTarget={mockData.dailyTarget} 
+      dailyCompleted={dailyCompletedCount} 
+      dailyTarget={dailyTarget}
     />
   );
-
-  console.log("Current Queue State - Pending Orders:", mockData.pendingOrders);
-  console.log("Current Queue State - Active Mixing:", mockData.activeMixing);
 
   return (
     <Layout sidebar={sidebar}>
@@ -81,28 +172,36 @@ const QueuePage: React.FC = () => {
           </div>
 
           <div className="flex-1 overflow-hidden">
-            <PendingOrdersTab
-              pendingOrders={mockData.pendingOrders}
-              onStartMixing={handleStartMixing}
-            />
-            
-            <MixingTab
-              activeMixing={mockData.activeMixing}
-              onCancelTimer={handleCancelTimer}
-              onMixingComplete={handleMixingComplete}
-              onQuantityChange={handleMixingQuantityChange}
-              onPutBack={handlePutBackToPending}
-              onMoveToOven={handleMixingComplete}
-            />
+            {isLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <p>Loading...</p>
+              </div>
+            ) : (
+              <>
+                <PendingOrdersTab
+                  pendingOrders={pendingOrders}
+                  onStartMixing={handleStartMixing}
+                />
+                
+                <MixingTab
+                  activeMixing={activeMixing}
+                  onCancelTimer={handlePutBackToPending}
+                  onMixingComplete={handleMixingComplete}
+                  onQuantityChange={handleMixingQuantityChange}
+                  onPutBack={handlePutBackToPending}
+                  onMoveToOven={handleMixingComplete}
+                />
 
-            <OvenTab
-              ovenReadyBatches={mockData.ovenReady || []}
-              onStartBaking={handleStartMixing}
-            />
-            
-            <CompletedTab
-              completedBatches={mockData.completedBatches}
-            />
+                <OvenTab
+                  ovenReadyBatches={ovenReadyBatches}
+                  onStartBaking={handleStartMixing}
+                />
+                
+                <CompletedTab
+                  completedBatches={completedBatches}
+                />
+              </>
+            )}
           </div>
         </Tabs>
       </div>
