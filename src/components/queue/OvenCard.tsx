@@ -2,6 +2,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { CakeFlavor, CakeShape } from "@/types/queue";
 
 interface OvenCardProps {
@@ -13,6 +14,8 @@ interface OvenCardProps {
   isPriority?: boolean;
   requestedQuantity: number;
   producedQuantity: number;
+  id: string;
+  onStartBaking?: (orderId: string, ovenNumber: number) => void;
 }
 
 const OvenCard: React.FC<OvenCardProps> = ({
@@ -22,6 +25,8 @@ const OvenCard: React.FC<OvenCardProps> = ({
   isPriority = false,
   producedQuantity,
   requestedQuantity,
+  id,
+  onStartBaking,
 }) => {
   // Choose colors based on flavor for slight visual context
   const bgColor =
@@ -32,13 +37,19 @@ const OvenCard: React.FC<OvenCardProps> = ({
     ? "border-2 border-[color:hsl(var(--bakery-danger))]"
     : "border border-gray-200";
 
+  const handleStartBaking = () => {
+    if (onStartBaking) {
+      onStartBaking(id, 1); // Default to oven #1 for now
+    }
+  };
+
   return (
     <Card
-      className={`relative transition-all ${bgColor} ${borderColor} hover:shadow-md w-full h-[100px] rounded-xl`}
+      className={`relative transition-all ${bgColor} ${borderColor} hover:shadow-md w-full rounded-xl`}
     >
-      <CardContent className="p-3 h-full flex items-center justify-between">
-        {/* Left column: Cake details */}
-        <div className="flex flex-col gap-0.5 justify-center w-1/2">
+      <CardContent className="p-3 flex flex-col">
+        {/* Top section: Cake details */}
+        <div className="flex flex-col gap-0.5 justify-center mb-2">
           <div className="text-base font-bold mb-1">
             {flavor.toUpperCase()} | {shape.toUpperCase()} {size}CM
           </div>
@@ -46,11 +57,11 @@ const OvenCard: React.FC<OvenCardProps> = ({
             Requested: <span className="font-semibold">{requestedQuantity}</span>
           </div>
         </div>
-        {/* Right column: Final quantity & priority */}
-        <div className="flex flex-col gap-1 items-end w-1/2">
+        
+        {/* Middle section: Final quantity & priority */}
+        <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-medium">
-            Final Qty:{" "}
-            <span className="font-bold text-lg">{producedQuantity}</span>
+            Final Qty: <span className="font-bold text-lg">{producedQuantity}</span>
           </span>
           {isPriority && (
             <Badge
@@ -61,10 +72,21 @@ const OvenCard: React.FC<OvenCardProps> = ({
             </Badge>
           )}
         </div>
+        
+        {/* Bottom section: Start baking button */}
+        {onStartBaking && (
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            className="w-full mt-auto"
+            onClick={handleStartBaking}
+          >
+            Start Baking
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
 };
 
 export default OvenCard;
-

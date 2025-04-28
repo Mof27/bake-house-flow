@@ -6,9 +6,10 @@ import { OvenReadyBatch } from "@/types/queue";
 
 interface OvenSectionProps {
   ovenReadyBatches: OvenReadyBatch[];
+  onStartBaking: (orderId: string, ovenNumber: number) => void;
 }
 
-const OvenSection: React.FC<OvenSectionProps> = ({ ovenReadyBatches }) => {
+const OvenSection: React.FC<OvenSectionProps> = ({ ovenReadyBatches, onStartBaking }) => {
   return (
     <Card className="flex-1 h-full overflow-hidden">
       <CardContent className="p-4 h-full">
@@ -26,6 +27,8 @@ const OvenSection: React.FC<OvenSectionProps> = ({ ovenReadyBatches }) => {
                 isPriority={batch.isPriority}
                 requestedQuantity={batch.requestedQuantity}
                 producedQuantity={batch.producedQuantity}
+                id={batch.id}
+                onStartBaking={onStartBaking}
               />
             ))
           ) : (
