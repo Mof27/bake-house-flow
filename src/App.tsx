@@ -38,8 +38,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <NotificationProvider>
-          <OrderProvider>
+        <OrderProvider>
+          <NotificationProvider>
             <Router>
               <Routes>
                 <Route path="/" element={<Index />} />
@@ -55,8 +55,8 @@ function App() {
               </Routes>
             </Router>
             <Toaster position="top-right" />
-          </OrderProvider>
-        </NotificationProvider>
+          </NotificationProvider>
+        </OrderProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
