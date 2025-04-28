@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { toast } from 'sonner';
-import { fetchOrdersByStatus, updateOrderStatus } from '@/services/queueService';
+import { supabase } from '@/integrations/supabase/client';
 import { OrderStatus } from '@/types/orders';
 
 // Constants
@@ -40,12 +40,21 @@ export const useQueueStore = create<QueueState>((set, get) => ({
       }
       
       // Update the order status and batch label
-      await updateOrderStatus(orderId, 'mixing', {
-        batch_label: `#A${orderId.substring(0, 4)} (Mixer #${mixerNumber})`,
-        started_at: new Date().toISOString()
-      });
+      const { error } = await supabase.from('orders')
+        .update({
+          status: 'mixing',
+          batch_label: `#A${orderId.substring(0, 4)} (Mixer #${mixerNumber})`,
+          started_at: new Date().toISOString()
+        })
+        .eq('id', orderId);
+      
+      if (error) throw error;
       
       toast.success(`Started mixing process in Mixer #${mixerNumber}`);
+      
+      // Trigger an event to refresh the data
+      window.dispatchEvent(new CustomEvent('queue-refresh-requested'));
+      
       return true;
     } catch (error) {
       console.error("Failed to start mixing:", error);
@@ -58,25 +67,39 @@ export const useQueueStore = create<QueueState>((set, get) => ({
   cancelMixing: async (orderId: string) => {
     try {
       // Get the current batch label to extract the original part
-      const orders = await fetchOrdersByStatus('mixing');
-      const order = orders.find(o => o.id === orderId);
+      const { data, error: fetchError } = await supabase
+        .from('orders')
+        .select('batch_label')
+        .eq('id', orderId)
+        .single();
       
-      if (!order) {
+      if (fetchError) throw fetchError;
+      
+      if (!data) {
         toast.error("Order not found");
         return false;
       }
       
       // Remove the mixer number from batch label when returning to pending
-      const originalBatchLabel = order.batchLabel.replace(/ \(Mixer #[1-2]\)/, '');
+      const originalBatchLabel = data.batch_label.replace(/ \(Mixer #[1-2]\)/, '');
       
-      await updateOrderStatus(orderId, 'queued', {
-        batch_label: originalBatchLabel,
-        started_at: null
-      });
+      const { error } = await supabase.from('orders')
+        .update({
+          status: 'queued',
+          batch_label: originalBatchLabel,
+          started_at: null
+        })
+        .eq('id', orderId);
+      
+      if (error) throw error;
       
       toast("Mixing cancelled", { 
         description: "Order returned to pending queue" 
       });
+      
+      // Trigger an event to refresh the data
+      window.dispatchEvent(new CustomEvent('queue-refresh-requested'));
+      
       return true;
     } catch (error) {
       console.error("Failed to cancel mixing:", error);
@@ -89,8 +112,14 @@ export const useQueueStore = create<QueueState>((set, get) => ({
   completeMixing: async (orderId: string, mixerNumber: number) => {
     try {
       // Get all orders with the same mixer number
-      const orders = await fetchOrdersByStatus('mixing');
-      const order = orders.find(o => o.id === orderId);
+      const { data: orders, error: fetchError } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('status', 'mixing');
+      
+      if (fetchError) throw fetchError;
+      
+      const order = orders?.find(o => o.id === orderId);
       
       if (!order) {
         toast.error("Order not found");
@@ -98,22 +127,29 @@ export const useQueueStore = create<QueueState>((set, get) => ({
       }
       
       // Find all items with the same flavor, shape, and size in the same mixer
-      const itemsInSameMixer = orders.filter(item => 
-        item.batchLabel.includes(`Mixer #${mixerNumber}`) &&
+      const itemsInSameMixer = orders?.filter(item => 
+        item.batch_label.includes(`Mixer #${mixerNumber}`) &&
         item.flavor === order.flavor &&
         item.shape === order.shape &&
         item.size === order.size
-      );
+      ) || [];
       
       // Update all the similar items to 'baking' status
       for (const item of itemsInSameMixer) {
-        await updateOrderStatus(item.id, 'baking', {
-          // Keep existing batch label
-          batch_label: item.batchLabel
-        });
+        await supabase.from('orders')
+          .update({
+            status: 'baking',
+            // Keep existing batch label
+            batch_label: item.batch_label
+          })
+          .eq('id', item.id);
       }
       
       toast.success("Mixing complete! Order ready for oven.");
+      
+      // Trigger an event to refresh the data
+      window.dispatchEvent(new CustomEvent('queue-refresh-requested'));
+      
       return true;
     } catch (error) {
       console.error("Failed to complete mixing:", error);
@@ -129,12 +165,21 @@ export const useQueueStore = create<QueueState>((set, get) => ({
       const batchIds = batchId.includes('-') ? batchId.split('-') : [batchId];
       
       for (const id of batchIds) {
-        await updateOrderStatus(id, 'baking', {
-          batch_label: `Oven #${ovenNumber} - ${id}`
-        });
+        const { error } = await supabase.from('orders')
+          .update({
+            status: 'baking',
+            batch_label: `Oven #${ovenNumber} - ${id}`
+          })
+          .eq('id', id);
+          
+        if (error) throw error;
       }
       
       toast.success(`Started baking in Oven #${ovenNumber}`);
+      
+      // Trigger an event to refresh the data
+      window.dispatchEvent(new CustomEvent('queue-refresh-requested'));
+      
       return true;
     } catch (error) {
       console.error("Failed to start baking:", error);
@@ -147,10 +192,16 @@ export const useQueueStore = create<QueueState>((set, get) => ({
   completeBaking: async (ovenNumber: number) => {
     try {
       // Get all orders in baking status
-      const orders = await fetchOrdersByStatus('baking');
-      const ovenBatches = orders.filter(o => 
-        o.batchLabel.includes(`Oven #${ovenNumber}`)
-      );
+      const { data: orders, error: fetchError } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('status', 'baking');
+      
+      if (fetchError) throw fetchError;
+      
+      const ovenBatches = orders?.filter(o => 
+        o.batch_label.includes(`Oven #${ovenNumber}`)
+      ) || [];
       
       if (ovenBatches.length === 0) {
         toast.error(`No batches found in Oven #${ovenNumber}`);
@@ -159,14 +210,23 @@ export const useQueueStore = create<QueueState>((set, get) => ({
       
       // Update all batches to 'done' status
       for (const batch of ovenBatches) {
-        await updateOrderStatus(batch.id, 'done', {
-          completed_at: new Date().toISOString()
-        });
+        const { error } = await supabase.from('orders')
+          .update({
+            status: 'done',
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', batch.id);
+          
+        if (error) throw error;
       }
       
       toast.success(`Oven ${ovenNumber} complete!`, {
         description: `${ovenBatches.length} batches successfully baked.`
       });
+      
+      // Trigger an event to refresh the data
+      window.dispatchEvent(new CustomEvent('queue-refresh-requested'));
+      
       return true;
     } catch (error) {
       console.error("Failed to complete baking:", error);
@@ -178,8 +238,14 @@ export const useQueueStore = create<QueueState>((set, get) => ({
   // Helper to count items in a mixer
   getMixerItemCount: async (mixerNumber: number) => {
     try {
-      const orders = await fetchOrdersByStatus('mixing');
-      return orders.filter(o => o.batchLabel.includes(`Mixer #${mixerNumber}`)).length;
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('status', 'mixing');
+        
+      if (error) throw error;
+      
+      return (data || []).filter(o => o.batch_label.includes(`Mixer #${mixerNumber}`)).length;
     } catch (error) {
       console.error("Error counting mixer items:", error);
       return 0;
@@ -189,24 +255,37 @@ export const useQueueStore = create<QueueState>((set, get) => ({
   // Update quantity operation
   updateQuantity: async (orderId: string, delta: number) => {
     try {
-      // Get current quantity
-      const orders = await fetchOrdersByStatus();
-      const order = orders.find(o => o.id === orderId);
+      // Get current order details
+      const { data, error: fetchError } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', orderId)
+        .single();
       
-      if (!order) {
+      if (fetchError) throw fetchError;
+      
+      if (!data) {
         toast.error("Order not found");
         return false;
       }
       
       // Calculate new quantity (minimum of 1)
-      const newQuantity = Math.max(1, order.producedQuantity + delta);
+      const newQuantity = Math.max(1, data.produced_quantity + delta);
       
       // Update the quantity
-      await updateOrderStatus(orderId, order.status, {
-        produced_quantity: newQuantity
-      });
+      const { error } = await supabase.from('orders')
+        .update({
+          produced_quantity: newQuantity
+        })
+        .eq('id', orderId);
+        
+      if (error) throw error;
       
       toast.info(`Quantity ${delta > 0 ? 'increased' : 'decreased'} for batch`);
+      
+      // Trigger an event to refresh the data
+      window.dispatchEvent(new CustomEvent('queue-refresh-requested'));
+      
       return true;
     } catch (error) {
       console.error("Failed to update quantity:", error);

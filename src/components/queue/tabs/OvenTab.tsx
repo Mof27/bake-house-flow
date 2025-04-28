@@ -19,6 +19,7 @@ const OvenTab: React.FC<OvenTabProps> = ({
         <div className="grid grid-cols-1 gap-4 h-full">
           <OvenSection 
             ovenReadyBatches={ovenReadyBatches || []} 
+            onStartBaking={onStartBaking}
           />
         </div>
       </div>

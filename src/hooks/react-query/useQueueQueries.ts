@@ -1,5 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { 
   fetchOrdersByStatus, 
@@ -107,7 +108,7 @@ export const useUpdateOrderStatus = () => {
             (old = []) => {
               const updatedOrder = { 
                 ...orderToMove, 
-                status: 'done', 
+                status: status as OrderStatus, 
                 completedAt: new Date(),
                 ...additionalFields 
               };
@@ -210,6 +211,9 @@ export const useQueueRefresh = () => {
     try {
       await queryClient.refetchQueries({ queryKey: queueKeys.lists() });
       await queryClient.refetchQueries({ queryKey: queueKeys.dailyCompleted() });
+      
+      // Dispatch event for backward compatibility
+      window.dispatchEvent(new CustomEvent('supabase-manual-refresh'));
       toast.success("Refresh successful");
     } catch (error) {
       console.error("Error refreshing data:", error);

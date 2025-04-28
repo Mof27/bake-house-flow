@@ -93,7 +93,9 @@ const QueuePage: React.FC = () => {
     startMixing, 
     cancelMixing, 
     completeMixing,
-    updateQuantity
+    updateQuantity,
+    completeBaking,
+    startBaking
   } = useQueueStore();
   
   // Convert API data to our UI models
@@ -142,6 +144,14 @@ const QueuePage: React.FC = () => {
   
   const handleMixingQuantityChange = (orderId: string, delta: number) => {
     updateQuantity(orderId, delta);
+  };
+
+  const handleStartBaking = (orderId: string, ovenNumber: number) => {
+    startBaking(orderId, ovenNumber);
+  };
+
+  const handleOvenComplete = (ovenNumber: number) => {
+    completeBaking(ovenNumber);
   };
   
   const isLoading = isPendingLoading || isMixingLoading || isBakingLoading || isCompletedLoading || isCountLoading;
@@ -194,7 +204,7 @@ const QueuePage: React.FC = () => {
 
                 <OvenTab
                   ovenReadyBatches={ovenReadyBatches}
-                  onStartBaking={handleStartMixing}
+                  onStartBaking={handleStartBaking}
                 />
                 
                 <CompletedTab
